@@ -1,0 +1,36 @@
+# Placeholder images
+# Bạn có thể thay thế các file này bằng hình ảnh thật
+
+# Để sử dụng các placeholder này trong code:
+
+## Album covers:
+- album_placeholder.jpg
+- sontung_album.jpg
+
+## Artist photos:
+- artist_placeholder.jpg
+- sontung_photo.jpg
+
+## App logos:
+- lyra_logo.png
+- lyra_icon.png
+
+## Usage example:
+```dart
+// Trong file Dart
+Container(
+  decoration: BoxDecoration(
+    image: DecorationImage(
+      image: AssetImage('assets/images/sontung_album.jpg'),
+      fit: BoxFit.cover,
+    ),
+  ),
+)
+
+// Hoặc
+Image.asset(
+  'assets/logos/lyra_logo.png',
+  width: 100,
+  height: 100,
+)
+```
