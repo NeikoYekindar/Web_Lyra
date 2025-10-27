@@ -1,8 +1,92 @@
 import 'package:flutter/material.dart';
+import 'package:lyra/theme/app_theme.dart';
+// import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
 
-class HomeCenter extends StatelessWidget {
+class HomeCenter extends StatefulWidget {
   const HomeCenter({super.key});
+  
+  @override
+  State<HomeCenter> createState() => _HomeCenterState();
+}
 
+class _HomeCenterState extends State<HomeCenter> {
+  bool _isPlaying = false;
+  int _selectedCategoryIndex = 0; // Index của category được chọn
+  List<String> _categories = []; // Danh sách categories từ API
+  bool _isLoadingCategories = true; // Trạng thái loading
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  // Gọi API để lấy danh sách categories
+  Future<void> _loadCategories() async {
+    try {
+      // OPTION 1: Sử dụng API thực (uncomment dòng dưới và import service)
+      // final List<String> apiResponse = await CategoryService.getCategories();
+      
+      // OPTION 2: Giả lập API call (hiện tại)
+      await Future.delayed(const Duration(seconds: 1)); // Giả lập network delay
+      final List<String> apiResponse = [
+        'All',
+        'Music', 
+        'Podcasts',
+        'Audiobooks',
+        'Playlists',
+        'Artists',
+        'Albums',
+        'Live Radio'
+      ];
+      
+      if (mounted) {
+        setState(() {
+          _categories = apiResponse;
+          _isLoadingCategories = false;
+        });
+      }
+    } catch (e) {
+      // Xử lý lỗi API
+      if (mounted) {
+        setState(() {
+          _categories = ['All', 'Music', 'Podcasts']; // Fallback data
+          _isLoadingCategories = false;
+        });
+      }
+      print('Error loading categories: $e');
+    }
+  }
+
+  // Method để xử lý khi user chọn category
+  void _onCategorySelected(int index) {
+    setState(() {
+      _selectedCategoryIndex = index;
+    });
+    
+    // Gọi API để lấy nội dung theo category đã chọn
+    _loadContentByCategory(_categories[index]);
+    print('Selected category: ${_categories[index]}');
+  }
+  
+  // Gọi API để lấy nội dung theo category
+  Future<void> _loadContentByCategory(String category) async {
+    try {
+      // OPTION 1: Sử dụng API thực (uncomment dòng dưới)
+      // final content = await CategoryService.getContentByCategory(category);
+      
+      // OPTION 2: Giả lập API call
+      await Future.delayed(const Duration(milliseconds: 500));
+      print('Loading content for category: $category');
+      
+      // TODO: Update UI với dữ liệu mới từ API
+      // Ví dụ: setState(() { _contentList = content; });
+      
+    } catch (e) {
+      print('Error loading content for category $category: $e');
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -69,13 +153,13 @@ class HomeCenter extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: 10),
-                        Text(
-                          'Sơn Tùng M-TP • Single',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 16,
-                          ),
-                        ),
+                        // Text(
+                        //   'Sơn Tùng M-TP • Single',
+                        //   style: TextStyle(
+                        //     color: Colors.grey,
+                        //     fontSize: 16,
+                        //   ),
+                        // ),
                         const Spacer(), // Đẩy container xuống dưới cùng
                         Container(
                           alignment: Alignment.bottomLeft,
@@ -100,6 +184,31 @@ class HomeCenter extends StatelessWidget {
                                   fontSize: 16,
                                 ),
                               ),
+                              const Spacer(),
+                              ElevatedButton(
+                                onPressed: (){
+                                  setState((){
+                                    _isPlaying = !_isPlaying;
+                                  });
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFE62429),
+                                  foregroundColor: Colors.white,
+                                  minimumSize: const Size(90, 40),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: Text(  
+                                  _isPlaying ? 'Pause' : 'Play',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              
                             ],
                           ),
                         ),
@@ -117,15 +226,53 @@ class HomeCenter extends StatelessWidget {
           const SizedBox(height: 16),
           Container(
             width: double.infinity,
-            height: 350,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              gradient: const LinearGradient(
-                colors: [Color(0xFF4A90E2), Color(0xFF7BB3F0)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
+              color: Colors.transparent,
+            
             ),
+            child: _isLoadingCategories
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    color: AppTheme.primaryColor,
+                    strokeWidth: 2,
+                  ),
+                )
+              : SizedBox(
+                  height: 40,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _categories.length,
+                    separatorBuilder: (context, index) => const SizedBox(width: 12),
+                    itemBuilder: (context, index) {
+                      final isSelected = index == _selectedCategoryIndex;
+                      return ElevatedButton(
+                        onPressed: () => _onCategorySelected(index),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isSelected 
+                            ? Theme.of(context).colorScheme.onBackground
+                            : AppTheme.darkSurfaceButton,
+                          foregroundColor: isSelected
+                            ? Theme.of(context).colorScheme.background
+                            : Theme.of(context).colorScheme.onBackground,
+                          minimumSize: Size(
+                            _categories[index].length * 10.0 + 20, // Dynamic width based on text length
+                            40
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          elevation: isSelected ? 3 : 1,
+                        ),
+                        child: Text(
+                          _categories[index],
+                          style: TextStyle(
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
           ),
           
           

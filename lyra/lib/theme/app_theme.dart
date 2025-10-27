@@ -12,7 +12,7 @@ class AppTheme {
   static const Color darkCard = Color(0xFF2A2A2A);
   static const Color darkText = Colors.white;
   static const Color darkSecondaryText = Color(0xFFB3B3B3);
-  
+  static const Color darkSurfaceButton = Color(0xFF303030);
   // Light Theme Colors
   static const Color lightBackground = Color(0xFFFFFFFF);
   static const Color lightSurface = Color.fromARGB(255, 189, 188, 188);
