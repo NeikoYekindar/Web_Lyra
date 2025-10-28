@@ -2,7 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class LeftSidebarMini extends StatelessWidget {
-  const LeftSidebarMini({super.key});
+  final VoidCallback? onLibraryIconPressed;
+  
+  const LeftSidebarMini({
+    super.key,
+    this.onLibraryIconPressed,
+  });
+
+  // Danh sách album icons
+  final List<String> albumImages = const [
+    'assets/images/album_1.png',
+    'assets/images/album_2.png',
+    'assets/images/album_3.png',
+    'assets/images/album_3.png',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -18,21 +31,26 @@ class LeftSidebarMini extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildCustomIconMenuItemLibrary('assets/icons/library_icon.svg', true, 60),
+          _buildCustomIconMenuItemLibrary('assets/icons/library_icon.svg', true, 60, onLibraryIconPressed),
           const SizedBox(height: 8),
           _buildCustomIconMenuItem('assets/icons/library_add_icon.svg', false, 60),
           const SizedBox(height: 16),
-          _buildAlbumIconPNG('assets/images/album_1.png', false),
-          const SizedBox(height: 8),
-          _buildAlbumIconPNG('assets/images/album_2.png', false),
-          const SizedBox(height: 8),
-          _buildAlbumIconPNG('assets/images/album_3.png', false),
-
+          
+          // Hiển thị danh sách album icons
+          Expanded(
+            child: ListView.separated(
+              itemCount: albumImages.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 8),
+              itemBuilder: (context, index) {
+                return _buildAlbumIconPNG(albumImages[index], false);
+              },
+            ),
+          ),
         ],
       ),
     );
   }
-    Widget _buildCustomIconMenuItemLibrary(String svgPath, bool isActive, double size) {
+    Widget _buildCustomIconMenuItemLibrary(String svgPath, bool isActive, double size, VoidCallback? onPressed) {
     return Container(
       width: size,
       height: size,
@@ -41,7 +59,7 @@ class LeftSidebarMini extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: IconButton(
-        onPressed: () {},
+        onPressed: onPressed ?? () {},
         icon: SvgPicture.asset(
           svgPath,
           width: 25,
@@ -135,18 +153,5 @@ class LeftSidebarMini extends StatelessWidget {
     if (pngPath.contains('album2')) return Colors.blue;
     if (pngPath.contains('album3')) return Colors.green;
     return Colors.orange; // Default color
-  }
-
-  // Hàm tổng quát để load cả PNG và SVG
-  Widget _buildAlbumIcon(String imagePath, bool isActive, {String? tooltip, double size = 40.0}) {
-    bool isPng = imagePath.toLowerCase().endsWith('.png') || 
-                imagePath.toLowerCase().endsWith('.jpg') || 
-                imagePath.toLowerCase().endsWith('.jpeg');
-    
-    if (isPng) {
-      return _buildAlbumIconPNG(imagePath, isActive);
-    } else {
-      return _buildCustomIconMenuItem(imagePath, isActive, size);
-    }
   }
 }

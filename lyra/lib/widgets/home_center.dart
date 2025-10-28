@@ -100,9 +100,9 @@ class _HomeCenterState extends State<HomeCenter> {
         },
         {
           'id': '3', 
-          'title': 'Không Buông',
-          'artist': 'hngle, Ari',
-          'image': 'assets/images/khongbuon.png',
+          'title': 'Playlist Sơn Tùng M-TP',
+          'artist': 'Trần Mai Trung Kiên',
+          'image': 'assets/images/playlist_mtp.png',
         },
         {
           'id': '4', 
@@ -220,42 +220,42 @@ class _HomeCenterState extends State<HomeCenter> {
           'id': '3',
           'title': 'HIEUTHUHAI Radio', 
           'subtitle': 'HIEUTHUHAI',
-          'image': 'assets/images/HTH.png',
+          'image': 'assets/images/HTH_radio.png',
           'type': 'radio'
         },
         {
           'id': '4',
           'title': 'Hoàng Dũng',
           'subtitle': 'Artist',
-          'image': 'assets/images/HTH.png', 
+          'image': 'assets/images/hoangdung.png', 
           'type': 'artist'
         },
         {
           'id': '5',
           'title': 'Have a sip',
           'subtitle': 'Playlist • 24 songs',
-          'image': 'assets/images/HTH.png',
+          'image': 'assets/images/haveasip.png',
           'type': 'playlist'
         },
         {
           'id': '6',
           'title': 'Vũ.',
           'subtitle': 'Artist • 2.1M followers',
-          'image': 'assets/images/HTH.png',
+          'image': 'assets/images/vu.png',
           'type': 'artist'
         },
         {
           'id': '7',
           'title': 'Ballad buồn',
           'subtitle': 'Made for you',
-          'image': 'assets/images/HTH.png',
+          'image': 'assets/images/balladbuon.png',
           'type': 'playlist'
         },
         {
           'id': '8',
           'title': 'Indie Việt',
           'subtitle': 'Playlist • 156 songs', 
-          'image': 'assets/images/HTH.png',
+          'image': 'assets/images/indieviet.png',
           'type': 'playlist'
         }
       ];
@@ -557,8 +557,8 @@ class _HomeCenterState extends State<HomeCenter> {
                           children: [
                             // Image container - tràn ra viền
                             Container(
-                              width: 60,
-                              height: 60,
+                              
+                              height: double.infinity,
                               decoration: BoxDecoration(
                                 borderRadius: const BorderRadius.only(
                                   topLeft: Radius.circular(8),

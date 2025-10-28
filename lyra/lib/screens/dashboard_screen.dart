@@ -15,6 +15,8 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  bool _isLeftSidebarExpanded = false; // State để quản lý sidebar
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,8 +29,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Expanded(
             child: Row(
               children: [
-                // Left Sidebar
-                const LeftSidebarMini(),
+                // Left Sidebar - chuyển đổi giữa Mini và Full
+                _isLeftSidebarExpanded
+                  ? LeftSidebar(
+                      onCollapsePressed: () {
+                        setState(() {
+                          _isLeftSidebarExpanded = false;
+                        });
+                      },
+                    )
+                  : LeftSidebarMini(
+                      onLibraryIconPressed: () {
+                        setState(() {
+                          _isLeftSidebarExpanded = true;
+                        });
+                      },
+                    ),
                 // Main Content Area
                 // Expanded(
                 //   flex: 2,
@@ -45,7 +61,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
 
                 // Right Sidebar
-                const RightSidebar(),
+                // const RightSidebar(),
               ],
             ),
           ),
