@@ -11,7 +11,7 @@ class LeftSidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 320,
+      width: 380,
       
       padding: const EdgeInsets.all(5),
       margin: const EdgeInsets.only(right: 8, bottom: 10, left: 8),
@@ -41,14 +41,12 @@ class LeftSidebar extends StatelessWidget {
                 ),
                 const Spacer(),
                 _buildCustomIconMenuItemLibraryCreate('assets/icons/create.svg', false, 120, 60),
+                const SizedBox(width: 2),
+                _buildCustomIconMenuItemLibraryCreate('assets/icons/expand.svg', false, 40, 40),
               ]
               ),
           ),
-          
-          
-
-          // Language Button
-          
+          // Language Button        
         ],
       ),
     );

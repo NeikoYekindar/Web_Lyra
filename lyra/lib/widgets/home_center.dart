@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lyra/theme/app_theme.dart';
 // import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
-
+import 'package:flutter_svg/flutter_svg.dart';
 class HomeCenter extends StatefulWidget {
   const HomeCenter({super.key});
   
@@ -326,6 +326,30 @@ class _HomeCenterState extends State<HomeCenter> {
       print('Error loading content for category $category: $e');
     }
   }
+
+
+  Widget _buildCustomIcon(String svgPath, bool isActive, double sizeWidth, double sizeHeight) {
+    return Container(
+      width: sizeWidth,
+      height: sizeHeight,
+      decoration: BoxDecoration(
+        color: isActive ? const Color(0xFF2A2A2A) : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: IconButton(
+        onPressed: () {},
+        icon: SvgPicture.asset(
+          svgPath,
+          width: sizeWidth,
+          height: sizeHeight,
+          // colorFilter: ColorFilter.mode(
+          //   isActive ? Colors.white : Colors.grey,
+          //   BlendMode.srcIn,
+          // ),
+        ),
+      ),
+    );
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -353,8 +377,8 @@ class _HomeCenterState extends State<HomeCenter> {
               children: [
                 // Left Side - Image
                 Container(
-                  width: 200,
-                  height: 200,
+                  width: double.infinity,
+                  height: 200,  
                   margin: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(6),
@@ -369,11 +393,23 @@ class _HomeCenterState extends State<HomeCenter> {
                 // Right Side - Text Info
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(5),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            IconButton(
+                              onPressed: () {},
+                              icon: const Icon(
+                                Icons.close,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
                         Text(
                           'Album',
                           style: TextStyle(
@@ -384,7 +420,7 @@ class _HomeCenterState extends State<HomeCenter> {
                           ),
                           
                         ),
-                        SizedBox(height: 45),
+                        SizedBox(height: 20),
                         Text(
                           'Ai Cũng Phải Bắt Đầu Từ Đâu Đó',
                           style: TextStyle(
