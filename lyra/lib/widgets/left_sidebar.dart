@@ -241,7 +241,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
 
               child: Row(
               children: [
-                _buildCustomIconMenuItemLibraryCreate('assets/icons/SearchLeftSiteBar.svg', false, 38, 38),
+                _buildCustomIconMenuItemLibraryCreate('assets/icons/SearchLeftSideBar.svg', false, 38, 38),
                  const SizedBox(width: 8),
 
                 const Spacer(),
@@ -255,7 +255,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                _buildCustomIconMenuItemLibraryCreate('assets/icons/MenuLeftSiteBar.svg', false, 45, 45),
+                _buildCustomIconMenuItemLibraryCreate('assets/icons/MenuLeftSideBar.svg', false, 45, 45),
                 ],
               ),
             ),
