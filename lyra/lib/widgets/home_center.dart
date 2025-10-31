@@ -365,7 +365,17 @@ class _HomeCenterState extends State<HomeCenter> {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
+        // color: const Color(0xFF1A1A1A),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color.fromARGB(255, 71, 1, 1),
+            const Color(0xFF1A1A1A),
+            
+          ],
+          stops: [0.0, 0.3], // 0-30% màu đỏ đen, 30-100% màu xám đen
+        ),
         borderRadius: BorderRadius.circular(12),
       ),
       child: SingleChildScrollView(
@@ -734,7 +744,9 @@ class _FavoriteItemCardState extends State<_FavoriteItemCard> {
             ],
           ),
           child: Row(
+            
             children: [
+             
               // Image container - tràn ra viền
               Container(
                 height: double.infinity,
@@ -784,6 +796,7 @@ class _FavoriteItemCardState extends State<_FavoriteItemCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      
                       Text(
                         widget.item['title'] ?? '',
                         style: TextStyle(
@@ -808,6 +821,31 @@ class _FavoriteItemCardState extends State<_FavoriteItemCard> {
                   ),
                 ),
               ),
+              if(_isHovered )
+                          
+                            Container(
+                                width: 48,
+                                height: 48,
+                                
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE62429), 
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.play_arrow,
+                                  color: Colors.black,
+                                  size: 28,
+                                ),
+                              ),
+            
+              const SizedBox(width: 8), // Khoảng cách bên phải icon
             ],
           ),
         ),
@@ -855,6 +893,7 @@ class _PopularArtistCardState extends State<_PopularArtistCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                
                 ClipRRect(
                   borderRadius: BorderRadius.circular(200),
                   child: Image.asset(
@@ -921,50 +960,77 @@ class _TrendingSongCardState extends State<_TrendingSongCard> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
+          width: _isHovered ? 216 : 200,
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: _isHovered 
               ? const Color(0xFF2A2A2A)
               : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Container(
-            width: 200,
-            padding: EdgeInsets.all(_isHovered ? 8 : 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    widget.song['image'],
-                    width: 200,
-                    height: 200,
-                    fit: BoxFit.cover,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.asset(
+                      widget.song['image'],
+                      width: 200,
+                      height: 200,
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                ), 
-                const SizedBox(height: 8),
-                Text(
-                  widget.song['title'],
-                  style: TextStyle(
-                    color: _isHovered ? Colors.white : Colors.white.withOpacity(0.95),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  if (_isHovered)
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE62429), 
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.play_arrow,
+                          color: Colors.black,
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                ],
+              ), 
+              const SizedBox(height: 8),
+              Text(
+                widget.song['title'],
+                style: TextStyle(
+                  color: _isHovered ? Colors.white : Colors.white.withOpacity(0.95),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  widget.song['artist'],
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 12,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                widget.song['artist'],
+                style: TextStyle(
+                  color: Colors.grey[400],
+                  fontSize: 12,
                 ),
-              ],
-            ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
         ),
       ),
