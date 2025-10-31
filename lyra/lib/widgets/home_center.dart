@@ -892,7 +892,12 @@ class _PopularArtistCardState extends State<_PopularArtistCard> {
             padding: EdgeInsets.all(_isHovered ? 8 : 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+
               children: [
+              Stack(children: [
+
+                
+                
                 
                 ClipRRect(
                   borderRadius: BorderRadius.circular(200),
@@ -903,7 +908,37 @@ class _PopularArtistCardState extends State<_PopularArtistCard> {
                     fit: BoxFit.cover,
                   ),
                 ), 
-                const SizedBox(height: 8),
+
+              
+                if (_isHovered)
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE62429), 
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.play_arrow,
+                          color: Colors.black,
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                
+              ],
+              ),
+              const SizedBox(height: 8),
                 Text(
                   widget.artist['name'],
                   style: TextStyle(
@@ -925,6 +960,7 @@ class _PopularArtistCardState extends State<_PopularArtistCard> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
+              
             ),
           ),
         ),
