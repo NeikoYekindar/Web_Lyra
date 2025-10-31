@@ -308,7 +308,16 @@ class _HomeCenterState extends State<HomeCenter> {
         break;
     }
   }
-  
+
+  // Method để xử lý khi user tap vào trending song
+  void _onTrendingSongTapped(Map<String, dynamic> song) {
+    print('Tapped trending song: ${song['title']} by ${song['artist']}');
+    // TODO: Implement play song or navigate to song detail
+  }
+  void _onPopularArtistTapped(Map<String, dynamic> artist) {
+    print('Tapped popular artist: ${artist['name']}');
+  }
+
   // Gọi API để lấy nội dung theo category
   Future<void> _loadContentByCategory(String category) async {
     try {
@@ -377,7 +386,7 @@ class _HomeCenterState extends State<HomeCenter> {
               children: [
                 // Left Side - Image
                 Container(
-                  width: double.infinity,
+                  width: 200,
                   height: 200,  
                   margin: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -392,26 +401,17 @@ class _HomeCenterState extends State<HomeCenter> {
 
                 // Right Side - Text Info
                 Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(5),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
+                  child: Stack(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            IconButton(
-                              onPressed: () {},
-                              icon: const Icon(
-                                Icons.close,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          'Album',
+                            const SizedBox(height: 30), // Space for close button
+                            Text(
+                              'Album',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -490,16 +490,27 @@ class _HomeCenterState extends State<HomeCenter> {
                           ),
                         ),
                       ],
-                      
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                
-              ],
-            )
-            
-          ),
+                  // Close button positioned at top right
+                  Positioned(
+                    top: 5,
+                    right: 5,
+                    child: IconButton(
+                      onPressed: () {},
+                      icon: const Icon(
+                        Icons.close,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+          ],
+        )
+      ),
           const SizedBox(height: 16),
           Container(
             width: double.infinity,
@@ -574,100 +585,9 @@ class _HomeCenterState extends State<HomeCenter> {
                   itemCount: _favoriteItems.length > 8 ? 8 : _favoriteItems.length,
                   itemBuilder: (context, index) {
                     final item = _favoriteItems[index];
-                    return GestureDetector(
+                    return _FavoriteItemCard(
+                      item: item,
                       onTap: () => _onFavoriteItemTapped(item),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        decoration: BoxDecoration(
-                          color: AppTheme.darkSurfaceButton,
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            // Image container - tràn ra viền
-                            Container(
-                              
-                              height: double.infinity,
-                              decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(8),
-                                  bottomLeft: Radius.circular(8),
-                                ),
-                                color: Colors.grey[800],
-                              ),
-                              child: ClipRRect(
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(8),
-                                  bottomLeft: Radius.circular(8),
-                                ),
-                                child: item['image'] != null
-                                  ? Image.asset(
-                                      item['image'],
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return Container(
-                                          color: Colors.grey[700],
-                                          child: const Icon(
-                                            Icons.music_note,
-                                            color: Colors.white54,
-                                            size: 20,
-                                          ),
-                                        );
-                                      },
-                                    )
-                                  : Container(
-                                      color: Colors.grey[700],
-                                      child: const Icon(
-                                        Icons.music_note,
-                                        color: Colors.white54,
-                                        size: 20,
-                                      ),
-                                    ),
-                              ),
-                            ),
-                            
-                            // Text container - bên phải của hình
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      item['title'] ?? '',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 3),
-                                    Text(
-                                      item['subtitle'] ?? '',
-                                      style: TextStyle(
-                                        color: Colors.grey[400],
-                                        fontSize: 11,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                     );
                   },
                 ),
@@ -706,65 +626,10 @@ class _HomeCenterState extends State<HomeCenter> {
                   separatorBuilder: (context, index) => const SizedBox(width: 20),
                   itemBuilder: (context, index) {
                     final song = _trendingSongs[index];
-                    return GestureDetector(
-                      // onTap: () => _
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        decoration: BoxDecoration(
-                          
-                          borderRadius: BorderRadius.circular(8),
-                          
-                          
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 200,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.asset(
-                                      song['image'],
-                                      width: 200,
-                                      height: 200,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ), 
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    song['title'],
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    song['artist'],
-                                    style: TextStyle(
-                                      color: Colors.grey[400],
-                                      fontSize: 12,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
+                    return _TrendingSongCard(
+                      song: song,
+                      onTap: () => _onTrendingSongTapped(song),
                     );
-                    
-
                   }
                 )
                 
@@ -805,63 +670,11 @@ class _HomeCenterState extends State<HomeCenter> {
                   separatorBuilder: (context, index) => const SizedBox(width: 20),
                   itemBuilder: (context, index) {
                     final artist = _popularArtists[index];
-                    return GestureDetector(
-                      // onTap: () => _
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        decoration: BoxDecoration(
-                          
-                          borderRadius: BorderRadius.circular(8),
-                          
-                          
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 200,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(200),
-                                    child: Image.asset(
-                                      artist['image'],
-                                      width: 200,
-                                      height: 200,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ), 
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    artist['name'],
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    artist['role'],
-                                    style: TextStyle(
-                                      color: Colors.grey[400],
-                                      fontSize: 12,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
+                    return _PopularArtistCard(
+                      artist: artist,
+                      onTap: () => _onPopularArtistTapped(artist),
                     );
+                    
                     
 
                   }
@@ -870,6 +683,289 @@ class _HomeCenterState extends State<HomeCenter> {
               )
           ),
         ],
+        ),
+      ),
+    );
+  }
+}
+
+// Widget riêng để xử lý hover effect cho favorite items
+class _FavoriteItemCard extends StatefulWidget {
+  final Map<String, dynamic> item;
+  final VoidCallback onTap;
+
+  const _FavoriteItemCard({
+    required this.item,
+    required this.onTap,
+  });
+
+  @override
+  State<_FavoriteItemCard> createState() => _FavoriteItemCardState();
+}
+
+
+
+
+
+class _FavoriteItemCardState extends State<_FavoriteItemCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            color: _isHovered 
+              ? AppTheme.darkSurfaceButton.withOpacity(0.7)
+              : AppTheme.darkSurfaceButton,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(_isHovered ? 0.4 : 0.2),
+                blurRadius: _isHovered ? 8 : 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Image container - tràn ra viền
+              Container(
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(8),
+                    bottomLeft: Radius.circular(8),
+                  ),
+                  color: Colors.grey[800],
+                ),
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(8),
+                    bottomLeft: Radius.circular(8),
+                  ),
+                  child: widget.item['image'] != null
+                    ? Image.asset(
+                        widget.item['image'],
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[700],
+                            child: const Icon(
+                              Icons.music_note,
+                              color: Colors.white54,
+                              size: 20,
+                            ),
+                          );
+                        },
+                      )
+                    : Container(
+                        color: Colors.grey[700],
+                        child: const Icon(
+                          Icons.music_note,
+                          color: Colors.white54,
+                          size: 20,
+                        ),
+                      ),
+                ),
+              ),
+              
+              // Text container - bên phải của hình
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        widget.item['title'] ?? '',
+                        style: TextStyle(
+                          color: _isHovered ? Colors.white : Colors.white.withOpacity(0.95),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.item['subtitle'] ?? '',
+                        style: TextStyle(
+                          color: Colors.grey[400],
+                          fontSize: 10,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+class _PopularArtistCard extends StatefulWidget {
+  final Map<String, dynamic> artist;
+  final VoidCallback onTap;
+
+  const _PopularArtistCard({
+    required this.artist,
+    required this.onTap,
+  });
+
+  @override
+  State<_PopularArtistCard> createState() => _PopularArtistCardState();
+}
+
+class _PopularArtistCardState extends State<_PopularArtistCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            color: _isHovered 
+              ? Colors.transparent
+              : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Container(
+            width: 200,
+            padding: EdgeInsets.all(_isHovered ? 8 : 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(200),
+                  child: Image.asset(
+                    widget.artist['image'],
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.cover,
+                  ),
+                ), 
+                const SizedBox(height: 8),
+                Text(
+                  widget.artist['name'],
+                  style: TextStyle(
+                    color: _isHovered ? Colors.white : Colors.white.withOpacity(0.95),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  widget.artist['role'],
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 12,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Widget riêng để xử lý hover effect cho trending songs
+class _TrendingSongCard extends StatefulWidget {
+  final Map<String, dynamic> song;
+  final VoidCallback onTap;
+
+  const _TrendingSongCard({
+    required this.song,
+    required this.onTap,
+  });
+
+  @override
+  State<_TrendingSongCard> createState() => _TrendingSongCardState();
+}
+
+class _TrendingSongCardState extends State<_TrendingSongCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            color: _isHovered 
+              ? const Color(0xFF2A2A2A)
+              : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Container(
+            width: 200,
+            padding: EdgeInsets.all(_isHovered ? 8 : 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    widget.song['image'],
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.cover,
+                  ),
+                ), 
+                const SizedBox(height: 8),
+                Text(
+                  widget.song['title'],
+                  style: TextStyle(
+                    color: _isHovered ? Colors.white : Colors.white.withOpacity(0.95),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  widget.song['artist'],
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 12,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

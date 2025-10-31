@@ -61,6 +61,9 @@ class LeftSidebar extends StatelessWidget {
       ),
       child: IconButton(
         onPressed: onPressed ?? () {},
+        style: IconButton.styleFrom(
+          overlayColor: Colors.transparent,
+        ),
         icon: SvgPicture.asset(
           svgPath,
           width: 25,
@@ -83,6 +86,9 @@ class LeftSidebar extends StatelessWidget {
       ),
       child: IconButton(
         onPressed: () {},
+        style: IconButton.styleFrom(
+          overlayColor: Colors.transparent,
+        ),
         icon: SvgPicture.asset(
           svgPath,
           width: sizeWidth,

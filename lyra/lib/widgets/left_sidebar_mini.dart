@@ -60,6 +60,9 @@ class LeftSidebarMini extends StatelessWidget {
       ),
       child: IconButton(
         onPressed: onPressed ?? () {},
+        style: IconButton.styleFrom(
+          overlayColor: Colors.transparent,
+        ),
         icon: SvgPicture.asset(
           svgPath,
           width: 25,
@@ -84,6 +87,9 @@ class LeftSidebarMini extends StatelessWidget {
       ),
       child: IconButton(
         onPressed: () {},
+        style: IconButton.styleFrom(
+          overlayColor: Colors.transparent,
+        ),
         icon: SvgPicture.asset(
           svgPath,
           width: 45,
@@ -109,6 +115,9 @@ class LeftSidebarMini extends StatelessWidget {
         onPressed: () {
           print('Clicked album: $pngPath'); // Debug log
         },
+        style: IconButton.styleFrom(
+          overlayColor: Colors.transparent,
+        ),
         icon: ClipRRect(
           borderRadius: BorderRadius.circular(6),
           child: Image.asset(
