@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:lyra/theme/app_theme.dart';
 // import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
 import 'package:flutter_svg/flutter_svg.dart';
+
+
+
+
+
+
 class HomeCenter extends StatefulWidget {
   const HomeCenter({super.key});
   
@@ -370,11 +376,11 @@ class _HomeCenterState extends State<HomeCenter> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            const Color.fromARGB(255, 71, 1, 1),
+            const Color(0xFF4F0303),
             const Color(0xFF1A1A1A),
             
           ],
-          stops: [0.0, 0.3], // 0-30% màu đỏ đen, 30-100% màu xám đen
+          stops: [0.0, 0.4], // 0-30% màu đỏ đen, 30-100% màu xám đen
         ),
         borderRadius: BorderRadius.circular(12),
       ),
@@ -659,7 +665,6 @@ class _HomeCenterState extends State<HomeCenter> {
 
           const SizedBox(height: 16),
 
-
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -684,9 +689,7 @@ class _HomeCenterState extends State<HomeCenter> {
                       artist: artist,
                       onTap: () => _onPopularArtistTapped(artist),
                     );
-                    
-                    
-
+                  
                   }
                 )
                 
@@ -712,10 +715,6 @@ class _FavoriteItemCard extends StatefulWidget {
   @override
   State<_FavoriteItemCard> createState() => _FavoriteItemCardState();
 }
-
-
-
-
 
 class _FavoriteItemCardState extends State<_FavoriteItemCard> {
   bool _isHovered = false;
@@ -823,29 +822,29 @@ class _FavoriteItemCardState extends State<_FavoriteItemCard> {
               ),
               if(_isHovered )
                           
-                            Container(
-                                width: 48,
-                                height: 48,
-                                
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE62429), 
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.3),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: const Icon(
-                                  Icons.play_arrow,
-                                  color: Colors.black,
-                                  size: 28,
-                                ),
-                              ),
+                Container(
+                    width: 42,
+                    height: 42,
+                    
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE62429), 
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow,
+                      color: Colors.black,
+                      size: 28,
+                    ),
+                  ),
             
-              const SizedBox(width: 8), // Khoảng cách bên phải icon
+              const SizedBox(width: 8),
             ],
           ),
         ),

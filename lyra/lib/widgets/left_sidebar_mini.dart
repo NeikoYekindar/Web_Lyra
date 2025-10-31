@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class LeftSidebarMini extends StatelessWidget {
+class LeftSidebarMini extends StatefulWidget {
   final VoidCallback? onLibraryIconPressed;
   
   const LeftSidebarMini({
@@ -9,13 +9,49 @@ class LeftSidebarMini extends StatelessWidget {
     this.onLibraryIconPressed,
   });
 
-  // Danh sách album icons
-  final List<String> albumImages = const [
-    'assets/images/album_1.png',
-    'assets/images/album_2.png',
-    'assets/images/album_3.png',
-    'assets/images/album_3.png',
-  ];
+  @override
+  State<LeftSidebarMini> createState() => _LeftSidebarMiniState();
+}
+
+class _LeftSidebarMiniState extends State<LeftSidebarMini> {
+  List<String> albumImages = [];
+  bool _isLoadingAlbums = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAlbumImages();
+  }
+
+  // Giả lập API call để lấy danh sách album
+  Future<void> _loadAlbumImages() async {
+    try {
+      // Giả lập API call với delay
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      final List<String> apiResponse = [
+        'assets/images/album_1.png',
+        'assets/images/album_2.png',
+        'assets/images/album_3.png',
+        'assets/images/album_3.png',
+      ];
+      
+      if (mounted) {
+        setState(() {
+          albumImages = apiResponse;
+          _isLoadingAlbums = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          albumImages = [];
+          _isLoadingAlbums = false;
+        });
+      }
+      print('Error loading albums: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,20 +67,27 @@ class LeftSidebarMini extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildCustomIconMenuItemLibrary('assets/icons/library_icon.svg', true, 60, onLibraryIconPressed),
+          _buildCustomIconMenuItemLibrary('assets/icons/library_icon.svg', true, 60, widget.onLibraryIconPressed),
           const SizedBox(height: 8),
           _buildCustomIconMenuItem('assets/icons/library_add_icon.svg', false, 60),
           const SizedBox(height: 16),
           
           // Hiển thị danh sách album icons
           Expanded(
-            child: ListView.separated(
-              itemCount: albumImages.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 8),
-              itemBuilder: (context, index) {
-                return _buildAlbumIconPNG(albumImages[index], false);
-              },
-            ),
+            child: _isLoadingAlbums
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
+              : ListView.separated(
+                  itemCount: albumImages.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 8),
+                  itemBuilder: (context, index) {
+                    return _buildAlbumIconPNG(albumImages[index], false);
+                  },
+                ),
           ),
         ],
       ),
