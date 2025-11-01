@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lyra/theme/app_theme.dart';
+import 'package:lyra/services/left_sidebar_service.dart';
 
 
 class LeftSidebar extends StatefulWidget {
@@ -41,13 +42,8 @@ class _LeftSidebarState extends State<LeftSidebar> {
 
   Future<void> _loadLeftSidebarCategories() async {
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      final List<String> apiResponse = [
-        'Playlists',
-        'Artists',
-        'Albums',
-      ];
+      final apiResponse = await LeftSidebarService.getCategories();
+      
       if (mounted) {
         setState(() {
           categories = apiResponse;
@@ -66,15 +62,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
 
   Future<void> _loadAlbumImages() async {
     try {
-      // Giả lập API call với delay
-      await Future.delayed(const Duration(milliseconds: 500));
-      
-      final List<String> apiResponse = [
-        'assets/images/album_1.png',
-        'assets/images/album_2.png',
-        'assets/images/album_3.png',
-        'assets/images/album_3.png',
-      ];
+      final apiResponse = await LeftSidebarService.getAlbumImages();
       
       if (mounted) {
         setState(() {
@@ -96,138 +84,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
 
   Future<void> _loadPlayListUser() async {
     try {
-      // Giả lập API call
-      await Future.delayed(const Duration(milliseconds: 800));
-      
-      final List<Map<String, dynamic>> apiResponse = [
-        {
-          'id': '1',
-          'name': 'KhongBuon_PL',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/khongbuon.png',
-        },
-        {
-          'id': '2', 
-          'name': 'EM XIN "SAY HI" 2025',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/emxinsayhi_2025.png',
-        },
-        {
-          'id': '3', 
-          'name': 'Playlist Sơn Tùng M-TP',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/playlist_mtp.png',
-        },
-        {
-          'id': '1',
-          'name': 'KhongBuon_PL',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/khongbuon.png',
-        },
-        {
-          'id': '2', 
-          'name': 'EM XIN "SAY HI" 2025',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/emxinsayhi_2025.png',
-        },
-        {
-          'id': '3', 
-          'name': 'Playlist Sơn Tùng M-TP',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/playlist_mtp.png',
-        },
-        {
-          'id': '1',
-          'name': 'KhongBuon_PL',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/khongbuon.png',
-        },
-        {
-          'id': '2', 
-          'name': 'EM XIN "SAY HI" 2025',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/emxinsayhi_2025.png',
-        },
-        {
-          'id': '3', 
-          'name': 'Playlist Sơn Tùng M-TP',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/playlist_mtp.png',
-        },
-        {
-          'id': '1',
-          'name': 'KhongBuon_PL',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/khongbuon.png',
-        },
-        {
-          'id': '2', 
-          'name': 'EM XIN "SAY HI" 2025',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/emxinsayhi_2025.png',
-        },
-        {
-          'id': '3', 
-          'name': 'Playlist Sơn Tùng M-TP',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/playlist_mtp.png',
-        },
-        {
-          'id': '1',
-          'name': 'KhongBuon_PL',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/khongbuon.png',
-        },
-        {
-          'id': '2', 
-          'name': 'EM XIN "SAY HI" 2025',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/emxinsayhi_2025.png',
-        },
-        {
-          'id': '3', 
-          'name': 'Playlist Sơn Tùng M-TP',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/playlist_mtp.png',
-        },
-        {
-          'id': '1',
-          'name': 'KhongBuon_PL',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/khongbuon.png',
-        },
-        {
-          'id': '2', 
-          'name': 'EM XIN "SAY HI" 2025',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/emxinsayhi_2025.png',
-        },
-        {
-          'id': '3', 
-          'name': 'Playlist Sơn Tùng M-TP',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/playlist_mtp.png',
-        },
-        // Thêm các bài hát khác tương tự
-      ];
+      final apiResponse = await LeftSidebarService.getPlaylistsUser();
       
       if (mounted) {
         setState(() {

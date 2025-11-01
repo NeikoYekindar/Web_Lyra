@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'providers/theme_provider.dart';
 import 'theme/app_theme.dart';
 import 'screens/dashboard_screen.dart';
-
+import 'screens/welcome_screen.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-            home: const DashboardScreen(),
+            home: const WelcomeScreen(),
           );
         },
       ),
