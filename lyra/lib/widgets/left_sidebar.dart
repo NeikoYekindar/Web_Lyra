@@ -103,16 +103,127 @@ class _LeftSidebarState extends State<LeftSidebar> {
         {
           'id': '1',
           'name': 'KhongBuon_PL',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
           'image': 'assets/images/khongbuon.png',
         },
         {
           'id': '2', 
           'name': 'EM XIN "SAY HI" 2025',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
           'image': 'assets/images/emxinsayhi_2025.png',
         },
         {
           'id': '3', 
           'name': 'Playlist Sơn Tùng M-TP',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/playlist_mtp.png',
+        },
+        {
+          'id': '1',
+          'name': 'KhongBuon_PL',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/khongbuon.png',
+        },
+        {
+          'id': '2', 
+          'name': 'EM XIN "SAY HI" 2025',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/emxinsayhi_2025.png',
+        },
+        {
+          'id': '3', 
+          'name': 'Playlist Sơn Tùng M-TP',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/playlist_mtp.png',
+        },
+        {
+          'id': '1',
+          'name': 'KhongBuon_PL',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/khongbuon.png',
+        },
+        {
+          'id': '2', 
+          'name': 'EM XIN "SAY HI" 2025',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/emxinsayhi_2025.png',
+        },
+        {
+          'id': '3', 
+          'name': 'Playlist Sơn Tùng M-TP',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/playlist_mtp.png',
+        },
+        {
+          'id': '1',
+          'name': 'KhongBuon_PL',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/khongbuon.png',
+        },
+        {
+          'id': '2', 
+          'name': 'EM XIN "SAY HI" 2025',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/emxinsayhi_2025.png',
+        },
+        {
+          'id': '3', 
+          'name': 'Playlist Sơn Tùng M-TP',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/playlist_mtp.png',
+        },
+        {
+          'id': '1',
+          'name': 'KhongBuon_PL',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/khongbuon.png',
+        },
+        {
+          'id': '2', 
+          'name': 'EM XIN "SAY HI" 2025',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/emxinsayhi_2025.png',
+        },
+        {
+          'id': '3', 
+          'name': 'Playlist Sơn Tùng M-TP',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/playlist_mtp.png',
+        },
+        {
+          'id': '1',
+          'name': 'KhongBuon_PL',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/khongbuon.png',
+        },
+        {
+          'id': '2', 
+          'name': 'EM XIN "SAY HI" 2025',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/emxinsayhi_2025.png',
+        },
+        {
+          'id': '3', 
+          'name': 'Playlist Sơn Tùng M-TP',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
           'image': 'assets/images/playlist_mtp.png',
         },
         // Thêm các bài hát khác tương tự
@@ -390,7 +501,7 @@ class _PlaylistUserCardState extends State<PlaylistUserCard> {
             width: double.infinity,
             // padding: EdgeInsets.all(_isHovered ? 8 : 0),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center, // Thay đổi từ start sang center
 
               children: [
               Stack(children: [
@@ -437,10 +548,17 @@ class _PlaylistUserCardState extends State<PlaylistUserCard> {
                 
               ],
               ),
+              
               const SizedBox(width: 8),
-                Text(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [Text(
+                  
                   widget.playlists['name'],
+                  
                   style: TextStyle(
+                    
                     color: _isHovered ? Colors.white : Colors.white.withOpacity(0.95),
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -449,6 +567,21 @@ class _PlaylistUserCardState extends State<PlaylistUserCard> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(width: 4),
+                Text(
+                  widget.playlists['type'] + ' . ' + widget.playlists['owner'],
+                  
+                  
+                  style: TextStyle(
+                    
+                    color: _isHovered ? Colors.white : Colors.white.withOpacity(0.95),
+                    fontSize: 12,
+                    fontWeight: FontWeight.normal,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),],
+              ),
+                
                 // Text(
                 //   widget.playlists['role'],
                 //   style: TextStyle(

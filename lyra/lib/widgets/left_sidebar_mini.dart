@@ -15,13 +15,167 @@ class LeftSidebarMini extends StatefulWidget {
 
 class _LeftSidebarMiniState extends State<LeftSidebarMini> {
   List<String> albumImages = [];
+  List<Map<String, dynamic>> PlaylistsUserImages = [];
+  bool _isLoadingPlaylistsUser = true;
   bool _isLoadingAlbums = true;
 
   @override
   void initState() {
     super.initState();
     _loadAlbumImages();
+    _loadPlayListUser();
   }
+  Future<void> _loadPlayListUser() async {
+    try {
+      // Giả lập API call
+      await Future.delayed(const Duration(milliseconds: 800));
+      
+      final List<Map<String, dynamic>> apiResponse = [
+        {
+          'id': '1',
+          'name': 'KhongBuon_PL',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/khongbuon.png',
+        },
+        {
+          'id': '2', 
+          'name': 'EM XIN "SAY HI" 2025',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/emxinsayhi_2025.png',
+        },
+        {
+          'id': '3', 
+          'name': 'Playlist Sơn Tùng M-TP',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/playlist_mtp.png',
+        },
+        {
+          'id': '1',
+          'name': 'KhongBuon_PL',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/khongbuon.png',
+        },
+        {
+          'id': '2', 
+          'name': 'EM XIN "SAY HI" 2025',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/emxinsayhi_2025.png',
+        },
+        {
+          'id': '3', 
+          'name': 'Playlist Sơn Tùng M-TP',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/playlist_mtp.png',
+        },
+        {
+          'id': '1',
+          'name': 'KhongBuon_PL',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/khongbuon.png',
+        },
+        {
+          'id': '2', 
+          'name': 'EM XIN "SAY HI" 2025',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/emxinsayhi_2025.png',
+        },
+        {
+          'id': '3', 
+          'name': 'Playlist Sơn Tùng M-TP',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/playlist_mtp.png',
+        },
+        {
+          'id': '1',
+          'name': 'KhongBuon_PL',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/khongbuon.png',
+        },
+        {
+          'id': '2', 
+          'name': 'EM XIN "SAY HI" 2025',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/emxinsayhi_2025.png',
+        },
+        {
+          'id': '3', 
+          'name': 'Playlist Sơn Tùng M-TP',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/playlist_mtp.png',
+        },
+        {
+          'id': '1',
+          'name': 'KhongBuon_PL',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/khongbuon.png',
+        },
+        {
+          'id': '2', 
+          'name': 'EM XIN "SAY HI" 2025',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/emxinsayhi_2025.png',
+        },
+        {
+          'id': '3', 
+          'name': 'Playlist Sơn Tùng M-TP',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/playlist_mtp.png',
+        },
+        {
+          'id': '1',
+          'name': 'KhongBuon_PL',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/khongbuon.png',
+        },
+        {
+          'id': '2', 
+          'name': 'EM XIN "SAY HI" 2025',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/emxinsayhi_2025.png',
+        },
+        {
+          'id': '3', 
+          'name': 'Playlist Sơn Tùng M-TP',
+          'type': 'Playlist',
+          'owner': 'TrumUIT',
+          'image': 'assets/images/playlist_mtp.png',
+        },
+        // Thêm các bài hát khác tương tự
+      ];
+      
+      if (mounted) {
+        setState(() {
+          PlaylistsUserImages = apiResponse;
+          _isLoadingPlaylistsUser = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          PlaylistsUserImages = [];
+        });
+      }
+      print('Error loading playlists user: $e');
+    }
+  }
+
 
   // Giả lập API call để lấy danh sách album
   Future<void> _loadAlbumImages() async {
@@ -82,10 +236,10 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
                   ),
                 )
               : ListView.separated(
-                  itemCount: albumImages.length,
+                  itemCount: PlaylistsUserImages.length,
                   separatorBuilder: (context, index) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
-                    return _buildAlbumIconPNG(albumImages[index], false);
+                    return _buildAlbumIconPNG(PlaylistsUserImages[index]['image'], false);
                   },
                 ),
           ),
