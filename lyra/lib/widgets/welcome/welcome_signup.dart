@@ -54,6 +54,7 @@ class _WelcomeSignupState extends State<WelcomeSignup>{
             child: Container(
               padding: const EdgeInsets.all(48),
               decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(bottomLeft: Radius.circular(16), topLeft: Radius.circular(16)),
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -198,14 +199,14 @@ class _WelcomeSignupState extends State<WelcomeSignup>{
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.2),
-                        width: 1,
-                      ),
-                    ),
+                    // decoration: BoxDecoration(
+                    //   color: Colors.white.withOpacity(0.1),
+                    //   borderRadius: BorderRadius.circular(16),
+                    //   border: Border.all(
+                    //     color: Colors.white.withOpacity(0.2),
+                    //     width: 1,
+                    //   ),
+                    // ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,

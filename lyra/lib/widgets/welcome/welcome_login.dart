@@ -36,6 +36,8 @@ class _WelcomeLoginState extends State<WelcomeLogin>{
             height: double.infinity,
             padding: const EdgeInsets.only(left: 24, bottom: 24),
             decoration:  BoxDecoration(
+              borderRadius: BorderRadius.only(bottomLeft: Radius.circular(16), topLeft: Radius.circular(16)),
+
               image: DecorationImage(image: AssetImage('assets/images/bg_login.png'),fit: BoxFit.cover),),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
