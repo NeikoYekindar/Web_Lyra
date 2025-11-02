@@ -5,7 +5,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class WelcomeLogin extends StatefulWidget {
-  const WelcomeLogin({super.key});
+  final VoidCallback? onBackPressed;
+  
+  const WelcomeLogin({
+    super.key,
+    this.onBackPressed,
+  });
 
   @override
   State<WelcomeLogin> createState() => _WelcomeLoginState();
@@ -78,7 +83,20 @@ class _WelcomeLoginState extends State<WelcomeLogin>{
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 160),
+                  const SizedBox(height: 24),
+                  IconButton(
+                    onPressed: widget.onBackPressed,
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      overlayColor: Colors.white.withOpacity(0.1),
+                    ),
+                  ),
+                  const SizedBox(height: 100),
                   Text(
                     'Welcome back',
                     style: GoogleFonts.inter(

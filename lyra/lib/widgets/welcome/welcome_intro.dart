@@ -5,7 +5,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class WelcomeIntro extends StatefulWidget {
-  const WelcomeIntro({super.key});
+  final VoidCallback? onLoginPressed;
+  
+  const WelcomeIntro({
+    super.key,
+    this.onLoginPressed,
+  });
 
   @override
   State<WelcomeIntro> createState() => _WelcomeIntroState();
@@ -128,7 +133,7 @@ class _WelcomeIntroState extends State<WelcomeIntro> with SingleTickerProviderSt
                   text: 'Log in',
                   isPrimary: false,
                   onPressed: () {
-                    // Xử lý khi nhấn nút Log in
+                    widget.onLoginPressed?.call();
                   },
                 ),
               ],

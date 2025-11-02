@@ -8,6 +8,7 @@ import '../widgets/right_sidebar.dart';
 import '../widgets/music_player.dart';
 import '../widgets/welcome/welcome_intro.dart';
 import '../widgets/welcome/welcome_login.dart';
+import '../widgets/welcome/welcome_signup.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -17,11 +18,34 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen>{
+  bool _showLogin = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
-      body: const WelcomeLogin(),
+      // body: _showLogin 
+      //     ? WelcomeLogin(
+      //         onBackPressed: () {
+      //           setState(() {
+      //             _showLogin = false;
+      //           });
+      //         },
+      //       )
+      //     : WelcomeIntro(
+      //         onLoginPressed: () {
+      //           setState(() {
+      //             _showLogin = true;
+      //           });
+      //         },
+      //       ),
+      body: WelcomeSignup(
+        onBackPressed: () {
+          setState(() {
+            _showLogin = false;
+          });
+        },
+      ),
     );
   }
 }
