@@ -6,10 +6,12 @@ import 'package:google_fonts/google_fonts.dart';
 
 class WelcomeIntro extends StatefulWidget {
   final VoidCallback? onLoginPressed;
+  final VoidCallback? onSignupPressed;
   
   const WelcomeIntro({
     super.key,
     this.onLoginPressed,
+    this.onSignupPressed,
   });
 
   @override
@@ -125,7 +127,7 @@ class _WelcomeIntroState extends State<WelcomeIntro> with SingleTickerProviderSt
                   text: 'Get started free',
                   isPrimary: true,
                   onPressed: () {
-                    // Xử lý khi nhấn nút Get Started
+                    widget.onSignupPressed?.call();
                   },
                 ),
                 const SizedBox(width: 16),
