@@ -27,41 +27,41 @@ class _WelcomeScreenState extends State<WelcomeScreen>{
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
-      // body: _showSignup
-      //     ? WelcomeSignup(
-      //         onBackPressed: () {
-      //           setState(() {
-      //             _showSignup = false;
-      //           });
-      //         },
-      //       )
-      //     : _showLogin 
-      //         ? WelcomeLogin(
-      //             onBackPressed: () {
-      //               setState(() {
-      //                 _showLogin = false;
-      //               });
-      //             },
-      //           )
-      //         : WelcomeIntro(
-      //             onLoginPressed: () {
-      //               setState(() {
-      //                 _showLogin = true;
-      //                 _showSignup = false;
-      //               });
-      //             },
-      //             onSignupPressed: () {
-      //               setState(() {
-      //                 _showSignup = true;
-      //                 _showLogin = false;
-      //               });
-      //             },
-      //           ),
-      body: WelcomeCreateProfile(
-        onBackPressed: () {
-          Navigator.of(context).pop();
-        },
-      ),
+      body: _showSignup
+          ? WelcomeSignup(
+              onBackPressed: () {
+                setState(() {
+                  _showSignup = false;
+                });
+              },
+            )
+          : _showLogin 
+              ? WelcomeLogin(
+                  onBackPressed: () {
+                    setState(() {
+                      _showLogin = false;
+                    });
+                  },
+                )
+              : WelcomeIntro(
+                  onLoginPressed: () {
+                    setState(() {
+                      _showLogin = true;
+                      _showSignup = false;
+                    });
+                  },
+                  onSignupPressed: () {
+                    setState(() {
+                      _showSignup = true;
+                      _showLogin = false;
+                    });
+                  },
+                ),
+      // body: WelcomeCreateProfile(
+      //   onBackPressed: () {
+      //     Navigator.of(context).pop();
+      //   },
+      // ),
     );
   }
 }
