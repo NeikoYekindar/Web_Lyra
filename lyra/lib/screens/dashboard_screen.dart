@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:lyra/widgets/home_center.dart';
 import 'package:lyra/widgets/left_sidebar_mini.dart';
 import '../widgets/left_sidebar.dart';
 import '../widgets/app_header.dart';
-import '../widgets/user_profile.dart';
-import '../widgets/right_sidebar.dart';
 import '../widgets/music_player.dart';
-import '../widgets/welcome/welcome_intro.dart';
+// Removed unused imports user_profile.dart, right_sidebar.dart, welcome_intro.dart
+import '../providers/music_player_provider.dart';
+import 'package:lyra/theme/app_theme.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -19,9 +20,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _isLeftSidebarExpanded = false; // State để quản lý sidebar
 
   @override
+  void initState() {
+    super.initState();
+    // Post-frame to ensure provider is available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<MusicPlayerProvider>().loadDemoTrack();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+      final extra = Theme.of(context).extension<AppExtraColors>();
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: extra?.headerAndAll ?? Theme.of(context).colorScheme.onTertiary,
       body: Column(
         children: [
           // Header

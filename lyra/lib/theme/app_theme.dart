@@ -2,33 +2,77 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Màu chính của ứng dụng
-  static const Color primaryColor = Color(0xFF1DB954); // Spotify Green
-  static const Color secondaryColor = Color(0xFF1ED760); // Light Green
+  // New palette based on provided image
+  // Core brand reds
+  static const Color redPrimary = Color(0xFFE62429); // main brand color
+  static const Color redPrimaryDark = Color(0xFF801417); // darker container / pressed state
+
+  // Neutral scale
+  static const Color black = Color(0xFF000000);
+  static const Color neutral900 = Color(0xFF1F1F1F); // dark background
+  static const Color neutral800 = Color(0xFF303030); // surfaces / cards
+ 
+  static const Color neutral500 = Color(0xFF909090); // disabled / hint
+  static const Color neutral400 = Color(0xFFB3B3B3); // secondary text on dark
+  static const Color white = Color(0xFFFFFFFF);
+
+  // Dark Theme Colors (mapped)
+  static const Color darkBackground = neutral900;
+  static const Color darkSurface = neutral800;
+  static const Color darkSurfaceSite = neutral900;
+  static const Color darkCard = neutral800;
+  static const Color darkText = white;
+  static const Color darkSecondaryText = neutral400;
+
+  // Light Theme Colors (mapped)
+  static const Color lightBackground = white;
+  // NOTE: Previous value 0xFFFEFEFEF had 9 hex digits (invalid). Adjusted to near-white.
+  static const Color lightSurface = Color(0xFFF5F5F5); // subtle light surface
+  static const Color lightCard = white;
+  static const Color lightText = black;
+  static const Color lightSecondaryText = neutral800; // use dark gray for secondary
   
-  // Dark Theme Colors
-  static const Color darkBackground = Color(0xFF0F0F0F);
-  static const Color darkSurface = Color(0xFF1A1A1A);
-  static const Color darkCard = Color(0xFF2A2A2A);
-  static const Color darkText = Colors.white;
-  static const Color darkSecondaryText = Color(0xFFB3B3B3);
-  static const Color darkSurfaceButton = Color(0xFF303030);
-  // Light Theme Colors
-  static const Color lightBackground = Color(0xFFFFFFFF);
-  static const Color lightSurface = Color.fromARGB(255, 189, 188, 188);
-  static const Color lightCard = Color(0xFFFFFFFF);
-  static const Color lightText = Color(0xFF000000);
-  static const Color lightSecondaryText = Color(0xFF666666);
   
   // Dark Theme
   static ThemeData get darkTheme {
+    final colorScheme = ColorScheme(
+      brightness: Brightness.dark,
+      primary: redPrimary,
+      onPrimary: white,
+      primaryContainer: redPrimaryDark,
+      onPrimaryContainer: white,
+      secondary: neutral500,
+      onSecondary: white,
+      secondaryContainer: darkSurface,
+      onSecondaryContainer: white,
+      tertiary: neutral400,
+      onTertiary: black,
+      tertiaryContainer: darkCard,
+      onTertiaryContainer: white,
+      error: Colors.red,
+      onError: white,
+      background: darkBackground,
+      onBackground: white,
+      surface: darkSurfaceSite,
+      onSurface: white,
+      surfaceVariant: darkCard,
+      onSurfaceVariant: neutral400,
+      outline: neutral500,
+      outlineVariant: darkSurface,
+      shadow: black,
+      scrim: Colors.black54,
+      inverseSurface: redPrimaryDark,
+      onInverseSurface: white,
+      inversePrimary: redPrimaryDark,
+    );
     return ThemeData(
       brightness: Brightness.dark,
-      primarySwatch: Colors.green,
-      primaryColor: primaryColor,
       scaffoldBackgroundColor: darkBackground,
-      
-      // Card Theme
+      colorScheme: colorScheme,
+      useMaterial3: true,
+      extensions: const <ThemeExtension<dynamic>>[
+        AppExtraColors(headerAndAll: AppTheme.black),
+      ],
       cardTheme: const CardThemeData(
         color: darkSurface,
         elevation: 0,
@@ -36,162 +80,149 @@ class AppTheme {
           borderRadius: BorderRadius.all(Radius.circular(12)),
         ),
       ),
-      
-      // App Bar Theme
       appBarTheme: const AppBarTheme(
         backgroundColor: darkBackground,
-        foregroundColor: darkText,
+        foregroundColor: white,
         elevation: 0,
       ),
-      
-      // Bottom Navigation Theme
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: darkSurface,
-        selectedItemColor: primaryColor,
-        unselectedItemColor: darkSecondaryText,
+        selectedItemColor: redPrimary,
+        unselectedItemColor: neutral500,
       ),
-      
-      // Icon Theme
-      iconTheme: const IconThemeData(
-        color: darkText,
-        size: 24,
-      ),
-      
-      // Button Theme
+      iconTheme: const IconThemeData(color: white, size: 24),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
+          backgroundColor: redPrimary,
+          foregroundColor: white,
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         ),
       ),
-      
-      // Text Theme with Google Fonts
       textTheme: GoogleFonts.interTextTheme(
         ThemeData.dark().textTheme.copyWith(
-          displayLarge: const TextStyle(color: darkText, fontWeight: FontWeight.bold),
-          displayMedium: const TextStyle(color: darkText, fontWeight: FontWeight.bold),
-          displaySmall: const TextStyle(color: darkText, fontWeight: FontWeight.bold),
-          headlineLarge: const TextStyle(color: darkText, fontWeight: FontWeight.w600),
-          headlineMedium: const TextStyle(color: darkText, fontWeight: FontWeight.w600),
-          headlineSmall: const TextStyle(color: darkText, fontWeight: FontWeight.w600),
-          titleLarge: const TextStyle(color: darkText, fontWeight: FontWeight.w600),
-          titleMedium: const TextStyle(color: darkText, fontWeight: FontWeight.w500),
-          titleSmall: const TextStyle(color: darkText, fontWeight: FontWeight.w500),
-          bodyLarge: const TextStyle(color: darkText),
-          bodyMedium: const TextStyle(color: darkText),
-          bodySmall: const TextStyle(color: darkSecondaryText),
-          labelLarge: const TextStyle(color: darkText, fontWeight: FontWeight.w500),
-          labelMedium: const TextStyle(color: darkSecondaryText),
-          labelSmall: const TextStyle(color: darkSecondaryText),
+          headlineLarge: const TextStyle(fontWeight: FontWeight.w700, color: white),
+          headlineMedium: const TextStyle(fontWeight: FontWeight.w700, color: white),
+          titleLarge: const TextStyle(fontWeight: FontWeight.w600, color: white),
+          titleMedium: const TextStyle(fontWeight: FontWeight.w500, color: white),
+          bodyLarge: const TextStyle(color: white),
+          bodyMedium: const TextStyle(color: white),
+          bodySmall: TextStyle(color: neutral400),
+          labelLarge: const TextStyle(fontWeight: FontWeight.w600, color: white),
+          labelMedium: TextStyle(color: neutral400),
+          labelSmall: TextStyle(color: neutral400),
         ),
       ),
-      
       fontFamily: GoogleFonts.inter().fontFamily,
-      
-      // Color Scheme
-      colorScheme: const ColorScheme.dark(
-        primary: primaryColor,
-        secondary: secondaryColor,
-        surface: darkSurface,
-        background: darkBackground,
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
-        onSurface: darkText,
-        onBackground: darkText,
-      ),
     );
   }
   
   // Light Theme
   static ThemeData get lightTheme {
+    final colorScheme = ColorScheme(
+      brightness: Brightness.light,
+      primary: redPrimary,
+      onPrimary: white,
+      primaryContainer: redPrimaryDark,
+      onPrimaryContainer: white,
+      secondary: neutral800,
+      onSecondary: white,
+      secondaryContainer: lightSurface,
+      onSecondaryContainer: black,
+      tertiary: neutral500,
+      onTertiary: black,
+      tertiaryContainer: lightSurface,
+      onTertiaryContainer: black,
+      error: Colors.red,
+      onError: white,
+      background: lightBackground,
+      onBackground: black,
+      surface: lightSurface,
+      onSurface: black,
+  // Use full light background for variant to ensure clear difference from surface in widgets
+  surfaceVariant: lightBackground,
+      onSurfaceVariant: neutral800,
+      outline: neutral500,
+      outlineVariant: neutral400,
+      shadow: neutral500,
+      scrim: Colors.black54,
+      inverseSurface: neutral800,
+      onInverseSurface: white,
+      inversePrimary: redPrimaryDark,
+    );
     return ThemeData(
       brightness: Brightness.light,
-      primarySwatch: Colors.green,
-      primaryColor: primaryColor,
       scaffoldBackgroundColor: lightBackground,
-      
-      // Card Theme
+      colorScheme: colorScheme,
+      useMaterial3: true,
+      extensions: const <ThemeExtension<dynamic>>[
+        AppExtraColors(headerAndAll: AppTheme.white),
+      ],
       cardTheme: CardThemeData(
         color: lightCard,
         elevation: 2,
-        shadowColor: Colors.black.withOpacity(0.1),
+        shadowColor: Colors.black.withOpacity(0.08),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(12)),
         ),
       ),
-      
-      // App Bar Theme
       appBarTheme: const AppBarTheme(
         backgroundColor: lightBackground,
-        foregroundColor: lightText,
+        foregroundColor: black,
         elevation: 0,
       ),
-      
-      // Bottom Navigation Theme
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: lightSurface,
-        selectedItemColor: primaryColor,
-        unselectedItemColor: lightSecondaryText,
+        selectedItemColor: redPrimary,
+        unselectedItemColor: neutral800,
       ),
-      
-      // Icon Theme
-      iconTheme: const IconThemeData(
-        color: lightText,
-        size: 24,
-      ),
-      
-      // Button Theme
+      iconTheme: const IconThemeData(color: black, size: 24),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
+          backgroundColor: redPrimary,
+          foregroundColor: white,
           elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         ),
       ),
-      
-      // Text Theme with Google Fonts
       textTheme: GoogleFonts.interTextTheme(
         ThemeData.light().textTheme.copyWith(
-          displayLarge: const TextStyle(color: lightText, fontWeight: FontWeight.bold),
-          displayMedium: const TextStyle(color: lightText, fontWeight: FontWeight.bold),
-          displaySmall: const TextStyle(color: lightText, fontWeight: FontWeight.bold),
-          headlineLarge: const TextStyle(color: lightText, fontWeight: FontWeight.w600),
-          headlineMedium: const TextStyle(color: lightText, fontWeight: FontWeight.w600),
-          headlineSmall: const TextStyle(color: lightText, fontWeight: FontWeight.w600),
-          titleLarge: const TextStyle(color: lightText, fontWeight: FontWeight.w600),
-          titleMedium: const TextStyle(color: lightText, fontWeight: FontWeight.w500),
-          titleSmall: const TextStyle(color: lightText, fontWeight: FontWeight.w500),
-          bodyLarge: const TextStyle(color: lightText),
-          bodyMedium: const TextStyle(color: lightText),
-          bodySmall: const TextStyle(color: lightSecondaryText),
-          labelLarge: const TextStyle(color: lightText, fontWeight: FontWeight.w500),
-          labelMedium: const TextStyle(color: lightSecondaryText),
-          labelSmall: const TextStyle(color: lightSecondaryText),
+          headlineLarge: const TextStyle(fontWeight: FontWeight.w700, color: black),
+          headlineMedium: const TextStyle(fontWeight: FontWeight.w700, color: black),
+          titleLarge: const TextStyle(fontWeight: FontWeight.w600, color: black),
+          titleMedium: const TextStyle(fontWeight: FontWeight.w500, color: black),
+          bodyLarge: const TextStyle(color: black),
+          bodyMedium: const TextStyle(color: black),
+          bodySmall: TextStyle(color: neutral800),
+          labelLarge: const TextStyle(fontWeight: FontWeight.w600, color: black),
+          labelMedium: TextStyle(color: neutral800),
+          labelSmall: TextStyle(color: neutral800),
         ),
       ),
-      
       fontFamily: GoogleFonts.inter().fontFamily,
-      
-      // Color Scheme
-      colorScheme: const ColorScheme.light(
-        primary: primaryColor,
-        secondary: secondaryColor,
-        surface: lightSurface,
-        background: lightBackground,
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
-        onSurface: lightText,
-        onBackground: lightText,
-      ),
+    );
+  }
+}
+
+// Extra theme colors that are not part of ColorScheme
+@immutable
+class AppExtraColors extends ThemeExtension<AppExtraColors> {
+  final Color headerAndAll;
+
+  const AppExtraColors({required this.headerAndAll});
+
+  @override
+  AppExtraColors copyWith({Color? headerAndAll}) {
+    return AppExtraColors(headerAndAll: headerAndAll ?? this.headerAndAll);
+  }
+
+  @override
+  AppExtraColors lerp(ThemeExtension<AppExtraColors>? other, double t) {
+    if (other is! AppExtraColors) return this;
+    return AppExtraColors(
+      headerAndAll: Color.lerp(headerAndAll, other.headerAndAll, t)!,
     );
   }
 }
@@ -199,19 +230,22 @@ class AppTheme {
 // Theme Colors Helper - để dễ dàng truy cập màu trong components
 class AppColors {
   static bool _isDark = true;
-  
-  static void setTheme(bool isDark) {
-    _isDark = isDark;
-  }
-  
-  // Dynamic colors dựa trên theme hiện tại
+
+  static void setTheme(bool isDark) => _isDark = isDark;
+
+  // Dynamic getters using new palette
   static Color get background => _isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
   static Color get surface => _isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
   static Color get card => _isDark ? AppTheme.darkCard : AppTheme.lightCard;
-  static Color get text => _isDark ? AppTheme.darkText : AppTheme.lightText;
-  static Color get secondaryText => _isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText;
-  
-  // Static colors (không đổi theo theme)
-  static const Color primary = AppTheme.primaryColor;
-  static const Color secondary = AppTheme.secondaryColor;
+  static Color get textPrimary => _isDark ? AppTheme.darkText : AppTheme.lightText;
+  static Color get textSecondary => _isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText;
+  static Color get divider => _isDark ? AppTheme.neutral800 : AppTheme.neutral400;
+  static Color get muted => _isDark ? AppTheme.neutral500 : AppTheme.neutral500;
+  static Color get onTertiary => _isDark ?AppTheme.lightText  :AppTheme.darkText ;
+  static Color get surfaceVariant => _isDark ? AppTheme.neutral800 : AppTheme.lightBackground;
+  // Static brand colors
+  static const Color red = AppTheme.redPrimary;
+  static const Color redDark = AppTheme.redPrimaryDark;
+  static const Color white = AppTheme.white;
+  static const Color black = AppTheme.black;
 }

@@ -23,17 +23,14 @@ class LeftSidebar extends StatefulWidget {
 
 class _LeftSidebarState extends State<LeftSidebar> {
 
-  List<String> albumImages = [];
   List<String> categories = [];
   List<Map<String, dynamic>> PlaylistsUser = [];
   int _selectedCategoryIndex = 0;
-  bool _isLoadingAlbums = true; 
   bool _isLoadingCategories = true;
   bool _isLoadingPlaylistsUser  = true;
   @override
   void initState() {
     super.initState();
-    _loadAlbumImages();
     _loadLeftSidebarCategories();
     _loadPlayListUser(); 
   }
@@ -60,26 +57,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
     }
   }
 
-  Future<void> _loadAlbumImages() async {
-    try {
-      final apiResponse = await LeftSidebarService.getAlbumImages();
-      
-      if (mounted) {
-        setState(() {
-          albumImages = apiResponse;
-          _isLoadingAlbums = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          albumImages = [];
-          _isLoadingAlbums = false;
-        });
-      }
-      print('Error loading albums: $e');
-    }
-  }
+  // Removed album image loading (unused) to clean up warnings.
 
 
   Future<void> _loadPlayListUser() async {
@@ -128,7 +106,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
                 Text(
                   'Your Library',
                   style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     
@@ -150,7 +128,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
               child: _isLoadingCategories
                 ? const Center(
                     child: CircularProgressIndicator(
-                      color: AppTheme.primaryColor,
+                      color: AppTheme.redPrimary,
                       strokeWidth: 2,
                     ),
                   )
@@ -169,25 +147,25 @@ class _LeftSidebarState extends State<LeftSidebar> {
                             });
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: isSelected
-                            ? Theme.of(context).colorScheme.onBackground
-                            : AppTheme.darkSurfaceButton,
-                            foregroundColor: isSelected
-                            ? Theme.of(context).colorScheme.background
-                            : Theme.of(context).colorScheme.onBackground,
+                              backgroundColor: isSelected
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).colorScheme.surfaceVariant,
+                              foregroundColor: isSelected
+                                ? Theme.of(context).colorScheme.onPrimary
+                                : Theme.of(context).colorScheme.onSurfaceVariant,
                             minimumSize: Size(
                             categories[index].length * 10.0 + 20,
                             40
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
+                              borderRadius: BorderRadius.circular(14),
                           ),
-                          elevation: isSelected ? 3 : 1,
+                            elevation: 0,
                           ),
                           child: Text(
                             categories[index],
                             style: TextStyle(
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                             ),
                           ),
 
@@ -213,13 +191,11 @@ class _LeftSidebarState extends State<LeftSidebar> {
                  const SizedBox(width: 8),
 
                 const Spacer(),
-                Text('Recent'
-                  ,
+                Text('Recent',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 16,
-                    fontWeight: FontWeight.normal,
-                    
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -239,7 +215,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
                 child: _isLoadingPlaylistsUser
                   ? const Center(
                     child: CircularProgressIndicator(
-                        color: AppTheme.primaryColor,
+                        color: AppTheme.redPrimary,
                         strokeWidth: 2,
                       ),
                   )
@@ -349,8 +325,8 @@ class _PlaylistUserCardState extends State<PlaylistUserCard> {
           padding: const EdgeInsets.all(8),
           duration: const Duration(milliseconds: 100),
           decoration: BoxDecoration(
-            color: _isHovered 
-              ? const Color(0xFF2A2A2A)
+            color: _isHovered
+              ? Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.7)
               : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
@@ -415,8 +391,7 @@ class _PlaylistUserCardState extends State<PlaylistUserCard> {
                   widget.playlists['name'],
                   
                   style: TextStyle(
-                    
-                    color: _isHovered ? Colors.white : Colors.white.withOpacity(0.95),
+                    color: _isHovered ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface.withOpacity(0.95),
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -425,14 +400,11 @@ class _PlaylistUserCardState extends State<PlaylistUserCard> {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  widget.playlists['type'] + ' . ' + widget.playlists['owner'],
-                  
-                  
+                  widget.playlists['type'] + ' · ' + widget.playlists['owner'],
                   style: TextStyle(
-                    
-                    color: _isHovered ? Colors.white : Colors.white.withOpacity(0.95),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 12,
-                    fontWeight: FontWeight.normal,
+                    fontWeight: FontWeight.w400,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

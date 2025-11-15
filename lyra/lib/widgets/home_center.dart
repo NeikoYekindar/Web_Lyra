@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lyra/theme/app_theme.dart';
 // import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
-import 'package:flutter_svg/flutter_svg.dart';
+// Removed flutter_svg import (unused after cleanup)
 
 
 
@@ -25,7 +25,6 @@ class _HomeCenterState extends State<HomeCenter> {
   bool _isLoadingTrendingSongs = true;
   List<Map<String, dynamic>> _favoriteItems = []; // Danh sách yêu thích
   bool _isLoadingFavorites = true;
-  int _selectedTrendingSongIndex = -1; // Index của bài hát đang được chọn
 
   @override
   void initState() {
@@ -343,44 +342,22 @@ class _HomeCenterState extends State<HomeCenter> {
   }
 
 
-  Widget _buildCustomIcon(String svgPath, bool isActive, double sizeWidth, double sizeHeight) {
-    return Container(
-      width: sizeWidth,
-      height: sizeHeight,
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF2A2A2A) : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: IconButton(
-        onPressed: () {},
-        icon: SvgPicture.asset(
-          svgPath,
-          width: sizeWidth,
-          height: sizeHeight,
-          // colorFilter: ColorFilter.mode(
-          //   isActive ? Colors.white : Colors.grey,
-          //   BlendMode.srcIn,
-          // ),
-        ),
-      ),
-    );
-  }
+  // Removed unused _selectedTrendingSongIndex and _buildCustomIcon to clean up warnings.
   
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        // color: const Color(0xFF1A1A1A),
         gradient: LinearGradient(
           begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            const Color(0xFF4F0303),
-            const Color(0xFF1A1A1A),
-            
-          ],
-          stops: [0.0, 0.4], // 0-30% màu đỏ đen, 30-100% màu xám đen
+            end: Alignment.bottomCenter,
+            colors: [
+              // AppTheme.redPrimaryDark,
+              Theme.of(context).colorScheme.surface,
+              Theme.of(context).colorScheme.surface,
+            ],
+            stops: const [0.0, 0.55],
         ),
         borderRadius: BorderRadius.circular(12),
       ),
@@ -394,7 +371,7 @@ class _HomeCenterState extends State<HomeCenter> {
             height: 240,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(6),
-              color: const Color(0xFF040404),
+              color: Theme.of(context).colorScheme.onTertiary,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start, // Căn trái
@@ -425,22 +402,20 @@ class _HomeCenterState extends State<HomeCenter> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            const SizedBox(height: 30), // Space for close button
+                            const SizedBox(height: 30),
                             Text(
                               'Album',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            
-                          ),
-                          
-                        ),
+                              style: TextStyle(
+                                color: const Color(0xFFFFFFFF),
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                         SizedBox(height: 20),
                         Text(
                           'Ai Cũng Phải Bắt Đầu Từ Đâu Đó',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: const Color(0xFFFFFFFF),
                             fontSize: 30,
                             fontWeight: FontWeight.bold,
                           ),
@@ -465,40 +440,31 @@ class _HomeCenterState extends State<HomeCenter> {
                                 height: 30,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(30),
-                                  color: Colors.green,
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
-                                child: Image(image: AssetImage('assets/images/HTH_icon.png'),fit: BoxFit.fill,),
+                                child: const Image(image: AssetImage('assets/images/HTH_icon.png'),fit: BoxFit.fill,),
                               ),
                               const SizedBox(width: 10),
                               Text(
                                 'HIEUTHUHAI • 2023 • 13 songs, 39 min 44 sec ',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: const Color(0xFFB0B0B0),
                                   fontSize: 16,
                                 ),
                               ),
                               const Spacer(),
                               ElevatedButton(
-                                onPressed: (){
-                                  setState((){
-                                    _isPlaying = !_isPlaying;
-                                  });
-                                },
+                                onPressed: () { setState(() { _isPlaying = !_isPlaying; }); },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFE62429),
-                                  foregroundColor: Colors.white,
+                                  backgroundColor: Theme.of(context).colorScheme.primary,
+                                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                                   minimumSize: const Size(95, 50),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                   elevation: 0,
                                 ),
-                                child: Text(  
+                                child: Text(
                                   _isPlaying ? 'Pause' : 'Play',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                 ),
                               ),
                               
@@ -514,9 +480,9 @@ class _HomeCenterState extends State<HomeCenter> {
                     right: 5,
                     child: IconButton(
                       onPressed: () {},
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.close,
-                        color: Colors.grey,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
                       ),
                     ),
                   ),
@@ -530,14 +496,11 @@ class _HomeCenterState extends State<HomeCenter> {
           const SizedBox(height: 16),
           Container(
             width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.transparent,
-            
-            ),
+            decoration: const BoxDecoration(color: Colors.transparent),
             child: _isLoadingCategories
               ? const Center(
                   child: CircularProgressIndicator(
-                    color: AppTheme.primaryColor,
+                    color: AppTheme.redPrimary,
                     strokeWidth: 2,
                   ),
                 )
@@ -552,25 +515,25 @@ class _HomeCenterState extends State<HomeCenter> {
                       return ElevatedButton(
                         onPressed: () => _onCategorySelected(index),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isSelected 
-                            ? Theme.of(context).colorScheme.onBackground
-                            : AppTheme.darkSurfaceButton,
+                          backgroundColor: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.surfaceVariant,
                           foregroundColor: isSelected
-                            ? Theme.of(context).colorScheme.background
-                            : Theme.of(context).colorScheme.onBackground,
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
                           minimumSize: Size(
                             _categories[index].length * 10.0 + 20, // Dynamic width based on text length
                             40
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
+                            borderRadius: BorderRadius.circular(14),
                           ),
-                          elevation: isSelected ? 3 : 1,
+                          elevation: 0,
                         ),
                         child: Text(
                           _categories[index],
                           style: TextStyle(
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                           ),
                         ),
                       );
@@ -585,7 +548,7 @@ class _HomeCenterState extends State<HomeCenter> {
           _isLoadingFavorites
             ? const Center(
                 child: CircularProgressIndicator(
-                  color: AppTheme.primaryColor,
+                  color: AppTheme.redPrimary,
                   strokeWidth: 2,
                 ),
               )
@@ -630,7 +593,7 @@ class _HomeCenterState extends State<HomeCenter> {
             child: _isLoadingTrendingSongs
               ? const Center(
                 child: CircularProgressIndicator(
-                    color: AppTheme.primaryColor,
+                    color: AppTheme.redPrimary,
                     strokeWidth: 2,
                   ),
               ):
@@ -673,7 +636,7 @@ class _HomeCenterState extends State<HomeCenter> {
             child: _isLoadingTrendingSongs
               ? const Center(
                 child: CircularProgressIndicator(
-                    color: AppTheme.primaryColor,
+                    color: AppTheme.redPrimary,
                     strokeWidth: 2,
                   ),
               ):
@@ -731,8 +694,8 @@ class _FavoriteItemCardState extends State<_FavoriteItemCard> {
           duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
             color: _isHovered 
-              ? AppTheme.darkSurfaceButton.withOpacity(0.7)
-              : AppTheme.darkSurfaceButton,
+              ? Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.7)
+              : Theme.of(context).colorScheme.surfaceVariant,
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
@@ -799,7 +762,7 @@ class _FavoriteItemCardState extends State<_FavoriteItemCard> {
                       Text(
                         widget.item['title'] ?? '',
                         style: TextStyle(
-                          color: _isHovered ? Colors.white : Colors.white.withOpacity(0.95),
+                          color: _isHovered ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface.withOpacity(0.95),
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         ),
@@ -810,7 +773,7 @@ class _FavoriteItemCardState extends State<_FavoriteItemCard> {
                       Text(
                         widget.item['subtitle'] ?? '',
                         style: TextStyle(
-                          color: Colors.grey[400],
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 10,
                         ),
                         maxLines: 1,
@@ -941,7 +904,7 @@ class _PopularArtistCardState extends State<_PopularArtistCard> {
                 Text(
                   widget.artist['name'],
                   style: TextStyle(
-                    color: _isHovered ? Colors.white : Colors.white.withOpacity(0.95),
+                    color: _isHovered ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface.withOpacity(0.95),
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -952,7 +915,7 @@ class _PopularArtistCardState extends State<_PopularArtistCard> {
                 Text(
                   widget.artist['role'],
                   style: TextStyle(
-                    color: Colors.grey[400],
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 12,
                   ),
                   maxLines: 1,
@@ -999,7 +962,7 @@ class _TrendingSongCardState extends State<_TrendingSongCard> {
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: _isHovered 
-              ? const Color(0xFF2A2A2A)
+              ? Colors.transparent
               : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
@@ -1035,9 +998,10 @@ class _TrendingSongCardState extends State<_TrendingSongCard> {
                             ),
                           ],
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.play_arrow,
-                          color: Colors.black,
+                          // Use theme color; can't be const because it depends on context
+                          color: Theme.of(context).colorScheme.surface,
                           size: 28,
                         ),
                       ),
@@ -1048,7 +1012,7 @@ class _TrendingSongCardState extends State<_TrendingSongCard> {
               Text(
                 widget.song['title'],
                 style: TextStyle(
-                  color: _isHovered ? Colors.white : Colors.white.withOpacity(0.95),
+                  color: _isHovered ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.onSurface.withOpacity(0.95),
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1059,7 +1023,7 @@ class _TrendingSongCardState extends State<_TrendingSongCard> {
               Text(
                 widget.song['artist'],
                 style: TextStyle(
-                  color: Colors.grey[400],
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 12,
                 ),
                 maxLines: 1,

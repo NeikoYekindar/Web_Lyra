@@ -1,0 +1,10 @@
+{
+  "dart.flutterSdkPath": null,
+  "dart.analysisExcludedFolders": [],
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/.dart_tool": true,
+    "**/.git": true
+  }
+}

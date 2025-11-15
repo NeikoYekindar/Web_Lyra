@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'theme_toggle_button.dart';
 import '../screens/theme_test_screen.dart';
+import 'package:lyra/theme/app_theme.dart';
 
 class AppHeader extends StatelessWidget {
   const AppHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final extra = Theme.of(context).extension<AppExtraColors>();
     return Container(
       height: 70,
-      color: Theme.of(context).colorScheme.background,
+      // Use custom header color from ThemeExtension; fallback to background.
+      color: extra?.headerAndAll ?? Theme.of(context).colorScheme.background,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
