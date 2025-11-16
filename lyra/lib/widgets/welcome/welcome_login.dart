@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:lyra/theme/app_theme.dart';
+import 'package:provider/provider.dart';
 // import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lyra/providers/auth_provider.dart';
+import 'package:lyra/screens/dashboard_screen.dart';
 
 class WelcomeLogin extends StatefulWidget {
   final VoidCallback? onBackPressed;
@@ -19,6 +21,15 @@ class WelcomeLogin extends StatefulWidget {
 class _WelcomeLoginState extends State<WelcomeLogin>{
     bool _obscurePassword = true;
     bool _rememberMe = false;
+    final _emailController = TextEditingController();
+    final _passwordController = TextEditingController();
+
+    @override
+    void dispose() {
+      _emailController.dispose();
+      _passwordController.dispose();
+      super.dispose();
+    }
 
     @override
     Widget build(BuildContext context){
@@ -168,9 +179,7 @@ class _WelcomeLoginState extends State<WelcomeLogin>{
                         ),
                       ),
                     ),
-                    onChanged: (value) {
-                      // Handle text changes
-                    },
+                    controller: _emailController,
                   ),
                   const SizedBox(height: 24),
                   Text(
@@ -242,6 +251,7 @@ class _WelcomeLoginState extends State<WelcomeLogin>{
                         ),
                       ),
                     ),
+                    controller: _passwordController,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter password';
@@ -308,10 +318,31 @@ class _WelcomeLoginState extends State<WelcomeLogin>{
 
 
                   const SizedBox(height: 32),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Handle login action
-                    },
+                  Consumer<AuthProvider>(
+                    builder: (context, auth, _) => ElevatedButton(
+                    onPressed: auth.isLoading
+                        ? null
+                        : () async {
+                            final email = _emailController.text.trim();
+                            final password = _passwordController.text;
+                            if (email.isEmpty || password.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Please enter email and password')),
+                              );
+                              return;
+                            }
+                            final ok = await context.read<AuthProvider>().login(email, password);
+                            if (ok && mounted) {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                              );
+                            } else if (mounted) {
+                              final msg = context.read<AuthProvider>().error ?? 'Login failed';
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(msg)),
+                              );
+                            }
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFDC0404),
                       minimumSize: const Size(double.infinity, 65),
@@ -319,14 +350,21 @@ class _WelcomeLoginState extends State<WelcomeLogin>{
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: Text(
-                      'Log In',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: auth.isLoading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          )
+                        : Text(
+                            'Log In',
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
                   ),
                   const SizedBox(height: 32 ),
                   Row(

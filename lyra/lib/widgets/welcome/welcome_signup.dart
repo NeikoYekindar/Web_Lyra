@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:lyra/theme/app_theme.dart';
+import 'package:provider/provider.dart';
 // import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lyra/providers/auth_provider.dart';
 
 class WelcomeSignup extends StatefulWidget {
   final VoidCallback? onBackPressed;
@@ -20,6 +21,21 @@ class _WelcomeSignupState extends State<WelcomeSignup>{
     bool _obscurePassword = true;
     bool _rememberMe = false;
     String _password = '';
+    final _fullNameController = TextEditingController();
+    final _displayNameController = TextEditingController();
+    final _emailController = TextEditingController();
+    final _passwordController = TextEditingController();
+    final _confirmPasswordController = TextEditingController();
+
+    @override
+    void dispose() {
+      _fullNameController.dispose();
+      _displayNameController.dispose();
+      _emailController.dispose();
+      _passwordController.dispose();
+      _confirmPasswordController.dispose();
+      super.dispose();
+    }
     
     int _getPasswordStrength(String password) {
       int strength = 0;
@@ -291,7 +307,15 @@ class _WelcomeSignupState extends State<WelcomeSignup>{
                       fontSize: 18,
                       fontWeight: FontWeight.w300,
                     ),
-                    
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'We\'ll help you complete your profile in the next step',
+                    style: GoogleFonts.inter(
+                      color: Colors.grey[400],
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                   const SizedBox(height: 30),
                   Text(
@@ -305,15 +329,11 @@ class _WelcomeSignupState extends State<WelcomeSignup>{
                     ),
                   const SizedBox(height: 8),
                   TextField(
+                    controller: _fullNameController,
                     style: GoogleFonts.inter(color: Colors.white),
                     cursorColor: const Color(0xFFDC0404),
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                      // labelText: 'Email or Username',
-                      // labelStyle: GoogleFonts.inter(
-                      //   color: Colors.grey[400],
-                      //   fontSize: 14,
-                      // ),
                       hintText: 'Enter your full name',
                       hintStyle: GoogleFonts.inter(
                         color: Colors.grey[600],
@@ -343,11 +363,54 @@ class _WelcomeSignupState extends State<WelcomeSignup>{
                         ),
                       ),
                     ),
-                    onChanged: (value) {
-                      // Handle text changes
-                    },
                   ),
                   const SizedBox(height: 20),
+                  // Text(
+                  //     'Display name',
+                  //     style: GoogleFonts.inter(
+                  //           color: Colors.white,
+                  //           fontSize: 18,
+                  //           fontWeight: FontWeight.w300,
+                  //         ),
+                  //   ),
+                  // const SizedBox(height: 8),
+                  // TextField(
+                  //   controller: _displayNameController,
+                  //   style: GoogleFonts.inter(color: Colors.white),
+                  //   cursorColor: const Color(0xFFDC0404),
+                  //   decoration: InputDecoration(
+                  //     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  //     hintText: 'Enter your display name',
+                  //     hintStyle: GoogleFonts.inter(
+                  //       color: Colors.grey[600],
+                  //       fontSize: 14,
+                  //     ),
+                  //     filled: true,
+                  //     fillColor: const Color(0xFF1E1E1E),
+                  //     enabledBorder: OutlineInputBorder(
+                  //       borderRadius: BorderRadius.circular(8),
+                  //       borderSide: BorderSide(
+                  //         color: const Color(0xFF2A2A2A),
+                  //         width: 1,
+                  //       ),
+                  //     ),
+                  //     focusedBorder: OutlineInputBorder(
+                  //       borderRadius: BorderRadius.circular(8),
+                  //       borderSide: BorderSide(
+                  //         color: const Color(0xFFDC0404),
+                  //         width: 2,
+                  //       ),
+                  //     ),
+                  //     errorBorder: OutlineInputBorder(
+                  //       borderRadius: BorderRadius.circular(8),
+                  //       borderSide: BorderSide(
+                  //         color: Colors.red[400]!,
+                  //         width: 1,
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+                  // const SizedBox(height: 20),
                   Text(
                       'Email',
                       style: GoogleFonts.inter(
@@ -359,15 +422,12 @@ class _WelcomeSignupState extends State<WelcomeSignup>{
                     ),
                   const SizedBox(height: 8),
                   TextField(
+                    controller: _emailController,
                     style: GoogleFonts.inter(color: Colors.white),
                     cursorColor: const Color(0xFFDC0404),
+                    keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                      // labelText: 'Email or Username',
-                      // labelStyle: GoogleFonts.inter(
-                      //   color: Colors.grey[400],
-                      //   fontSize: 14,
-                      // ),
                       hintText: 'Enter your email',
                       hintStyle: GoogleFonts.inter(
                         color: Colors.grey[600],
@@ -397,67 +457,142 @@ class _WelcomeSignupState extends State<WelcomeSignup>{
                         ),
                       ),
                     ),
-                    onChanged: (value) {
-                      // Handle text changes
-                    },
                   ),
+                  // const SizedBox(height: 20),
+                  // Text(
+                  //     'Username',
+                  //     style: GoogleFonts.inter(
+                  //           color: Colors.white,
+                  //           fontSize: 18,
+                  //           fontWeight: FontWeight.w300,
+                  //         ),
+                  //   ),
+                  // const SizedBox(height: 8),
+                  // TextField(
+                  //   controller: _usernameController,
+                  //   style: GoogleFonts.inter(color: Colors.white),
+                  //   cursorColor: const Color(0xFFDC0404),
+                  //   decoration: InputDecoration(
+                  //     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  //     hintText: 'Enter your username',
+                  //     hintStyle: GoogleFonts.inter(
+                  //       color: Colors.grey[600],
+                  //       fontSize: 14,
+                  //     ),
+                  //     filled: true,
+                  //     fillColor: const Color(0xFF1E1E1E),
+                  //     enabledBorder: OutlineInputBorder(
+                  //       borderRadius: BorderRadius.circular(8),
+                  //       borderSide: BorderSide(
+                  //         color: const Color(0xFF2A2A2A),
+                  //         width: 1,
+                  //       ),
+                  //     ),
+                  //     focusedBorder: OutlineInputBorder(
+                  //       borderRadius: BorderRadius.circular(8),
+                  //       borderSide: BorderSide(
+                  //         color: const Color(0xFFDC0404),
+                  //         width: 2,
+                  //       ),
+                  //     ),
+                  //     errorBorder: OutlineInputBorder(
+                  //       borderRadius: BorderRadius.circular(8),
+                  //       borderSide: BorderSide(
+                  //         color: Colors.red[400]!,
+                  //         width: 1,
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                   const SizedBox(height: 20),
-                  Text(
-                      'Username',
-                      style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w300,
-                          ),
-                    
-                    ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    style: GoogleFonts.inter(color: Colors.white),
-                    cursorColor: const Color(0xFFDC0404),
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                      // labelText: 'Email or Username',
-                      // labelStyle: GoogleFonts.inter(
-                      //   color: Colors.grey[400],
-                      //   fontSize: 14,
-                      // ),
-                      hintText: 'Enter your username',
-                      hintStyle: GoogleFonts.inter(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                      ),
-                      filled: true,
-                      fillColor: const Color(0xFF1E1E1E),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: const Color(0xFF2A2A2A),
-                          width: 1,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: const Color(0xFFDC0404),
-                          width: 2,
-                        ),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: Colors.red[400]!,
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                    onChanged: (value) {
-                      // Handle text changes
-                    },
-                  ),
+                  // Text(
+                  //     'Date of Birth',
+                  //     style: GoogleFonts.inter(
+                  //           color: Colors.white,
+                  //           fontSize: 18,
+                  //           fontWeight: FontWeight.w300,
+                  //         ),
+                  //   ),
+                  // const SizedBox(height: 8),
+                  // GestureDetector(
+                  //   onTap: () => _selectDate(context),
+                  //   child: Container(
+                  //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  //     decoration: BoxDecoration(
+                  //       color: const Color(0xFF1E1E1E),
+                  //       borderRadius: BorderRadius.circular(8),
+                  //       border: Border.all(
+                  //         color: const Color(0xFF2A2A2A),
+                  //         width: 1,
+                  //       ),
+                  //     ),
+                  //     child: Row(
+                  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //       children: [
+                  //         Text(
+                  //           _selectedDate == null
+                  //               ? 'Select your birth date'
+                  //               : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+                  //           style: GoogleFonts.inter(
+                  //             color: _selectedDate == null ? Colors.grey[600] : Colors.white,
+                  //             fontSize: 14,
+                  //           ),
+                  //         ),
+                  //         Icon(
+                  //           Icons.calendar_today,
+                  //           color: Colors.grey[600],
+                  //           size: 20,
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ),
+                  // const SizedBox(height: 20),
+                  // Text(
+                  //     'Gender',
+                  //     style: GoogleFonts.inter(
+                  //           color: Colors.white,
+                  //           fontSize: 18,
+                  //           fontWeight: FontWeight.w300,
+                  //         ),
+                  //   ),
+                  // const SizedBox(height: 8),
+                  // DropdownButtonFormField<String>(
+                  //   value: _selectedGender,
+                  //   dropdownColor: const Color(0xFF1E1E1E),
+                  //   style: GoogleFonts.inter(color: Colors.white),
+                  //   decoration: InputDecoration(
+                  //     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  //     filled: true,
+                  //     fillColor: const Color(0xFF1E1E1E),
+                  //     enabledBorder: OutlineInputBorder(
+                  //       borderRadius: BorderRadius.circular(8),
+                  //       borderSide: BorderSide(
+                  //         color: const Color(0xFF2A2A2A),
+                  //         width: 1,
+                  //       ),
+                  //     ),
+                  //     focusedBorder: OutlineInputBorder(
+                  //       borderRadius: BorderRadius.circular(8),
+                  //       borderSide: BorderSide(
+                  //         color: const Color(0xFFDC0404),
+                  //         width: 2,
+                  //       ),
+                  //     ),
+                  //   ),
+                  //   items: const [
+                  //     DropdownMenuItem(value: 'male', child: Text('Male')),
+                  //     DropdownMenuItem(value: 'female', child: Text('Female')),
+                  //     DropdownMenuItem(value: 'other', child: Text('Other')),
+                  //   ],
+                  //   onChanged: (value) {
+                  //     setState(() {
+                  //       _selectedGender = value!;
+                  //     });
+                  //   },
+                  // ),
 
-
-                  const SizedBox(height: 20),
+                  // const SizedBox(height: 20),
                   Text(
                       'Password',
                       style: GoogleFonts.inter(
@@ -533,6 +668,7 @@ class _WelcomeSignupState extends State<WelcomeSignup>{
                       }
                       return null;
                     },
+                    controller: _passwordController,
                     onChanged: (value) {
                       setState(() {
                         _password = value;
@@ -660,9 +796,13 @@ class _WelcomeSignupState extends State<WelcomeSignup>{
                         ),
                       ),
                     ),
+                    controller: _confirmPasswordController,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter password';
+                        return 'Please confirm password';
+                      }
+                      if (value != _passwordController.text) {
+                        return 'Passwords do not match';
                       }
                       return null;
                     },
@@ -755,10 +895,54 @@ class _WelcomeSignupState extends State<WelcomeSignup>{
 
 
                   const SizedBox(height: 30),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Handle login action
-                    },
+                  Consumer<AuthProvider>(
+                    builder: (context, auth, _) => ElevatedButton(
+                    onPressed: auth.isLoading || !_rememberMe
+                        ? null
+                        : () async {
+                            // Validate required fields
+                            if (_fullNameController.text.trim().isEmpty ||
+                                // _displayNameController.text.trim().isEmpty ||
+                                _emailController.text.trim().isEmpty ||
+                                _passwordController.text.isEmpty ||
+                                _confirmPasswordController.text.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Please fill all required fields')),
+                              );
+                              return;
+                            }
+                            
+                            if (_passwordController.text != _confirmPasswordController.text) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Passwords do not match')),
+                              );
+                              return;
+                            }
+
+                            final result = await context.read<AuthProvider>().signup(
+                              displayName: 'unknown',
+                              fullName: _fullNameController.text.trim(),
+                              userType: 'normal',
+                              password: _passwordController.text,
+                              email: _emailController.text.trim(),
+                              // Optional fields with proper defaults - will be updated in create profile
+                              dateOfBirth: null,
+                              gender: 'other',
+                              profileImageUrl: null,
+                            );
+                            
+                            if (result != null && mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Account created successfully! Please log in.')),
+                              );
+                              widget.onBackPressed?.call();
+                            } else if (mounted) {
+                              final msg = context.read<AuthProvider>().error ?? 'Signup failed';
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(msg)),
+                              );
+                            }
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFDC0404),
                       minimumSize: const Size(double.infinity, 65),
@@ -766,14 +950,21 @@ class _WelcomeSignupState extends State<WelcomeSignup>{
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: Text(
-                      'Create Account',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: auth.isLoading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          )
+                        : Text(
+                            'Create Account',
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
                   ),
                   const SizedBox(height: 32),
                   // Row(
