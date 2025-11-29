@@ -124,7 +124,7 @@ class _WelcomeIntroState extends State<WelcomeIntro> with SingleTickerProviderSt
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _AnimatedButton(
-                  text: 'Get started free',
+                  text: 'Sign up',
                   isPrimary: true,
                   onPressed: () {
                     widget.onSignupPressed?.call();
@@ -132,7 +132,7 @@ class _WelcomeIntroState extends State<WelcomeIntro> with SingleTickerProviderSt
                 ),
                 const SizedBox(width: 16),
                 _AnimatedButton(
-                  text: 'Log in',
+                  text: 'Sign in',  
                   isPrimary: false,
                   onPressed: () {
                     widget.onLoginPressed?.call();
@@ -145,7 +145,7 @@ class _WelcomeIntroState extends State<WelcomeIntro> with SingleTickerProviderSt
           FadeTransition(
             opacity: _fadeAnimation,
             child: Text(
-              'No credit card required • Free plan available',
+              '',
               style: GoogleFonts.inter(
                 fontSize: 14,
                 color: Colors.white.withOpacity(0.7),

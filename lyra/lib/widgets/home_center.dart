@@ -371,7 +371,7 @@ class _HomeCenterState extends State<HomeCenter> {
             height: 240,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(6),
-              color: Theme.of(context).colorScheme.onTertiary,
+              color: Theme.of(context).colorScheme.tertiaryContainer,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start, // Căn trái
@@ -456,8 +456,8 @@ class _HomeCenterState extends State<HomeCenter> {
                               ElevatedButton(
                                 onPressed: () { setState(() { _isPlaying = !_isPlaying; }); },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Theme.of(context).colorScheme.primary,
-                                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                                  backgroundColor: AppColors.bgrcmbutton(context), // Sử dụng màu red từ AppColors
+                                  foregroundColor: AppColors.textrcmbutton(context), // Sử dụng màu textrcmbutton tùy chỉnh với context
                                   minimumSize: const Size(95, 50),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                   elevation: 0,
@@ -518,6 +518,11 @@ class _HomeCenterState extends State<HomeCenter> {
                           backgroundColor: isSelected
                               ? Theme.of(context).colorScheme.primary
                               : Theme.of(context).colorScheme.surfaceVariant,
+
+
+
+
+
                           foregroundColor: isSelected
                               ? Theme.of(context).colorScheme.onPrimary
                               : Theme.of(context).colorScheme.onSurfaceVariant,
