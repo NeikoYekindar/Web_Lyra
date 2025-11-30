@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'theme_toggle_button.dart';
-import '../screens/theme_test_screen.dart';
+import '../theme_toggle_button.dart';
+import '../../screens/theme_test_screen.dart';
 import 'package:lyra/theme/app_theme.dart';
 
 class AppHeader extends StatelessWidget {

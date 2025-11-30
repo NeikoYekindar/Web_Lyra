@@ -40,12 +40,24 @@ class MusicPlayerProvider extends ChangeNotifier {
   void loadDemoTrack() {
     loadFromApi({
       'id': 'demo_001',
-      'title': 'Chúng Ta Của Tương Lai',
+      'title': 'Chúng Ta Của hiện tại',
       'artist': 'Sơn Tùng M-TP',
       // Use any reachable image/asset. Replace with real URL or asset path.
-      'albumArtUrl': 'assets/images/album_1.png',
+      'albumArtUrl': 'assets/images/playlist_mtp.png',
       'durationMs': 249000,
       'positionMs': 0,
     });
+  }
+
+  // Load from backend 'now playing'
+  Future<void> loadNowPlaying(Future<Map<String, dynamic>> Function() fetcher) async {
+    try {
+      final json = await fetcher();
+      loadFromApi(json);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Failed to load now playing: $e');
+      }
+    }
   }
 }

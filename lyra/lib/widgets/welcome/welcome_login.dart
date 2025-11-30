@@ -1,39 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-// import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lyra/providers/auth_provider.dart';
-import 'package:lyra/screens/dashboard_screen.dart';
+import 'login_controller.dart';
 
-class WelcomeLogin extends StatefulWidget {
+/// UI thuần: không giữ logic nội bộ, logic nằm ở LoginController.
+class WelcomeLogin extends StatelessWidget {
   final VoidCallback? onBackPressed;
-  
-  const WelcomeLogin({
-    super.key,
-    this.onBackPressed,
-  });
+  const WelcomeLogin({super.key, this.onBackPressed});
 
   @override
-  State<WelcomeLogin> createState() => _WelcomeLoginState();
-}
-
-class _WelcomeLoginState extends State<WelcomeLogin>{
-    bool _obscurePassword = true;
-    bool _rememberMe = false;
-    final _emailController = TextEditingController();
-    final _passwordController = TextEditingController();
-
-    @override
-    void dispose() {
-      _emailController.dispose();
-      _passwordController.dispose();
-      super.dispose();
-    }
-
-    @override
-    Widget build(BuildContext context){
-      return Container(
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider<LoginController>(
+      create: (_) => LoginController(),
+      child: Consumer<LoginController>(
+        builder: (context, controller, _) {
+          return Container(
         width: double.infinity,
       height: double.infinity,
       color: const Color(0xFF0B0B0B),
@@ -98,7 +81,7 @@ class _WelcomeLoginState extends State<WelcomeLogin>{
                 children: [
                   const SizedBox(height: 24),
                   IconButton(
-                    onPressed: widget.onBackPressed,
+                    onPressed: onBackPressed,
                     icon: Icon(
                       Icons.arrow_back,
                       color: Colors.white,
@@ -179,7 +162,7 @@ class _WelcomeLoginState extends State<WelcomeLogin>{
                         ),
                       ),
                     ),
-                    controller: _emailController,
+                    controller: controller.emailController,
                   ),
                   const SizedBox(height: 24),
                   Text(
@@ -213,14 +196,10 @@ class _WelcomeLoginState extends State<WelcomeLogin>{
                       fillColor: const Color(0xFF1E1E1E),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          controller.obscurePassword ? Icons.visibility_off : Icons.visibility,
                           color: Colors.grey[400],
                         ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
+                        onPressed: controller.toggleObscure,
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -251,14 +230,14 @@ class _WelcomeLoginState extends State<WelcomeLogin>{
                         ),
                       ),
                     ),
-                    controller: _passwordController,
+                    controller: controller.passwordController,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter password';
                       }
                       return null;
                     },
-                    obscureText: _obscurePassword,
+                    obscureText: controller.obscurePassword,
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -270,12 +249,8 @@ class _WelcomeLoginState extends State<WelcomeLogin>{
                             width: 20,
                             height: 20,
                             child: Checkbox(
-                              value: _rememberMe,
-                              onChanged: (value) {
-                                setState(() {
-                                  _rememberMe = value ?? false;
-                                });
-                              },
+                              value: controller.rememberMe,
+                              onChanged: controller.toggleRemember,
                               activeColor: const Color(0xFFDC0404),
                               checkColor: Colors.white,
                               side: BorderSide(
@@ -320,51 +295,29 @@ class _WelcomeLoginState extends State<WelcomeLogin>{
                   const SizedBox(height: 32),
                   Consumer<AuthProvider>(
                     builder: (context, auth, _) => ElevatedButton(
-                    onPressed: auth.isLoading
-                        ? null
-                        : () async {
-                            final email = _emailController.text.trim();
-                            final password = _passwordController.text;
-                            if (email.isEmpty || password.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Please enter email and password')),
-                              );
-                              return;
-                            }
-                            final ok = await context.read<AuthProvider>().login(email, password);
-                            if (ok && mounted) {
-                              Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(builder: (_) => const DashboardScreen()),
-                              );
-                            } else if (mounted) {
-                              final msg = context.read<AuthProvider>().error ?? 'Login failed';
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(msg)),
-                              );
-                            }
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFDC0404),
-                      minimumSize: const Size(double.infinity, 65),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                      onPressed: auth.isLoading ? null : () => controller.submit(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFDC0404),
+                        minimumSize: const Size(double.infinity, 65),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
-                    ),
-                    child: auth.isLoading
-                        ? const SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                          )
-                        : Text(
-                            'Log In',
-                            style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
+                      child: auth.isLoading
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            )
+                          : Text(
+                              'Log In',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                  ),
+                    ),
                   ),
                   const SizedBox(height: 32 ),
                   Row(
@@ -540,6 +493,8 @@ class _WelcomeLoginState extends State<WelcomeLogin>{
         ],
       ),
       );
-      
-    }
+        },
+      ),
+    );
+  }
 }

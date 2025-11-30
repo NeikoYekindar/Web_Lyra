@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../providers/music_player_provider.dart';
+import '../../providers/music_player_provider.dart';
+import 'music_player_controller.dart';
 
 class MusicPlayer extends StatelessWidget {
   const MusicPlayer({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final ctrl = MusicPlayerController();
     return Container(
       height: 90,
       color: Theme.of(context).colorScheme.surface,
@@ -227,7 +229,7 @@ class MusicPlayer extends StatelessWidget {
               
               children: [
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () => ctrl.openNowPlayingDetail(context),
                   icon: SvgPicture.asset(
                             'assets/icons/now playing view.svg',
                             width: 18,

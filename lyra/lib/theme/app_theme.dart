@@ -322,6 +322,7 @@ class AppColors {
   static Color get colortextrcmbutton => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFFE62429);
   static Color bgrcmbutton(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFFE62429) : const Color(0xFFFFFFFF); // white for dark, red for light
   static Color bg_left_sidebar(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1F1F1F) : const Color(0xFFFFFFFF); // dark for dark, light for light
+  static Color bg_right_sidebar(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1F1F1F) : const Color(0xFFFFFFFF);
 }
 
 // Extension để dễ dàng truy cập AppExtraColors
