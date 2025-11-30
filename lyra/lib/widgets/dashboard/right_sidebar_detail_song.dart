@@ -7,6 +7,9 @@ import '../../services/playlist_service.dart';
 import 'right_playlist_user_card.dart';
 import 'right_sidebar_controller.dart';
 import '../../services/left_sidebar_service.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+
 class MockArtistService {
   static Future<Map<String, dynamic>?> getArtistInfo(String artistName) async {
     // Ở đây bạn gọi API backend để lấy ảnh artist và số lượng người nghe
@@ -14,7 +17,8 @@ class MockArtistService {
     return {
       'image': 'assets/images/image 18.png', // Ví dụ ảnh Sơn Tùng
       'listeners': '2,044,507 monthly listeners',
-      'bio': 'Nguyễn Thanh Tùng, born in 1994...'
+      'bio': 'Nguyễn Thanh Tùng, born in 1994...',
+      'more_info': 'Nguyễn Thanh Tùng, born in 1994, known professionally as Sơn Tùng M-TP, is a Vietnamese singer, songwriter, producer, and actor. He is not only known as one of the ...'
     };
   }
 }
@@ -29,7 +33,7 @@ class RightSidebarDetailSong extends StatelessWidget {
         width: 360,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: AppColors.bg_left_sidebar(context),
           borderRadius: BorderRadius.circular(12),
         ),
        margin: const EdgeInsets.only(bottom: 10, left: 8, right: 8),
@@ -40,10 +44,10 @@ class RightSidebarDetailSong extends StatelessWidget {
           children:[
             Row(
             children: [
-              const Text(
+              Text(
                 'Now Playing',
                 style: TextStyle(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 18,
                     fontWeight: FontWeight.bold),
               ),
@@ -89,8 +93,8 @@ Expanded(
                   // Tên bài hát
                   Text(
                     track?.title ?? 'No Track Playing',
-                    style: const TextStyle(
-                        color: Colors.white,
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 22,
                         fontWeight: FontWeight.bold),
                     maxLines: 1,
@@ -101,7 +105,7 @@ Expanded(
                   // Tên nghệ sĩ
                   Text(
                     track?.artist ?? 'Unknown Artist',
-                    style: TextStyle(color: Colors.grey.shade400, fontSize: 16),
+                    style: TextStyle(color: AppColors.text_min_right_sidebar_detail_song(context), fontSize: 16),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -128,7 +132,7 @@ Expanded(
                       child: Text(
                         'Open queue',
                         style: TextStyle(
-                            color: Colors.grey.shade400, fontSize: 12),
+                            color: AppColors.text_min_right_sidebar_detail_song(context), fontSize: 12),
                       ),
                     ),
                   ]),
@@ -173,7 +177,7 @@ class _ArtistInfoCard extends StatelessWidget {
         final data = snapshot.data;
         // Nếu không có dữ liệu hoặc lỗi, ẩn phần này hoặc hiện placeholder
         if (data == null) return const SizedBox.shrink();
-
+        final more_info = data['more_info'] ?? '';
         final imageUrl = data['image'];
         final listeners = data['listeners'];
         // final bio = data['bio']; // Có thể hiển thị thêm bio nếu muốn
@@ -181,7 +185,7 @@ class _ArtistInfoCard extends StatelessWidget {
         return Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: Colors.grey.shade900,
+            color: AppColors.card_right_sidebar_detai_song(context),
             borderRadius: BorderRadius.circular(12),
           ),
           clipBehavior: Clip.antiAlias, // Để ảnh bo góc theo container
@@ -240,34 +244,59 @@ class _ArtistInfoCard extends StatelessWidget {
               // Phần thông tin bên dưới ảnh
               Padding(
                 padding: const EdgeInsets.all(12.0),
-                child: Row(
+                child: Column(  
+                  crossAxisAlignment: CrossAxisAlignment.start, // Căn lề trái cho toàn bộ nội dung
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    
+                       Row(
+                      
                         children: [
                           Text(
                             listeners ?? 'N/A Listeners',
-                            style: const TextStyle(color: Colors.grey, fontSize: 12),
+                            style:  TextStyle(color: AppColors.text_min_right_sidebar_detail_song(context), fontSize: 12),
                           ),
+                          const Spacer(),
+                          ElevatedButton(
+                              onPressed: () {},
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                foregroundColor: Theme.of(context).colorScheme.onSurface,
+                                side: const BorderSide(color: Colors.grey),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                elevation: 0,
+                                // Thêm dòng này nếu bạn muốn chắc chắn không có bóng đổ khi hover
+                                shadowColor: Colors.transparent, 
+                              ).copyWith(
+                                // Logic xử lý riêng cho overlayColor
+                                overlayColor: MaterialStateProperty.resolveWith<Color?>(
+                                  (Set<MaterialState> states) {
+                                    if (states.contains(MaterialState.hovered)) {
+                                      return Colors.transparent; // Trả về màu trong suốt khi hover
+                                    }
+                                    return null; // Giữ nguyên hiệu ứng mặc định cho các trạng thái khác (như khi bấm)
+                                  },
+                                ),
+                              ),
+                              child: const Text('Follow', style: TextStyle(fontSize: 12)),
+                            )
+                          
                           // Bạn có thể thêm đoạn Bio ngắn ở đây
                         ],
+
                       ),
-                    ),
+                    const SizedBox(height: 8),
+                    if (more_info != null && more_info!.isNotEmpty)
+                        Text(
+                          more_info!,
+                          maxLines: 2, // Giới hạn 2 dòng để không bị dài quá
+                          overflow: TextOverflow.ellipsis, // Hiện dấu ... nếu dài quá
+                          style: TextStyle(color: AppColors.text_min_right_sidebar_detail_song(context), fontSize: 12),
+                        ),
                     
                     // Nút Follow
-                    ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        foregroundColor: Colors.white,
-                        side: const BorderSide(color: Colors.grey),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        elevation: 0,
-                      ),
-                      child: const Text('Follow', style: TextStyle(fontSize: 12)),
-                    )
+                    
                   ],
                 ),
               )
@@ -357,7 +386,7 @@ class _NextQueueSection extends StatelessWidget {
 
         return Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.2),
+            color: AppColors.card_right_sidebar_detai_song(context),
             borderRadius: BorderRadius.circular(8),
           ),
           padding: const EdgeInsets.all(8),
@@ -368,7 +397,7 @@ class _NextQueueSection extends StatelessWidget {
                 height: 56,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(6),
-                  color: Colors.grey.shade800,
+                  color: AppColors.card_right_sidebar_detai_song(context),
                   image: hasImage
                       ? (coverUrl.startsWith('http')
                           ? DecorationImage(
@@ -389,8 +418,8 @@ class _NextQueueSection extends StatelessWidget {
                     Text(title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            color: Colors.white,
+                        style: TextStyle(
+                            color: Theme.of(  context).colorScheme.onSurface,
                             fontSize: 15,
                             fontWeight: FontWeight.w600)),
                     const SizedBox(height: 4),
@@ -398,13 +427,13 @@ class _NextQueueSection extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                            color: Colors.grey.shade400, fontSize: 13)),
+                            color: AppColors.text_min_right_sidebar_detail_song(context), fontSize: 13)),
                   ],
                 ),
               ),
               // Nút Play nhỏ bên cạnh nếu cần
               IconButton(
-                icon: const Icon(Icons.play_arrow_rounded, color: Colors.white),
+                icon:  Icon(Icons.play_arrow_rounded, color: Theme.of( context).colorScheme.onSurface),
                 onPressed: () {},
               )
             ],

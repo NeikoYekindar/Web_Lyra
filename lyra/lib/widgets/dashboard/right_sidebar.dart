@@ -43,10 +43,10 @@ class RightSidebar extends StatelessWidget {
             
               Row(
                 children: [
-                  const Text(
+                  Text(
                     'Now Playing',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Theme.of(  context).colorScheme.onSurface,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -108,7 +108,7 @@ class RightSidebar extends StatelessWidget {
                                 : null,
                           ),
                           child: track == null || track.albumArtUrl.isEmpty
-                              ? const Icon(Icons.music_note, color: Colors.white, size: 30)
+                              ?  Icon(Icons.music_note, color: Theme.of(context).colorScheme.onSurface, size: 30)
                               : null,
                         ),
                         const SizedBox(width: 12),
@@ -120,8 +120,8 @@ class RightSidebar extends StatelessWidget {
                             children: [
                               Text(
                                 track?.title ?? 'Chưa chọn bài hát',
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.onSurface,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -130,8 +130,8 @@ class RightSidebar extends StatelessWidget {
                               const SizedBox(height: 4),
                               Text(
                                 track?.artist ?? 'Nghệ sĩ chưa rõ',
-                                style: const TextStyle(
-                                  color: Colors.grey,
+                                style: TextStyle(
+                                  color: AppColors.text_min_right_sidebar_detail_song(  context),
                                   fontSize: 12,
                                 ),
                                 overflow: TextOverflow.ellipsis,
