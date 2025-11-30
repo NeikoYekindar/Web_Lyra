@@ -23,6 +23,7 @@ class AppTheme {
   static const Color darkCard = neutral800;
   static const Color darkText = white;
   static const Color darkSecondaryText = neutral400;
+  static const Color rcmsong = Color(0xFF040404);
 
   // Light Theme Colors (mapped)
   static const Color lightBackground = white;
@@ -31,6 +32,7 @@ class AppTheme {
   static const Color lightCard = white;
   static const Color lightText = black;
   static const Color lightSecondaryText = neutral800; // use dark gray for secondary
+  static const Color lightrcmsong = Color(0xFFD13F43);
   
   
   // Dark Theme
@@ -47,7 +49,7 @@ class AppTheme {
       onSecondaryContainer: white,
       tertiary: neutral400,
       onTertiary: black,
-      tertiaryContainer: darkCard,
+      tertiaryContainer: rcmsong,
       onTertiaryContainer: white,
       error: Colors.red,
       onError: white,
@@ -64,6 +66,7 @@ class AppTheme {
       inverseSurface: redPrimaryDark,
       onInverseSurface: white,
       inversePrimary: redPrimaryDark,
+      
     );
     return ThemeData(
       brightness: Brightness.dark,
@@ -71,7 +74,14 @@ class AppTheme {
       colorScheme: colorScheme,
       useMaterial3: true,
       extensions: const <ThemeExtension<dynamic>>[
-        AppExtraColors(headerAndAll: AppTheme.black),
+        AppExtraColors(
+          headerAndAll: AppTheme.black,
+          playerControlsBackground: Color(0xFF1A1A1A),
+          miniPlayerBackground: Color(0xFF0F0F0F),
+          playlistItemHover: Color(0xFF2A2A2A),
+          lyricsSectionBackground: Color(0xFF151515),
+          equalizer: Color(0xFF4CAF50),
+        ),
       ],
       cardTheme: const CardThemeData(
         color: darkSurface,
@@ -122,7 +132,7 @@ class AppTheme {
   static ThemeData get lightTheme {
     final colorScheme = ColorScheme(
       brightness: Brightness.light,
-      primary: redPrimary,
+      primary: black,
       onPrimary: white,
       primaryContainer: redPrimaryDark,
       onPrimaryContainer: white,
@@ -132,7 +142,7 @@ class AppTheme {
       onSecondaryContainer: black,
       tertiary: neutral500,
       onTertiary: black,
-      tertiaryContainer: lightSurface,
+      tertiaryContainer: lightrcmsong,
       onTertiaryContainer: black,
       error: Colors.red,
       onError: white,
@@ -141,7 +151,7 @@ class AppTheme {
       surface: lightSurface,
       onSurface: black,
   // Use full light background for variant to ensure clear difference from surface in widgets
-  surfaceVariant: lightBackground,
+      surfaceVariant: lightBackground,
       onSurfaceVariant: neutral800,
       outline: neutral500,
       outlineVariant: neutral400,
@@ -157,7 +167,14 @@ class AppTheme {
       colorScheme: colorScheme,
       useMaterial3: true,
       extensions: const <ThemeExtension<dynamic>>[
-        AppExtraColors(headerAndAll: AppTheme.white),
+        AppExtraColors(
+          headerAndAll: AppTheme.white,
+          playerControlsBackground: Color(0xFFF5F5F5),
+          miniPlayerBackground: Color(0xFFFFFFFF),
+          playlistItemHover: Color(0xFFF0F0F0),
+          lyricsSectionBackground: Color(0xFFFAFAFA),
+          equalizer: Color(0xFF4CAF50),
+        ),
       ],
       cardTheme: CardThemeData(
         color: lightCard,
@@ -210,12 +227,38 @@ class AppTheme {
 @immutable
 class AppExtraColors extends ThemeExtension<AppExtraColors> {
   final Color headerAndAll;
+  final Color playerControlsBackground;
+  final Color miniPlayerBackground;
+  final Color playlistItemHover;
+  final Color lyricsSectionBackground;
+  final Color equalizer;
 
-  const AppExtraColors({required this.headerAndAll});
+  const AppExtraColors({
+    required this.headerAndAll,
+    required this.playerControlsBackground,
+    required this.miniPlayerBackground,
+    required this.playlistItemHover,
+    required this.lyricsSectionBackground,
+    required this.equalizer,
+  });
 
   @override
-  AppExtraColors copyWith({Color? headerAndAll}) {
-    return AppExtraColors(headerAndAll: headerAndAll ?? this.headerAndAll);
+  AppExtraColors copyWith({
+    Color? headerAndAll,
+    Color? playerControlsBackground,
+    Color? miniPlayerBackground,
+    Color? playlistItemHover,
+    Color? lyricsSectionBackground,
+    Color? equalizer,
+  }) {
+    return AppExtraColors(
+      headerAndAll: headerAndAll ?? this.headerAndAll,
+      playerControlsBackground: playerControlsBackground ?? this.playerControlsBackground,
+      miniPlayerBackground: miniPlayerBackground ?? this.miniPlayerBackground,
+      playlistItemHover: playlistItemHover ?? this.playlistItemHover,
+      lyricsSectionBackground: lyricsSectionBackground ?? this.lyricsSectionBackground,
+      equalizer: equalizer ?? this.equalizer,
+    );
   }
 
   @override
@@ -223,6 +266,11 @@ class AppExtraColors extends ThemeExtension<AppExtraColors> {
     if (other is! AppExtraColors) return this;
     return AppExtraColors(
       headerAndAll: Color.lerp(headerAndAll, other.headerAndAll, t)!,
+      playerControlsBackground: Color.lerp(playerControlsBackground, other.playerControlsBackground, t)!,
+      miniPlayerBackground: Color.lerp(miniPlayerBackground, other.miniPlayerBackground, t)!,
+      playlistItemHover: Color.lerp(playlistItemHover, other.playlistItemHover, t)!,
+      lyricsSectionBackground: Color.lerp(lyricsSectionBackground, other.lyricsSectionBackground, t)!,
+      equalizer: Color.lerp(equalizer, other.equalizer, t)!,
     );
   }
 }
@@ -243,9 +291,40 @@ class AppColors {
   static Color get muted => _isDark ? AppTheme.neutral500 : AppTheme.neutral500;
   static Color get onTertiary => _isDark ?AppTheme.lightText  :AppTheme.darkText ;
   static Color get surfaceVariant => _isDark ? AppTheme.neutral800 : AppTheme.lightBackground;
+  static Color get tertiaryContainer => _isDark ? AppTheme.rcmsong : AppTheme.lightrcmsong;
+  static Color get primary => _isDark ? AppTheme.redPrimary : const Color.fromARGB(255, 255, 255, 255);
   // Static brand colors
   static const Color red = AppTheme.redPrimary;
   static const Color redDark = AppTheme.redPrimaryDark;
   static const Color white = AppTheme.white;
   static const Color black = AppTheme.black;
+  
+  // Custom colors - Bạn có thể thêm bao nhiêu tùy thích với tên tùy chỉnh
+  static const Color musicPlayerBackground = Color(0xFF1A1A1A);
+  static const Color sidebarBackground = Color(0xFF0F0F0F);
+  static const Color playButtonColor = Color(0xFF00E676);
+  static const Color volumeSlider = Color(0xFF4CAF50);
+  static const Color favoriteIcon = Color(0xFFFF5722);
+  static const Color warningColor = Color(0xFFFF9800);
+  static const Color successColor = Color(0xFF4CAF50);
+  static const Color infoColor = Color(0xFF2196F3);
+  static const Color gradientStart = Color(0xFFE62429);
+  static const Color gradientEnd = Color(0xFF801417);
+  // static const Color colortextrcmbutton = Color(0xFFFFFFFF);
+  
+  // Dynamic custom colors (thay đổi theo theme)
+  static Color get musicCardHover => _isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF0F0F0);
+  static Color get searchBarBackground => _isDark ? const Color(0xFF252525) : const Color(0xFFFFFFFF);
+  static Color get buttonHover => _isDark ? const Color(0xFF404040) : const Color(0xFFE0E0E0);
+  static Color get borderColor => _isDark ? const Color(0xFF404040) : const Color(0xFFE0E0E0);
+  static Color get shadowColor => _isDark ? Colors.black.withOpacity(0.3) : Colors.grey.withOpacity(0.2);
+  static Color textrcmbutton(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFFFFFFFF) : const Color(0xFFE62429); // white for dark, red for light
+  static Color get colortextrcmbutton => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFFE62429);
+  static Color bgrcmbutton(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFFE62429) : const Color(0xFFFFFFFF); // white for dark, red for light
+  static Color bg_left_sidebar(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1F1F1F) : const Color(0xFFFFFFFF); // dark for dark, light for light
+}
+
+// Extension để dễ dàng truy cập AppExtraColors
+extension AppExtraColorsExtension on BuildContext {
+  AppExtraColors get extraColors => Theme.of(this).extension<AppExtraColors>()!;
 }

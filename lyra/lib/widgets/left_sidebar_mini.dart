@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lyra/theme/app_theme.dart';
 
 class LeftSidebarMini extends StatefulWidget {
   final VoidCallback? onLibraryIconPressed;
@@ -215,7 +216,7 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
       padding: const EdgeInsets.all(10),
       margin: const EdgeInsets.only(right: 8, bottom: 10, left: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.bg_left_sidebar(context), 
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(

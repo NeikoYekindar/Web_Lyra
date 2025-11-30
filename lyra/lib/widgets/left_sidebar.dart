@@ -89,7 +89,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
       padding: const EdgeInsets.all(5),
       margin: const EdgeInsets.only(right: 8, bottom: 10, left: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.bg_left_sidebar(context), 
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(

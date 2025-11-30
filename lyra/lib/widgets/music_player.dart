@@ -10,7 +10,7 @@ class MusicPlayer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 90,
-      color: const Color(0xFF1A1A1A),
+      color: Theme.of(context).colorScheme.surface,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [

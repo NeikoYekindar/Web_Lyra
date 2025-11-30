@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lyra/widgets/home_center.dart';
 import 'package:lyra/widgets/left_sidebar_mini.dart';
 import 'package:lyra/widgets/welcome/welcome_create_profile.dart';
+import 'package:lyra/widgets/welcome/welcome_verify_email.dart';
 import '../widgets/left_sidebar.dart';
 import '../widgets/app_header.dart';
 import '../widgets/user_profile.dart';
@@ -57,10 +58,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>{
                     });
                   },
                 ),
-      // body: WelcomeCreateProfile(
-      //   onBackPressed: () {
-      //     Navigator.of(context).pop();
-      //   },
+      // body: WelcomeVerifyEmail(
+
       // ),
     );
   }
