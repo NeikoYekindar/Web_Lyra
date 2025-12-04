@@ -10,6 +10,7 @@ import 'package:lyra/theme/app_theme.dart';
 import 'dashboard/dashboard_controller.dart';
 import 'package:lyra/services/now_playing_service.dart';
 import 'package:lyra/providers/auth_provider.dart';
+import 'package:lyra/widgets/dashboard/maximise_music_playing.dart';
 import 'package:lyra/providers/music_player_provider.dart';
 import 'package:lyra/widgets/dashboard/right_sidebar_detail_song.dart';
 
@@ -50,28 +51,33 @@ class _DashboardView extends StatelessWidget {
       body: Column(
         children: [
           const AppHeader(),
-          Expanded(
-            child: Row(
-              children: [
-                controller.isLeftSidebarExpanded
-                    ? LeftSidebar(
-                        onCollapsePressed: controller.collapseSidebar,
-                      )
-                    : LeftSidebarMini(
-                        onLibraryIconPressed: controller.expandSidebar,
-                      ),
-                Expanded(
-                  flex: 2,
-                  child: const HomeCenter(),
-                ),
-                // Có thể thêm RightSidebar ở đây nếu cần
-                controller.isRightSidebarDetail ?
-                  const RightSidebarDetailSong()
-                  : const RightSidebar(),
+          // Expanded(
+          //   child: Row(
+          //     children: [
+          //       controller.isLeftSidebarExpanded
+          //           ? LeftSidebar(
+          //               onCollapsePressed: controller.collapseSidebar,
+          //             )
+          //           : LeftSidebarMini(
+          //               onLibraryIconPressed: controller.expandSidebar,
+          //             ),
+          //       Expanded(
+          //         flex: 2,
+          //         child: const HomeCenter(),
+          //       ),
+          //       // Có thể thêm RightSidebar ở đây nếu cần
+          //       controller.isRightSidebarDetail ?
+          //         const RightSidebarDetailSong()
+          //         : const RightSidebar(),
+                
 
-              ],
-            ),
+          //     ],
+          //   ),
+          // ),
+          Expanded(
+            child: const MaximiseMusicPlaying(),
           ),
+          
           const MusicPlayer(),
         ],
       ),

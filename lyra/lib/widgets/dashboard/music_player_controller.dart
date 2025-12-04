@@ -6,6 +6,18 @@ import 'right_sidebar_detail_song.dart';
 import '/screens/dashboard/dashboard_controller.dart';
 
 class MusicPlayerController {
+
+
+  void toggleNowPlayingDetail(BuildContext context){
+    final dashboard = Provider.of<DashboardController>(context, listen: false);
+    if (dashboard.isRightSidebarDetail){
+      dashboard.closeNowPlayingDetail();
+    } else {
+      dashboard.openNowPlayingDetail();
+    }
+  }
+
+
   void openNowPlayingDetail(BuildContext context) {
     final player = Provider.of<MusicPlayerProvider>(context, listen: false);
     final track = player.currentTrack;
@@ -14,6 +26,9 @@ class MusicPlayerController {
     Provider.of<DashboardController>(context, listen: false).openNowPlayingDetail();
       
   }
+
+
+
 }
 
 

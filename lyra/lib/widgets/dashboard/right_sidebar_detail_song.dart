@@ -60,7 +60,7 @@ class RightSidebarDetailSong extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-Expanded(
+            Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               child: Column(
