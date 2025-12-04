@@ -1,83 +1,83 @@
 import 'package:flutter/material.dart';
+import 'package:lyra/widgets/dashboard/right_sidebar.dart';
 import 'package:provider/provider.dart';
-import 'package:lyra/widgets/home_center.dart';
-import 'package:lyra/widgets/left_sidebar_mini.dart';
-import '../widgets/left_sidebar.dart';
-import '../widgets/app_header.dart';
-import '../widgets/music_player.dart';
-// Removed unused imports user_profile.dart, right_sidebar.dart, welcome_intro.dart
-import '../providers/music_player_provider.dart';
+import 'package:lyra/widgets/dashboard/home_center.dart';
+import 'package:lyra/widgets/dashboard/left_sidebar_mini.dart';
+import '../widgets/dashboard/left_sidebar.dart';
+import '../widgets/dashboard/app_header.dart';
+import '../widgets/dashboard/music_player.dart';
 import 'package:lyra/theme/app_theme.dart';
+import 'dashboard/dashboard_controller.dart';
+import 'package:lyra/services/now_playing_service.dart';
+import 'package:lyra/providers/auth_provider.dart';
+import 'package:lyra/widgets/dashboard/maximise_music_playing.dart';
+import 'package:lyra/providers/music_player_provider.dart';
+import 'package:lyra/widgets/dashboard/right_sidebar_detail_song.dart';
 
-class DashboardScreen extends StatefulWidget {
+/// DashboardScreen chỉ lo phần dựng UI, logic state nằm ở DashboardController.
+class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider<DashboardController>(
+      create: (ctx) {
+        final controller = DashboardController();
+        // Post-frame init (tương đương initState cũ)
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          controller.init(ctx);
+          // Fetch now-playing and set into MusicPlayerProvider
+          final auth = ctx.read<AuthProvider>();
+          final player = ctx.read<MusicPlayerProvider>();
+          final service = NowPlayingService(baseUrl: auth.baseUrl);
+          player.loadNowPlaying(() => service.fetchNowPlaying());
+        });
+        return controller;
+      },
+      child: const _DashboardView(),
+    );
+  }
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
-  bool _isLeftSidebarExpanded = false; // State để quản lý sidebar
-
-  @override
-  void initState() {
-    super.initState();
-    // Post-frame to ensure provider is available
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MusicPlayerProvider>().loadDemoTrack();
-    });
-  }
+class _DashboardView extends StatelessWidget {
+  const _DashboardView();
 
   @override
   Widget build(BuildContext context) {
-      final extra = Theme.of(context).extension<AppExtraColors>();
+    final extra = Theme.of(context).extension<AppExtraColors>();
+    final controller = context.watch<DashboardController>();
     return Scaffold(
       backgroundColor: extra?.headerAndAll ?? Theme.of(context).colorScheme.onTertiary,
       body: Column(
         children: [
-          // Header
           const AppHeader(),
-          // Main content
-          Expanded(
-            child: Row(
-              children: [
-                // Left Sidebar - chuyển đổi giữa Mini và Full
-                _isLeftSidebarExpanded
-                  ? LeftSidebar(
-                      onCollapsePressed: () {
-                        setState(() {
-                          _isLeftSidebarExpanded = false;
-                        });
-                      },
-                    )
-                  : LeftSidebarMini(
-                      onLibraryIconPressed: () {
-                        setState(() {
-                          _isLeftSidebarExpanded = true;
-                        });
-                      },
-                    ),
-                // Main Content Area
-                // Expanded(
-                //   flex: 2,
-                //   child: Container(
-                //     color: const Color(0xFF121212),
-                //     child: const UserProfile(),
-                //   ),
-                // ),
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    child: const HomeCenter(),
-                  ),
-                ),
+          // Expanded(
+          //   child: Row(
+          //     children: [
+          //       controller.isLeftSidebarExpanded
+          //           ? LeftSidebar(
+          //               onCollapsePressed: controller.collapseSidebar,
+          //             )
+          //           : LeftSidebarMini(
+          //               onLibraryIconPressed: controller.expandSidebar,
+          //             ),
+          //       Expanded(
+          //         flex: 2,
+          //         child: const HomeCenter(),
+          //       ),
+          //       // Có thể thêm RightSidebar ở đây nếu cần
+          //       controller.isRightSidebarDetail ?
+          //         const RightSidebarDetailSong()
+          //         : const RightSidebar(),
+                
 
-                // Right Sidebar
-                // const RightSidebar(),
-              ],
-            ),
+          //     ],
+          //   ),
+          // ),
+          Expanded(
+            child: const MaximiseMusicPlaying(),
           ),
-          // Music Player at bottom
+          
           const MusicPlayer(),
         ],
       ),

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../providers/music_player_provider.dart';
+import '../../providers/music_player_provider.dart';
+import 'music_player_controller.dart';
+import '/screens/dashboard/dashboard_controller.dart';
 
 class MusicPlayer extends StatelessWidget {
   const MusicPlayer({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final ctrl = MusicPlayerController();
     return Container(
       height: 90,
       color: Theme.of(context).colorScheme.surface,
@@ -226,16 +229,32 @@ class MusicPlayer extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               
               children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: SvgPicture.asset(
-                            'assets/icons/now playing view.svg',
-                            width: 18,
-                            height: 18,
-                            // If you want to recolor the SVG to white regardless of original color:
-                            colorFilter: const ColorFilter.mode(const Color(0xFFB3B3B3), BlendMode.srcIn),
+                Consumer<DashboardController>(
+                    builder: (context, dashboard, _) {
+                      // Kiểm tra trạng thái để đổi màu icon
+                      final bool isActive = dashboard.isRightSidebarDetail;
+                      
+                      return IconButton(
+                        // Gọi hàm toggle thay vì chỉ open
+                        onPressed: () => ctrl.toggleNowPlayingDetail(context),
+                        icon: SvgPicture.asset(
+                          'assets/icons/now playing view.svg',
+                          width: 18,
+                          height: 18,
+                          // Logic đổi màu: 
+                          // Nếu isActive = true (đang mở) -> Màu chủ đạo (ví dụ Đỏ hoặc Trắng sáng)
+                          // Nếu isActive = false (đang đóng) -> Màu xám (B3B3B3)
+                          colorFilter: ColorFilter.mode(
+                            isActive 
+                              ? const Color(0xFFE62429) // Hoặc Colors.white tuỳ design của bạn khi active
+                              : const Color(0xFFB3B3B3), 
+                            BlendMode.srcIn
                           ),
-                ),
+                        ),
+                        tooltip: isActive ? 'Đóng chi tiết' : 'Xem chi tiết',
+                      );
+                    },
+                  ),
                 IconButton(
                   onPressed: () {},
                   icon: SvgPicture.asset(
