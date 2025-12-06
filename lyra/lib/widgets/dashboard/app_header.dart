@@ -9,7 +9,8 @@ import 'package:provider/provider.dart';
 
 class AppHeader extends StatelessWidget {
   final VoidCallback? onBrowseAllPressed;
-  const AppHeader({super.key, this.onBrowseAllPressed});
+  final Function(String)? onSearchChanged;
+  const AppHeader({super.key, this.onBrowseAllPressed, this.onSearchChanged});
   
 
   @override
@@ -108,6 +109,7 @@ class AppHeader extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
+                      onChanged: onSearchChanged,
                       decoration: InputDecoration(
                         hintText: 'What do you want to play?',
                         hintStyle: TextStyle(
