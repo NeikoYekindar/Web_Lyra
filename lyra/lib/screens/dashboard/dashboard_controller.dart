@@ -10,7 +10,11 @@ class DashboardController extends ChangeNotifier {
   bool _isRightSidebarDetail= false;
   bool get isRightSidebarDetail => _isRightSidebarDetail;
   bool get isLeftSidebarExpanded => _isLeftSidebarExpanded;
-
+  bool _isPlayerMaximized = false; 
+  bool get isPlayerMaximized => _isPlayerMaximized;
+  bool _isBrowseAllExpanded = false;
+  bool get isBrowseAllExpanded => _isBrowseAllExpanded;
+  String searchText = '';
   /// Toggle sidebar expand/collapse
   void toggleSidebar() {
     _isLeftSidebarExpanded = !_isLeftSidebarExpanded;
@@ -47,6 +51,34 @@ class DashboardController extends ChangeNotifier {
 
     }
   }
+  void toggleMaximizePlayer() {
+    _isPlayerMaximized = !_isPlayerMaximized;
+    notifyListeners();
+  }
+  void minimizePlayer() {
+    if (_isPlayerMaximized) {
+      _isPlayerMaximized = false;
+      notifyListeners();
+    }
+  }
+
+  void BrowseAllExpand() {
+    if (!_isBrowseAllExpanded) {
+      _isBrowseAllExpanded = true;
+      notifyListeners();
+    }
+  }
+  void BrowseAllCollapse() {
+    if (_isBrowseAllExpanded) {
+      _isBrowseAllExpanded = false;
+      notifyListeners();
+    }
+  }
+  void updateSearchText(String text) {
+    searchText = text;
+    notifyListeners(); // Báo cho UI biết dữ liệu đã thay đổi
+  }
+  bool get isSearchingText => searchText.isNotEmpty;
 
   /// Called after first frame to load initial data.
   void init(BuildContext context) {

@@ -3,24 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lyra/providers/auth_provider.dart';
-import 'login_controller.dart';
 import 'package:lyra/screens/dashboard_screen.dart';
 import 'package:lyra/widgets/reset_pass/fp_enter_email.dart';
 
-/// UI thuần: không giữ logic nội bộ, logic nằm ở LoginController.
-class WelcomeLogin extends StatelessWidget {
+class WelcomeLogin extends StatefulWidget {
   final VoidCallback? onBackPressed;
-  const WelcomeLogin({super.key, this.onBackPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider<LoginController>(
-      create: (_) => LoginController(),
-      child: Consumer<LoginController>(
-        builder: (context, controller, _) {
-          return Container(
-        width: double.infinity,
-
   const WelcomeLogin({super.key, this.onBackPressed});
 
   @override
@@ -55,12 +42,11 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
             width: 600,
             height: double.infinity,
             padding: const EdgeInsets.only(left: 24, bottom: 24),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(16),
                 topLeft: Radius.circular(16),
               ),
-
               image: DecorationImage(
                 image: AssetImage('assets/images/bg_login.png'),
                 fit: BoxFit.cover,
@@ -99,33 +85,16 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
               ],
             ),
           ),
-
           Container(
             width: 600,
             height: double.infinity,
             padding: const EdgeInsets.only(left: 48, right: 48),
-            decoration: BoxDecoration(
-              color: const Color(0xFF111111),
+            decoration: const BoxDecoration(
+              color: Color(0xFF111111),
               borderRadius: BorderRadius.only(
                 topRight: Radius.circular(16),
                 bottomRight: Radius.circular(16),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 24),
-                  IconButton(
-                    onPressed: onBackPressed,
-                    icon: Icon(
-                      Icons.arrow_back,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      overlayColor: Colors.white.withOpacity(0.1),
-                    ),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -134,7 +103,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                 const SizedBox(height: 24),
                 IconButton(
                   onPressed: widget.onBackPressed,
-                  icon: Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                  icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
                   style: IconButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     overlayColor: Colors.white.withOpacity(0.1),
@@ -176,11 +145,6 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                       horizontal: 16,
                       vertical: 20,
                     ),
-                    // labelText: 'Email or Username',
-                    // labelStyle: GoogleFonts.inter(
-                    //   color: Colors.grey[400],
-                    //   fontSize: 14,
-                    // ),
                     hintText: 'Enter your email or username',
                     hintStyle: GoogleFonts.inter(
                       color: Colors.grey[600],
@@ -190,19 +154,18 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                     fillColor: const Color(0xFF1E1E1E),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(
-                        color: const Color(0xFF2A2A2A),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF2A2A2A),
                         width: 1,
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(
-                        color: const Color(0xFFDC0404),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFDC0404),
                         width: 2,
                       ),
                     ),
-                    controller: controller.emailController,
                     errorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(color: Colors.red[400]!, width: 1),
@@ -228,51 +191,6 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                       horizontal: 16,
                       vertical: 20,
                     ),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    
-                    style: GoogleFonts.inter(color: Colors.white),
-                    cursorColor: const Color(0xFFDC0404),
-                    decoration: InputDecoration(
-
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                      // labelText: 'Password',
-                      // labelStyle: GoogleFonts.inter(
-                      //   color: Colors.grey[400],
-                      //   fontSize: 14,
-                      // ),
-                      hintText: 'Enter password',
-                      hintStyle: GoogleFonts.inter(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                      ),
-                      filled: true,
-                      fillColor: const Color(0xFF1E1E1E),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          controller.obscurePassword ? Icons.visibility_off : Icons.visibility,
-                          color: Colors.grey[400],
-                        ),
-                        onPressed: controller.toggleObscure,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: const Color(0xFF2A2A2A),
-                          width: 1,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                          color: const Color(0xFFDC0404),
-                          width: 2,
-                        ),
-                    // labelText: 'Password',
-                    // labelStyle: GoogleFonts.inter(
-                    //   color: Colors.grey[400],
-                    //   fontSize: 14,
-                    // ),
                     hintText: 'Enter password',
                     hintStyle: GoogleFonts.inter(
                       color: Colors.grey[600],
@@ -295,45 +213,18 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(
-                        color: const Color(0xFF2A2A2A),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF2A2A2A),
                         width: 1,
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(
-                        color: const Color(0xFFDC0404),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFDC0404),
                         width: 2,
                       ),
                     ),
-                    controller: controller.passwordController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter password';
-                      }
-                      return null;
-                    },
-                    obscureText: controller.obscurePassword,
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: Checkbox(
-                              value: controller.rememberMe,
-                              onChanged: controller.toggleRemember,
-                              activeColor: const Color(0xFFDC0404),
-                              checkColor: Colors.white,
-                              side: BorderSide(
-                                color: Colors.grey[600]!,
-                                width: 1.5,
-                              ),
                     errorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(color: Colors.red[400]!, width: 1),
@@ -393,7 +284,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => EnterEmailScreen(),
+                              builder: (_) =>  EnterEmailScreen(),
                             ),
                           );
                         },
@@ -409,52 +300,6 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                     ),
                   ],
                 ),
-
-                  const SizedBox(height: 32),
-                  Consumer<AuthProvider>(
-                    builder: (context, auth, _) => ElevatedButton(
-                      onPressed: auth.isLoading ? null : () => controller.submit(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFDC0404),
-                        minimumSize: const Size(double.infinity, 65),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: auth.isLoading
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                            )
-                          : Text(
-                              'Log In',
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(height: 32 ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Divider(
-                          color: Colors.grey[700],
-                          thickness: 1,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'Or continue with',
-                          style: GoogleFonts.inter(
-                            color: Colors.grey[400],
-                            fontSize: 18,
-                            fontWeight: FontWeight.w400,
-                          ),
                 const SizedBox(height: 32),
                 Consumer<AuthProvider>(
                   builder: (context, auth, _) => ElevatedButton(
@@ -474,9 +319,9 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                               return;
                             }
                             final ok = await context.read<AuthProvider>().login(
-                              email,
-                              password,
-                            );
+                                  email,
+                                  password,
+                                );
                             if (ok && mounted) {
                               Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
@@ -486,7 +331,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                             } else if (mounted) {
                               final msg =
                                   context.read<AuthProvider>().error ??
-                                  'Login failed';
+                                      'Login failed';
                               ScaffoldMessenger.of(
                                 context,
                               ).showSnackBar(SnackBar(content: Text(msg)));
@@ -553,7 +398,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                         minimumSize: const Size(150, 65),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(color: Color(0xFFF222222)),
+                          side: const BorderSide(color: Color(0xFF222222)),
                         ),
                       ),
                       child: Row(
@@ -578,14 +423,14 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                     const Spacer(),
                     ElevatedButton(
                       onPressed: () {
-                        // Handle Google login
+                        // Handle Apple login
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF111111),
                         minimumSize: const Size(150, 65),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(color: Color(0xFFF222222)),
+                          side: const BorderSide(color: Color(0xFF222222)),
                         ),
                       ),
                       child: Row(
@@ -610,14 +455,14 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                     const Spacer(),
                     ElevatedButton(
                       onPressed: () {
-                        // Handle Google login
+                        // Handle Facebook login
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF111111),
                         minimumSize: const Size(150, 65),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(color: Color(0xFFF222222)),
+                          side: const BorderSide(color: Color(0xFF222222)),
                         ),
                       ),
                       child: Row(
@@ -677,12 +522,6 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
           ),
         ],
       ),
-      );
-        },
-      ),
-    );
-  }
-}
     );
   }
 }
