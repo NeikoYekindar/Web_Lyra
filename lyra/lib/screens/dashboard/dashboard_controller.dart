@@ -10,7 +10,10 @@ class DashboardController extends ChangeNotifier {
   bool _isRightSidebarDetail= false;
   bool get isRightSidebarDetail => _isRightSidebarDetail;
   bool get isLeftSidebarExpanded => _isLeftSidebarExpanded;
-
+  bool _isPlayerMaximized = false; 
+  bool get isPlayerMaximized => _isPlayerMaximized;
+  bool _isBrowseAllExpanded = false;
+  bool get isBrowseAllExpanded => _isBrowseAllExpanded;
   /// Toggle sidebar expand/collapse
   void toggleSidebar() {
     _isLeftSidebarExpanded = !_isLeftSidebarExpanded;
@@ -45,6 +48,29 @@ class DashboardController extends ChangeNotifier {
       _isRightSidebarDetail = false;
       notifyListeners();
 
+    }
+  }
+  void toggleMaximizePlayer() {
+    _isPlayerMaximized = !_isPlayerMaximized;
+    notifyListeners();
+  }
+  void minimizePlayer() {
+    if (_isPlayerMaximized) {
+      _isPlayerMaximized = false;
+      notifyListeners();
+    }
+  }
+
+  void BrowseAllExpand() {
+    if (!_isBrowseAllExpanded) {
+      _isBrowseAllExpanded = true;
+      notifyListeners();
+    }
+  }
+  void BrowseAllCollapse() {
+    if (_isBrowseAllExpanded) {
+      _isBrowseAllExpanded = false;
+      notifyListeners();
     }
   }
 

@@ -13,6 +13,8 @@ import 'package:lyra/providers/auth_provider.dart';
 import 'package:lyra/widgets/dashboard/maximise_music_playing.dart';
 import 'package:lyra/providers/music_player_provider.dart';
 import 'package:lyra/widgets/dashboard/right_sidebar_detail_song.dart';
+import 'package:lyra/widgets/dashboard/browse_all.dart';
+
 
 /// DashboardScreen chỉ lo phần dựng UI, logic state nằm ở DashboardController.
 class DashboardScreen extends StatelessWidget {
@@ -51,32 +53,46 @@ class _DashboardView extends StatelessWidget {
       body: Column(
         children: [
           const AppHeader(),
-          // Expanded(
-          //   child: Row(
-          //     children: [
-          //       controller.isLeftSidebarExpanded
-          //           ? LeftSidebar(
-          //               onCollapsePressed: controller.collapseSidebar,
-          //             )
-          //           : LeftSidebarMini(
-          //               onLibraryIconPressed: controller.expandSidebar,
-          //             ),
-          //       Expanded(
-          //         flex: 2,
-          //         child: const HomeCenter(),
-          //       ),
-          //       // Có thể thêm RightSidebar ở đây nếu cần
-          //       controller.isRightSidebarDetail ?
-          //         const RightSidebarDetailSong()
-          //         : const RightSidebar(),
-                
-
-          //     ],
-          //   ),
-          // ),
           Expanded(
-            child: const MaximiseMusicPlaying(),
+            // Dùng AnimatedSwitcher để chuyển đổi mượt mà (Fade effect)
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: controller.isPlayerMaximized
+                  ? MaximiseMusicPlaying(
+                      // Truyền hàm đóng vào widget con
+                      onClose: controller.minimizePlayer, 
+                      key: const ValueKey('MaximiseView'), // Key giúp Animation nhận diện
+                    )
+                  : Row(
+                      key: const ValueKey('NormalView'), // Key giúp Animation nhận diện
+                      children: [
+                        controller.isLeftSidebarExpanded
+                            ? LeftSidebar(
+                                onCollapsePressed: controller.collapseSidebar,
+                              )
+                            : LeftSidebarMini(
+                                onLibraryIconPressed: controller.expandSidebar,
+                              ),
+                        controller.isBrowseAllExpanded
+                            ? const Expanded(
+                                flex: 2,
+                                child: BrowseAllCenter(),
+                              )
+                            : const Expanded(
+                                flex: 2,
+                                child: HomeCenter(),
+                              ),
+                        
+                        controller.isRightSidebarDetail
+                            ? const RightSidebarDetailSong()
+                            : const RightSidebar(),
+                      ],
+                    ),
+            ),
           ),
+          // Expanded(
+          //   child: const BrowseAllCenter(),
+          // ),
           
           const MusicPlayer(),
         ],

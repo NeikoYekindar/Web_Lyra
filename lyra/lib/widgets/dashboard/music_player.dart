@@ -4,9 +4,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../providers/music_player_provider.dart';
 import 'music_player_controller.dart';
 import '/screens/dashboard/dashboard_controller.dart';
+import 'maximise_music_playing.dart';
 
 class MusicPlayer extends StatelessWidget {
-  const MusicPlayer({super.key});
+  final VoidCallback? onMaximiseTap;
+  const MusicPlayer({super.key, this.onMaximiseTap});
 
   @override
   Widget build(BuildContext context) {
@@ -337,7 +339,10 @@ class MusicPlayer extends StatelessWidget {
                 //   ),
                 // ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+    
+                    context.read<DashboardController>().toggleMaximizePlayer();
+                  },
                   icon: SvgPicture.asset(
                             'assets/icons/maximise-02.svg',
                             width: 18,

@@ -4,7 +4,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lyra/theme/app_theme.dart';
 
 class MaximiseMusicPlaying extends StatefulWidget {
-  const MaximiseMusicPlaying({super.key});
+  final VoidCallback onClose;
+  const MaximiseMusicPlaying({super.key, required this.onClose});
+  
 
   @override
   State<MaximiseMusicPlaying> createState() => _MaximiseMusicPlayingState(); 
@@ -13,7 +15,7 @@ class MaximiseMusicPlaying extends StatefulWidget {
 
 class _MaximiseMusicPlayingState extends State<MaximiseMusicPlaying> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-
+  
   @override
   void initState(){
     super.initState();
@@ -34,8 +36,9 @@ class _MaximiseMusicPlayingState extends State<MaximiseMusicPlaying> with Single
     const double albumSize = 300.0;
     const double vinylSize = 380.0;
     const double vinylOffset = 90.0;
-
-    return Container(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Container(
       height: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -52,6 +55,8 @@ class _MaximiseMusicPlayingState extends State<MaximiseMusicPlaying> with Single
       ),
       margin: const EdgeInsets.only(bottom: 10, left: 8, right: 8),
       child: Expanded(
+        child: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
           child: SingleChildScrollView(
             
             physics: const BouncingScrollPhysics(),
@@ -78,11 +83,19 @@ class _MaximiseMusicPlayingState extends State<MaximiseMusicPlaying> with Single
                           ]
                         ),
                         IconButton(
-                          onPressed: () {
-                            // Action đóng
-                          },
-                          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 30),
-                        )
+                            onPressed: widget.onClose,
+                            // Thay thế Icon bằng SvgPicture.asset
+                            icon: SvgPicture.asset(
+                              'assets/icons/closeExpanded.svg', // Đường dẫn đến file svg của bạn
+                              width: 25, // Kích thước tương đương size: 30 cũ
+                              height: 25,
+                              // Để đổi màu SVG sang trắng giống như icon cũ (color: Colors.white)
+                              colorFilter: const ColorFilter.mode(
+                                Colors.white, 
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                          )
                       ],
                     )
                   ),
@@ -139,86 +152,107 @@ class _MaximiseMusicPlayingState extends State<MaximiseMusicPlaying> with Single
                   mainAxisAlignment: MainAxisAlignment.center ,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    
                     // Expanded(
-                    //   flex: 5,
-                       Container(
-                        height: 420,
-                        width: 500,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: const Color(0xFF2C2C2C),
-                          image: const DecorationImage(
-                            image: AssetImage('assets/images/image 18.png'), // Ảnh nền nghệ sĩ
-                            fit: BoxFit.cover,
-                            // opacity: 0.9, 
-                          ),
-                        ),
-                        child: Stack(
-                          children: [
-                            // Lớp phủ tối dần (Gradient)
+                    //         flex: 5,
                             Container(
+                              height: 422,
+                              width: 550, // Chiều cao cố định cho card
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(12),
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [Colors.black.withOpacity(0.2), Colors.black.withOpacity(0.9)],
-                                  stops: const [0.0, 1.0],
-                                ),
+                                color: const Color(0xFF2C2C2C), // Màu nền dự phòng
                               ),
-                            ),
-                            
-                            // [MỚI] Tiêu đề nằm trong Container, góc trên trái
-                            const Positioned(
-                              top: 20,
-                              left: 20,
-                              child: Text(
-                                "About the artists",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold
-                                ),
-                              ),
-                            ),
-
-                            // Nội dung chi tiết ở dưới cùng
-                            Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              // Dùng Stack để xếp chồng Ảnh (dưới) và Chữ (trên)
+                              child: Stack(
                                 children: [
-                                  const Text("Sơn Tùng M-TP",
-                                      style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                                  const SizedBox(height: 4),
-                                  const Text("2,044,507 monthly listener",
-                                      style: TextStyle(color: Colors.grey, fontSize: 14)),
-                                  const SizedBox(height: 12),
-                                  const Text(
-                                    "Nguyễn Thanh Tùng, born in 1994, known professionally as Sơn Tùng M-TP...",
-                                    maxLines: 3,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  OutlinedButton(
-                                    onPressed: () {},
-                                    style: OutlinedButton.styleFrom(
-                                      side: const BorderSide(color: Colors.white),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                                  // LỚP 1: ẢNH NỀN ZOOM (Nằm dưới cùng)
+                                  Positioned.fill(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Transform.scale(
+                                        scale: 1, // Zoom ảnh to lên 1.2 lần
+                                        child: Image.asset(
+                                          'assets/images/image 18.png',
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
                                     ),
-                                    child: const Text("Follow", style: TextStyle(color: Colors.white)),
+                                  ),
+
+                                  // LỚP 2: GRADIENT ĐEN MỜ (Để chữ dễ đọc)
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            Colors.black.withOpacity(0.0), // Trong suốt ở trên
+                                            Colors.black.withOpacity(0.9)  // Đen đậm ở dưới
+                                          ],
+                                          stops: const [0.5, 1.0],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  // LỚP 3: TIÊU ĐỀ "About the artists" (Góc trái trên)
+                                  const Positioned(
+                                    top: 20,
+                                    left: 20,
+                                    child: Text(
+                                      "About the artists",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold
+                                      ),
+                                    ),
+                                  ),
+
+                                  // LỚP 4: THÔNG TIN CHI TIẾT (Ở dưới cùng)
+                                  Padding(
+                                    padding: const EdgeInsets.all(20.0),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text("Sơn Tùng M-TP",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold)),
+                                        const SizedBox(height: 4),
+                                        const Text("2,044,507 monthly listener",
+                                            style: TextStyle(color: Colors.grey, fontSize: 14)),
+                                        const SizedBox(height: 12),
+                                        const Text(
+                                          "Nguyễn Thanh Tùng, born in 1994, known professionally as Sơn Tùng M-TP...",
+                                          maxLines: 3,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                              color: Colors.white70, fontSize: 13, height: 1.5),
+                                        ),
+                                        const SizedBox(height: 20),
+                                        OutlinedButton(
+                                          onPressed: () {},
+                                          style: OutlinedButton.styleFrom(
+                                            side: const BorderSide(color: Colors.white),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(30)),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 30, vertical: 12),
+                                          ),
+                                          child: const Text("Follow",
+                                              style: TextStyle(color: Colors.white)),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
-                            
-                            )
-                          ],
-                        ),
-                      ),
+                            ),
+                          // ),
                     // ),
 
                     const SizedBox(width: 20), 
@@ -234,7 +268,7 @@ class _MaximiseMusicPlayingState extends State<MaximiseMusicPlaying> with Single
                           // Header của Queue
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
+                            children: [ 
                               const Text(
                                 "Next in queue",
                                 style: TextStyle(
@@ -339,9 +373,12 @@ class _MaximiseMusicPlayingState extends State<MaximiseMusicPlaying> with Single
 
           ),
 
-         
+          ),
         ),
+      )    
     );      
+
+ 
   }
   
 
@@ -420,8 +457,8 @@ class _QueueItemState extends State<QueueItem> {
                       style: TextStyle(
                         // Chữ sáng hơn khi hover
                         color: isHovered 
-                            ? Colors.white 
-                            : Colors.white.withOpacity(0.9),
+                            ? Theme.of(  context).colorScheme.onSurface
+                            : Theme.of(  context).colorScheme.onSurface.withOpacity(0.8),
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -434,8 +471,8 @@ class _QueueItemState extends State<QueueItem> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: isHovered 
-                              ? Colors.white.withOpacity(0.9) 
-                              : Colors.white.withOpacity(0.6), // Màu xám nhạt
+                              ? AppColors.text_min_right_sidebar_detail_song(context) 
+                              : AppColors.text_min_right_sidebar_detail_song(context).withOpacity(0.6), // Màu xám nhạt
                           fontSize: 12,
                         ),
                       ),
