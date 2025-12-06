@@ -1,200 +1,281 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lyra/widgets/common/header_info_section.dart';
+import 'package:lyra/widgets/common/silver_app_bar.dart';
+import 'package:lyra/widgets/common/playlist_card.dart';
+import 'package:lyra/widgets/common/trackItem.dart';
 
-class UserProfile extends StatelessWidget {
+class UserProfile extends StatefulWidget {
   const UserProfile({super.key});
 
   @override
+  State<UserProfile> createState() => _UserProfileState();
+}
+
+class _UserProfileState extends State<UserProfile> {
+  final ValueNotifier<double> scrollOffset = ValueNotifier(0);
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Profile Header
-          Row(
-            children: [
-              // Profile Image
-              Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(100),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFF6B35), Color(0xFFFF8E35)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.person,
-                    color: Colors.white,
-                    size: 100,
-                  ),
-                ),
-              ),
+    final List<Map<String, dynamic>> followed = [
+      {
+        'id': '1',
+        'name': 'Sơn Tùng M-TP',
+        'type': 'Artist',
+        'reference_url': 'abcdefg',
+        'image': 'assets/images/album_3.png',
+      },
+      {
+        'id': '2',
+        'name': 'Hoàng Dũng',
+        'type': 'Artist',
+        'reference_url': 'abcdefg',
+        'image': 'assets/images/album_2.png',
+      },
+    ];
+    final List<Map<String, dynamic>> apiResponse = [
+      {
+        'id': '1',
+        'name': 'KhongBuon_PL',
+        'type': 'Playlist',
+        'owner': 'TrumUIT',
+        'image': 'assets/images/khongbuon.png',
+      },
+      {
+        'id': '2',
+        'name': 'EM XIN "SAY HI" 2025',
+        'type': 'Playlist',
+        'owner': 'TrumUIT',
+        'image': 'assets/images/emxinsayhi_2025.png',
+      },
+      {
+        'id': '3',
+        'name': 'Playlist Sơn Tùng M-TP',
+        'type': 'Playlist',
+        'owner': 'TrumUIT',
+        'image': 'assets/images/playlist_mtp.png',
+      },
+      {
+        'id': '4',
+        'name': 'SonTung_pl',
+        'type': 'Playlist',
+        'owner': 'TrumUIT',
+        'image': 'assets/images/album_2.png',
+      },
+      {
+        'id': '5',
+        'name': 'HoangDung_pl',
+        'type': 'Playlist',
+        'owner': 'TrumUIT',
+        'image': 'assets/images/album_3.png',
+      },
 
-              const SizedBox(width: 24),
-
-              // Profile Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Profile',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Trùm UIT',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface,
-                        fontSize: 64,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Text(
-                          '18 Public Playlists',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Text(
-                          '36 Following',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // Menu button
-              IconButton(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.more_horiz,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                  size: 32,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 32),
-
-          // Public Playlist Section
-          Text(
-            'Public Playlist',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Playlist Grid
-          Expanded(
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 5,
-                childAspectRatio: 0.8,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-              ),
-              itemCount: 1, // Chỉ hiện 1 playlist như trong hình
-              itemBuilder: (context, index) {
-                return _buildPlaylistCard(context);
-              },
-            ),
-          ),
-        ],
+      // Thêm các bài hát khác tương tự
+    ];
+    final List<Map<String, dynamic>> track_recent = [
+      {
+        "rank": 1,
+        "title": "Buông Đôi Tay Nhau Ra",
+        "artist": "Sơn Tùng M-TP",
+        "albumArtist": "m-tp M-TP",
+        "albumArt": "https://picsum.photos/seed/album1/200",
+        "duration": "3:47",
+        "last_listen": "2025-12-06T10:15:20",
+      },
+      {
+        "rank": 2,
+        "title": "Nơi Này Có Anh",
+        "artist": "Sơn Tùng M-TP",
+        "albumArtist": "Single - Nơi Này Có Anh",
+        "albumArt": "https://picsum.photos/seed/album2/200",
+        "duration": "4:05",
+        "last_listen": "2025-12-06T09:58:44",
+      },
+      {
+        "rank": 3,
+        "title": "Chúng Ta Của Hiện Tại",
+        "artist": "Sơn Tùng M-TP",
+        "albumArtist": "Single - Chúng Ta Của Hiện Tại",
+        "albumArt": "https://picsum.photos/seed/album3/200",
+        "duration": "5:12",
+        "last_listen": "2025-12-05T21:02:10",
+      },
+      {
+        "rank": 4,
+        "title": "Hãy Trao Cho Anh",
+        "artist": "Sơn Tùng M-TP ft. Snoop Dogg",
+        "albumArtist": "m-tp M-TP",
+        "albumArt": "https://picsum.photos/seed/album4/200",
+        "duration": "4:04",
+        "last_listen": "2025-12-04T18:11:55",
+      },
+      {
+        "rank": 5,
+        "title": "Muộn Rồi Mà Sao Còn",
+        "artist": "Sơn Tùng M-TP",
+        "albumArtist": "Single - Muộn Rồi Mà Sao Còn",
+        "albumArt": "https://picsum.photos/seed/album5/200",
+        "duration": "4:30",
+        "last_listen": "2025-12-01T11:33:22",
+      },
+    ];
+    final playlists = List.generate(
+      apiResponse.length,
+      (i) => PlaylistItem(
+        title: apiResponse[i]['name'],
+        author: apiResponse[i]['owner'],
+        coverUrl: apiResponse[i]['image'],
+        songCount: 5 + i,
+        duration: '${30 + i} phút',
       ),
     );
-  }
-
-  Widget _buildPlaylistCard(BuildContext context) {
+    final followedItems = List.generate(
+      followed.length,
+      (i) => PlaylistItem(
+        title: followed[i]['name'],
+        author: followed[i]['type'],
+        coverUrl: followed[i]['image'],
+        imageShape: BoxShape.circle,
+        imageFit: BoxFit.fill,
+      ),
+    );
+    final recentTracks = List.generate(
+      track_recent.length,
+      (i) => TrackItem(
+        index: i + 1,
+        title: track_recent[i]['title'],
+        artist: track_recent[i]['artist'],
+        albumArtist: track_recent[i]['albumArtist'],
+        duration: track_recent[i]['duration'],
+        image: track_recent[i]['albumArt'],
+      ),
+    );
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
+        color: const Color(0xFF1F1F1F),
       ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Playlist Cover
-          Container(
-            width: double.infinity,
-            height: 120,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              gradient: const LinearGradient(
-                colors: [Color(0xFFFF9A9A), Color(0xFFFFB6B6)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notif) {
+          if (notif.metrics.axis == Axis.vertical) {
+            scrollOffset.value = notif.metrics.pixels;
+          }
+          return false;
+        },
+        child: CustomScrollView(
+          slivers: [
+            ProfileSliverAppBar(offset: scrollOffset),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  "Your Playlists",
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
-            child: Stack(
-              children: [
-                // Background pattern or image would go here
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: Colors.pink.withOpacity(0.3),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: SizedBox(
+                  height: 260,
+                  child: ScrollConfiguration(
+                    behavior: ScrollConfiguration.of(context).copyWith(
+                      dragDevices: {
+                        PointerDeviceKind.touch,
+                        PointerDeviceKind
+                            .mouse, // quan trọng khi chạy debug / desktop / web
+                      },
+                    ),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      primary: false,
+                      shrinkWrap: true,
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: playlists.length,
+                      itemBuilder: (context, i) => Container(
+                        width: 180,
+                        margin: const EdgeInsets.only(right: 16),
+                        child: PlaylistCard(item: playlists[i]),
+                      ),
+                    ),
                   ),
                 ),
-                // Character/avatar in the center
-                const Center(
-                  child: Icon(
-                    Icons.person,
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  "Following",
+                  style: GoogleFonts.inter(
                     color: Colors.white,
-                    size: 60,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: SizedBox(
+                  height: 280,
+                  child: ScrollConfiguration(
+                    behavior: ScrollConfiguration.of(context).copyWith(
+                      dragDevices: {
+                        PointerDeviceKind.touch,
+                        PointerDeviceKind
+                            .mouse, // quan trọng khi chạy debug / desktop / web
+                      },
+                    ),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      primary: false,
+                      shrinkWrap: true,
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: followedItems.length,
+                      itemBuilder: (context, i) => Container(
+                        width: 180,
+                        margin: const EdgeInsets.only(right: 16),
+                        child: PlaylistCard(item: followedItems[i]),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Thêm nội dung để có thể scroll dọc
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  "Recently Played",
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
 
-          const SizedBox(height: 12),
-
-          // Playlist Info
-          Text(
-            'SonTung_pl',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => recentTracks[index],
+                childCount: recentTracks.length,
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'By Trùm UIT',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-              fontSize: 14,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

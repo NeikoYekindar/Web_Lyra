@@ -33,7 +33,6 @@ class AppHeader extends StatelessWidget {
           //     size: 20,
           //   ),
           // ),
-
           const SizedBox(width: 32),
 
           // Logo
@@ -65,21 +64,21 @@ class AppHeader extends StatelessWidget {
           //     ),
           //   ),
           // ),
-
           const SizedBox(width: 16),
 
           // Search bar
           Expanded(
             child: Container(
               height: 50,
-              width: 600,
-              margin: const EdgeInsets.symmetric(horizontal: 300),
+              // width: 600, // XÓA
+              // margin: const EdgeInsets.symmetric(horizontal: 300), // XÓA
               padding: const EdgeInsets.symmetric(horizontal: 8),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceVariant,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.3)),
-                
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                ),
               ),
               child: Row(
                 children: [
@@ -95,7 +94,9 @@ class AppHeader extends StatelessWidget {
                       decoration: InputDecoration(
                         hintText: 'What do you want to play?',
                         hintStyle: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurfaceVariant.withOpacity(0.6),
                           fontSize: 14,
                         ),
                         border: InputBorder.none,
@@ -130,10 +131,10 @@ class AppHeader extends StatelessWidget {
               size: 24,
             ),
           ),
-          
+
           // Theme Toggle Button
           const ThemeToggleButton(showLabel: false, iconSize: 24),
-          
+
           const SizedBox(width: 10),
 
           // Theme Test Button
@@ -153,7 +154,7 @@ class AppHeader extends StatelessWidget {
             ),
             tooltip: 'Test Theme',
           ),
-          
+
           const SizedBox(width: 10),
 
           // User avatar
@@ -166,7 +167,6 @@ class AppHeader extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
             ),
-            
           ),
           const SizedBox(width: 16),
         ],
