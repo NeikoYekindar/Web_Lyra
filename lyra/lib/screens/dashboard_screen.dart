@@ -15,6 +15,7 @@ import 'package:lyra/providers/music_player_provider.dart';
 import 'package:lyra/widgets/dashboard/right_sidebar_detail_song.dart';
 import 'package:lyra/widgets/dashboard/browse_all.dart';
 import 'package:lyra/widgets/dashboard/search_result_center.dart';
+import 'package:lyra/widgets/dashboard/PlaylistDetailCenter.dart';
 
 /// DashboardScreen chỉ lo phần dựng UI, logic state nằm ở DashboardController.
 class DashboardScreen extends StatelessWidget {
@@ -76,6 +77,10 @@ class _DashboardView extends StatelessWidget {
                               )
                             : LeftSidebarMini(
                                 onLibraryIconPressed: controller.expandSidebar,
+                                onPlaylistSelected: (playlistId) {
+                                // Gọi hàm trong controller để chuyển đổi giao diện sang Playlist Detail
+                                  controller.selectPlaylist(playlistId);
+                                }
                               ),
                         Expanded(
                           flex: 2,
@@ -84,6 +89,12 @@ class _DashboardView extends StatelessWidget {
                               // Ưu tiên 1: Đang tìm kiếm -> Hiện Search Result
                               if (controller.searchText.isNotEmpty) {
                                 return const SearchResultCenter(key: ValueKey('SearchResult'));
+                              }
+                              else if (controller.selectedPlaylistId != null) {
+                                return PlaylistDetailCenter(
+                                  key: ValueKey('PlaylistDetail'), 
+                                  playlistId: controller.selectedPlaylistId!
+                                );
                               }
                               // Ưu tiên 2: Đang ở chế độ Browse -> Hiện Browse All
                               else if (controller.isBrowseAllExpanded) {

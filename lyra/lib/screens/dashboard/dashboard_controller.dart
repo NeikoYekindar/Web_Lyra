@@ -14,6 +14,7 @@ class DashboardController extends ChangeNotifier {
   bool get isPlayerMaximized => _isPlayerMaximized;
   bool _isBrowseAllExpanded = false;
   bool get isBrowseAllExpanded => _isBrowseAllExpanded;
+  String? selectedPlaylistId;
   String searchText = '';
   /// Toggle sidebar expand/collapse
   void toggleSidebar() {
@@ -76,9 +77,25 @@ class DashboardController extends ChangeNotifier {
   }
   void updateSearchText(String text) {
     searchText = text;
-    notifyListeners(); // Báo cho UI biết dữ liệu đã thay đổi
+    if (text.isNotEmpty) {
+      selectedPlaylistId = null; // Nếu tìm kiếm thì thoát playlist detail
+    }
+    notifyListeners();
   }
   bool get isSearchingText => searchText.isNotEmpty;
+  void selectPlaylist(String id) {
+    selectedPlaylistId = id;
+    // Tự động clear các trạng thái khác để ưu tiên hiển thị Playlist
+    searchText = ''; 
+    _isBrowseAllExpanded = false; 
+    notifyListeners();
+  }
+  void goHome() {
+    selectedPlaylistId = null;
+    searchText = '';
+    _isBrowseAllExpanded = false;
+    notifyListeners();
+  }
 
   /// Called after first frame to load initial data.
   void init(BuildContext context) {

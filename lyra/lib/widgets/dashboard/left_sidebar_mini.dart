@@ -4,10 +4,11 @@ import 'package:lyra/theme/app_theme.dart';
 
 class LeftSidebarMini extends StatefulWidget {
   final VoidCallback? onLibraryIconPressed;
-  
+  final Function(String)? onPlaylistSelected;
   const LeftSidebarMini({
     super.key,
     this.onLibraryIconPressed,
+    this.onPlaylistSelected,
   });
 
   @override
@@ -240,7 +241,17 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
                   itemCount: PlaylistsUserImages.length,
                   separatorBuilder: (context, index) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
-                    return _buildAlbumIconPNG(PlaylistsUserImages[index]['image'], false);
+                    final playlist = PlaylistsUserImages[index];
+                    return _buildAlbumIconPNG(
+                        playlist['image'],
+                        false, // isActive
+                        () {   // onTap
+                          if (widget.onPlaylistSelected != null) {
+                            widget.onPlaylistSelected!(playlist['id']);
+                          }
+                        },
+                      );
+              
                   },
                 ),
           ),
@@ -301,7 +312,7 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
     );
   }
 
-  Widget _buildAlbumIconPNG(String pngPath, bool isActive) {
+  Widget _buildAlbumIconPNG(String pngPath, bool isActive, VoidCallback onTap) {
     return Container(
       width: 60,
       height: 60,
@@ -310,9 +321,8 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
         borderRadius: BorderRadius.circular(8),
       ),
       child: IconButton(
-        onPressed: () {
-          print('Clicked album: $pngPath'); // Debug log
-        },
+        // Gọi hàm callback được truyền vào
+        onPressed: onTap,
         style: IconButton.styleFrom(
           overlayColor: Colors.transparent,
         ),
@@ -339,11 +349,11 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
                   ),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Center(
+                child: const Center(
                   child: Icon(
                     Icons.album,
                     color: Colors.white,
-                    size: 60,
+                    size: 30, // Kích thước icon vừa phải trong khung 50x50
                   ),
                 ),
               );
