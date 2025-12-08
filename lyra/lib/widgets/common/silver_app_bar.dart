@@ -1,20 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'header_info_section.dart';
-import '../profile/profile_view.dart';
+import '../popup/profile_view.dart';
+import 'package:lyra/models/current_user.dart';
+import 'package:lyra/models/user.dart';
 
-class ProfileSliverAppBar extends StatelessWidget {
+class ProfileSliverAppBar extends StatefulWidget {
   final ValueNotifier<double> offset;
 
   const ProfileSliverAppBar({super.key, required this.offset});
+
+  @override
+  State<ProfileSliverAppBar> createState() => _ProfileSliverAppBarState();
+}
+
+class _ProfileSliverAppBarState extends State<ProfileSliverAppBar> {
+  @override
+  void initState() {
+    super.initState();
+    // restore persisted user for demo purposes
+    Future.microtask(() => CurrentUser.instance.restoreFromPrefs());
+  }
 
   @override
   Widget build(BuildContext context) {
     const double expandedHeight = 350;
 
     return ValueListenableBuilder<double>(
-      valueListenable: offset,
+      valueListenable: widget.offset,
       builder: (context, value, _) {
         final double t = (value / expandedHeight).clamp(0, 1);
 
@@ -53,54 +66,79 @@ class _RoundedSliverDelegate extends SliverPersistentHeaderDelegate {
         topRight: Radius.circular(6),
       ),
       child: Container(
-        color: const Color(0xFF121212),
+        color: Theme.of(context).colorScheme.surface,
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // HEADER LỚN — fade khi scroll
+            // HEADER LỚN — fade khi scroll (reactive to CurrentUser)
             Opacity(
               opacity: 1 - t,
-              child: HeaderInfoSection(
-                imageSize: 220 - (t * 60),
-                imageShape: BoxShape.circle,
-                image: Image.asset('assets/images/avatar.png'),
-                type: Text(
-                  "Profile",
-                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 20),
-                ),
-                title: Text(
-                  "Trùm UIT",
-                  style: GoogleFonts.inter(
-                    fontSize: 80,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                subtitle: Row(
-                  children: [
-                    Text(
-                      "18 Public Playlists",
+              child: ValueListenableBuilder<UserModel?>(
+                valueListenable: CurrentUser.instance.userNotifier,
+                builder: (context, user, _) {
+                  final displayName = user?.displayName ?? 'Profile';
+                  final profileImage = user?.profileImageUrl;
+                  Widget imageWidget;
+                  if (profileImage == null || profileImage.isEmpty) {
+                    imageWidget = Image.asset(
+                      'assets/images/avatar.png',
+                      fit: BoxFit.cover,
+                    );
+                  } else if (profileImage.startsWith('http')) {
+                    imageWidget = Image.network(
+                      profileImage,
+                      fit: BoxFit.cover,
+                    );
+                  } else {
+                    imageWidget = Image.asset(profileImage, fit: BoxFit.cover);
+                  }
+
+                  return HeaderInfoSection(
+                    imageSize: 220 - (t * 60),
+                    imageShape: BoxShape.circle,
+                    image: imageWidget,
+                    type: Text(
+                      "Profile",
                       style: GoogleFonts.inter(
-                        color: Colors.white70,
+                        color: Theme.of(context).colorScheme.secondary,
                         fontSize: 20,
                       ),
                     ),
-                    Text(
-                      "  •  ",
+                    title: Text(
+                      displayName,
                       style: GoogleFonts.inter(
-                        color: Colors.white70,
-                        fontSize: 20,
+                        fontSize: 80,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      "36 Following",
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 20,
-                      ),
+                    subtitle: Row(
+                      children: [
+                        Text(
+                          "18 Public Playlists",
+                          style: GoogleFonts.inter(
+                            color: Theme.of(context).colorScheme.secondary,
+                            fontSize: 20,
+                          ),
+                        ),
+                        Text(
+                          "  •  ",
+                          style: GoogleFonts.inter(
+                            color: Theme.of(context).colorScheme.secondary,
+                            fontSize: 20,
+                          ),
+                        ),
+                        Text(
+                          "36 Following",
+                          style: GoogleFonts.inter(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontSize: 20,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
 
@@ -110,9 +148,9 @@ class _RoundedSliverDelegate extends SliverPersistentHeaderDelegate {
                 top: 40,
                 right: 16,
                 child: IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.open_in_new_outlined,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                     size: 28,
                   ),
                   onPressed: () {
@@ -136,20 +174,26 @@ class _RoundedSliverDelegate extends SliverPersistentHeaderDelegate {
                 ),
               ),
 
-            // MINI HEADER khi scroll thu nhỏ
+            // MINI HEADER khi scroll thu nhỏ (reactive)
             Align(
               alignment: Alignment.bottomLeft,
               child: Opacity(
                 opacity: t,
                 child: Padding(
                   padding: const EdgeInsets.only(left: 16, bottom: 14),
-                  child: Text(
-                    "Trùm UIT",
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  child: ValueListenableBuilder<UserModel?>(
+                    valueListenable: CurrentUser.instance.userNotifier,
+                    builder: (context, user, _) {
+                      final mini = user?.displayName ?? 'Trùm UIT';
+                      return Text(
+                        mini,
+                        style: GoogleFonts.inter(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),

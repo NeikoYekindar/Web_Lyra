@@ -26,7 +26,7 @@ class PlaylistItem {
   });
 }
 
-class PlaylistCard extends StatelessWidget {
+class PlaylistCard extends StatefulWidget {
   final PlaylistItem item;
   final VoidCallback? onTap;
 
@@ -34,19 +34,49 @@ class PlaylistCard extends StatelessWidget {
     : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final double cardSize = item.size ?? 180;
-    final double coverSize = item.imageSize ?? (cardSize - 10);
-    final BoxShape imageShape = item.imageShape ?? BoxShape.rectangle;
-    final BoxFit imageFit = item.imageFit ?? BoxFit.cover;
+  State<PlaylistCard> createState() => _PlaylistCardState();
+}
 
-    return GestureDetector(
-      onTap: onTap,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: Container(
+class _PlaylistCardState extends State<PlaylistCard> {
+  bool _hovering = false;
+  bool _pressed = false;
+
+  Color _backgroundColor(BuildContext context) {
+    if (_pressed) {
+      return Theme.of(context).colorScheme.primary.withOpacity(0.15);
+    }
+    if (_hovering) {
+      return Theme.of(context).colorScheme.primary.withOpacity(0.08);
+    }
+    return Colors.transparent;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final double cardSize = widget.item.size ?? 180;
+    final double coverSize = widget.item.imageSize ?? (cardSize - 10);
+    final BoxShape imageShape = widget.item.imageShape ?? BoxShape.rectangle;
+    final BoxFit imageFit = widget.item.imageFit ?? BoxFit.cover;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() {
+        _hovering = false;
+        _pressed = false;
+      }),
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _pressed = true),
+        onTapUp: (_) => setState(() => _pressed = false),
+        onTapCancel: () => setState(() => _pressed = false),
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 120),
+          curve: Curves.easeOut,
           width: cardSize,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            color: _backgroundColor(context),
+          ),
           padding: const EdgeInsets.all(8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,20 +89,21 @@ class PlaylistCard extends StatelessWidget {
                   shape: imageShape,
                   borderRadius: imageShape == BoxShape.circle
                       ? null
-                      : (item.imageBorderRadius ?? BorderRadius.circular(5)),
-                  color: Colors.grey[800],
-                  image: item.coverUrl != null
+                      : (widget.item.imageBorderRadius ??
+                            BorderRadius.circular(5)),
+                  color: Theme.of(context).colorScheme.surfaceVariant,
+                  image: widget.item.coverUrl != null
                       ? DecorationImage(
-                          image: NetworkImage(item.coverUrl!),
+                          image: NetworkImage(widget.item.coverUrl!),
                           fit: imageFit,
                         )
                       : null,
                 ),
-                child: item.coverUrl == null
+                child: widget.item.coverUrl == null
                     ? Center(
                         child: Icon(
                           Icons.music_note,
-                          color: Colors.white54,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           size: coverSize * 0.3,
                         ),
                       )
@@ -81,9 +112,9 @@ class PlaylistCard extends StatelessWidget {
               const SizedBox(height: 8),
               // Title
               Text(
-                item.title,
-                style: const TextStyle(
-                  color: Colors.white,
+                widget.item.title,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
                 ),
@@ -93,35 +124,48 @@ class PlaylistCard extends StatelessWidget {
               const SizedBox(height: 4),
               // Author
               Text(
-                item.author,
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                widget.item.author,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 12,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               // Song count & duration
-              if (item.songCount != null || item.duration != null)
+              if (widget.item.songCount != null || widget.item.duration != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 2.0),
                   child: Row(
                     children: [
-                      if (item.songCount != null)
+                      if (widget.item.songCount != null)
                         Text(
-                          '${item.songCount} bài hát',
-                          style: const TextStyle(
-                            color: Colors.grey,
+                          '${widget.item.songCount} bài hát',
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                             fontSize: 11,
                           ),
                         ),
-                      if (item.songCount != null && item.duration != null)
-                        const Text(
-                          ' • ',
-                          style: TextStyle(color: Colors.grey, fontSize: 11),
-                        ),
-                      if (item.duration != null)
+                      if (widget.item.songCount != null &&
+                          widget.item.duration != null)
                         Text(
-                          item.duration!,
-                          style: const TextStyle(
-                            color: Colors.grey,
+                          ' • ',
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                            fontSize: 11,
+                          ),
+                        ),
+                      if (widget.item.duration != null)
+                        Text(
+                          widget.item.duration!,
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                             fontSize: 11,
                           ),
                         ),

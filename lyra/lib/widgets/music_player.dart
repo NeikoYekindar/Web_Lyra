@@ -56,8 +56,8 @@ class MusicPlayer extends StatelessWidget {
                         children: [
                           Text(
                             track?.title ?? 'Chưa chọn bài hát',
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
@@ -66,8 +66,10 @@ class MusicPlayer extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             track?.artist ?? 'Nghệ sĩ chưa rõ',
-                            style: const TextStyle(
-                              color: Colors.grey,
+                            style: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                               fontSize: 12,
                             ),
                             overflow: TextOverflow.ellipsis,

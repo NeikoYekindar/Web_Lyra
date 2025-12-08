@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:lyra/widgets/home_center.dart';
-import 'package:lyra/widgets/user_profile.dart';
 import 'package:lyra/widgets/settings.dart';
-import 'package:lyra/navigation/middle_nav_key.dart';
 import 'package:lyra/widgets/left_sidebar_mini.dart';
 import '../widgets/left_sidebar.dart';
 import '../widgets/app_header.dart';
@@ -12,14 +9,14 @@ import '../widgets/music_player.dart';
 import '../providers/music_player_provider.dart';
 import 'package:lyra/theme/app_theme.dart';
 
-class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _SettingsScreenState extends State<SettingsScreen> {
   bool _isLeftSidebarExpanded = false; // State để quản lý sidebar
 
   @override
@@ -47,19 +44,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 // Left Sidebar - chuyển đổi giữa Mini và Full
                 _isLeftSidebarExpanded
-                    ? LeftSidebar(
-                        onCollapsePressed: () {
-                          setState(() {
-                            _isLeftSidebarExpanded = false;
-                          });
-                        },
+                    ? Container(
+                        margin: EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          color: Theme.of(context).colorScheme.surface,
+                        ),
+                        child: LeftSidebar(
+                          onCollapsePressed: () {
+                            setState(() {
+                              _isLeftSidebarExpanded = false;
+                            });
+                          },
+                        ),
                       )
-                    : LeftSidebarMini(
-                        onLibraryIconPressed: () {
-                          setState(() {
-                            _isLeftSidebarExpanded = true;
-                          });
-                        },
+                    : Container(
+                        margin: EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          color: Theme.of(context).colorScheme.surface,
+                        ),
+                        child: LeftSidebarMini(
+                          onLibraryIconPressed: () {
+                            setState(() {
+                              _isLeftSidebarExpanded = true;
+                            });
+                          },
+                        ),
                       ),
                 // Main Content Area
                 // Expanded(
@@ -72,29 +83,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Expanded(
                   flex: 2,
                   child: Container(
-                    margin: const EdgeInsets.all(0),
-                    child: Navigator(
-                      key: middleNavigatorKey,
-                      initialRoute: '/',
-                      onGenerateRoute: (settings) {
-                        Widget page;
-                        switch (settings.name) {
-                          case '/profile':
-                            page = const UserProfile();
-                            break;
-                          case '/settings':
-                            page = const SettingsWid();
-                            break;
-                          case '/':
-                          default:
-                            page = const HomeCenter();
-                        }
-                        return MaterialPageRoute(
-                          builder: (_) => SizedBox.expand(child: page),
-                          settings: settings,
-                        );
-                      },
+                    margin: EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6),
+                      color: Theme.of(context).colorScheme.surface,
                     ),
+                    child: const SettingsWid(),
                   ),
                 ),
 

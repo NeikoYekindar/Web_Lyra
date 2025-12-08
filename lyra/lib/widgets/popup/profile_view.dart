@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lyra/widgets/common/header_info_section.dart';
+import 'package:lyra/widgets/common/favorite_card.dart';
+import '../../models/current_user.dart';
+import '../../models/user.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -34,7 +37,7 @@ class ProfileView extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-            color: const Color(0xFF111111),
+            color: Theme.of(context).colorScheme.surface,
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
@@ -44,75 +47,93 @@ class ProfileView extends StatelessWidget {
                 Text(
                   "Profile View",
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 16),
-                // --- Header info ---
+                // --- Header info (reactive to CurrentUser) ---
                 SizedBox(
                   height: 70, // Đảm bảo Stack có chiều cao xác định
-                  child: HeaderInfoSection(
-                    background: LinearGradient(
-                      colors: [Colors.transparent, Colors.transparent],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                    horizontalPadding: 10,
-                    imageSize: 64,
-                    imageShape: BoxShape.circle,
-                    image: Image.asset('assets/images/avatar.png'),
-                    title: Text(
-                      "Trùm UIT",
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    subtitle: Row(
-                      children: [
-                        Text(
-                          "18 Public Playlists",
+                  child: ValueListenableBuilder<UserModel?>(
+                    valueListenable: CurrentUser.instance.userNotifier,
+                    builder: (context, user, _) {
+                      final profileImage = user?.profileImageUrl;
+                      Widget imageWidget;
+                      if (profileImage == null || profileImage.isEmpty) {
+                        imageWidget = Image.asset('assets/images/avatar.png');
+                      } else if (profileImage.startsWith('http')) {
+                        imageWidget = Image.network(profileImage);
+                      } else {
+                        imageWidget = Image.asset(profileImage);
+                      }
+
+                      return HeaderInfoSection(
+                        background: LinearGradient(
+                          colors: [Colors.transparent, Colors.transparent],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        horizontalPadding: 10,
+                        imageSize: 64,
+                        imageShape: BoxShape.circle,
+                        image: imageWidget,
+                        title: Text(
+                          user?.displayName ?? 'Trùm UIT',
                           style: GoogleFonts.inter(
-                            color: Colors.white70,
-                            fontSize: 11,
+                            fontSize: 16,
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        Text(
-                          "  •  ",
+                        subtitle: Row(
+                          children: [
+                            Text(
+                              "18 Public Playlists",
+                              style: GoogleFonts.inter(
+                                color: Theme.of(context).colorScheme.secondary,
+                                fontSize: 11,
+                              ),
+                            ),
+                            Text(
+                              "  •  ",
+                              style: GoogleFonts.inter(
+                                color: Theme.of(context).colorScheme.secondary,
+                                fontSize: 11,
+                              ),
+                            ),
+                            Text(
+                              "36 Following",
+                              style: GoogleFonts.inter(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                        bio: Text(
+                          user?.bio ?? 'kakakakakaka',
                           style: GoogleFonts.inter(
-                            color: Colors.white70,
-                            fontSize: 11,
+                            color: Theme.of(context).colorScheme.secondary,
+                            fontSize: 14,
                           ),
                         ),
-                        Text(
-                          "36 Following",
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                    bio: Text(
-                      "kakakakakaka",
-                      style: GoogleFonts.inter(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
-                    ),
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   "Favorite",
-                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                  style: GoogleFonts.inter(
+                    color: Theme.of(context).colorScheme.secondary,
+                    fontSize: 12,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
-                  height: 30,
+                  height: 40,
                   child: ScrollConfiguration(
                     behavior: ScrollConfiguration.of(context).copyWith(
                       dragDevices: {
@@ -126,13 +147,19 @@ class ProfileView extends StatelessWidget {
                       itemBuilder: (context, i) {
                         return Container(
                           margin: const EdgeInsets.only(right: 16),
-                          child: FavoriteCard(item: types[i]),
+                          child: FavoriteCard(item: types[i], isPicked: true),
                         );
                       },
                     ),
                   ),
                 ),
-                Divider(color: Colors.white24, thickness: 1, height: 30),
+                Divider(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outline.withAlpha((0.2 * 255).round()),
+                  thickness: 1,
+                  height: 30,
+                ),
                 Expanded(
                   child: ScrollConfiguration(
                     behavior: ScrollConfiguration.of(context).copyWith(
@@ -150,7 +177,9 @@ class ProfileView extends StatelessWidget {
                           margin: const EdgeInsets.symmetric(vertical: 4),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),
-                            color: const Color(0xFF1F1F1F),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.secondaryContainer,
                           ),
                           child: HeaderInfoSection(
                             background: LinearGradient(
@@ -166,7 +195,7 @@ class ProfileView extends StatelessWidget {
                             title: Text(
                               apiResponse[i]['name'],
                               style: GoogleFonts.inter(
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 fontWeight: FontWeight.w500,
                                 fontSize: 20,
                               ),
@@ -176,21 +205,27 @@ class ProfileView extends StatelessWidget {
                                 Text(
                                   apiResponse[i]['type'],
                                   style: GoogleFonts.inter(
-                                    color: Colors.white70,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
                                     fontSize: 17,
                                   ),
                                 ),
                                 Text(
                                   "  •  ",
                                   style: GoogleFonts.inter(
-                                    color: Colors.white70,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
                                     fontSize: 17,
                                   ),
                                 ),
                                 Text(
                                   apiResponse[i]['owner'],
                                   style: GoogleFonts.inter(
-                                    color: Colors.white,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
                                     fontSize: 17,
                                   ),
                                 ),
@@ -203,37 +238,6 @@ class ProfileView extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class FavoriteCard extends StatelessWidget {
-  final String item;
-
-  const FavoriteCard({super.key, required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {},
-      child: Container(
-        width: 63,
-        height: 26,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30),
-          color: Colors.white,
-        ),
-        child: Center(
-          child: Text(
-            item,
-            style: GoogleFonts.inter(
-              color: const Color(0xFF111111),
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
             ),
           ),
         ),

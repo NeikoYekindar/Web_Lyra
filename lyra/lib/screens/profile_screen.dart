@@ -44,19 +44,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 // Left Sidebar - chuyển đổi giữa Mini và Full
                 _isLeftSidebarExpanded
-                    ? LeftSidebar(
-                        onCollapsePressed: () {
-                          setState(() {
-                            _isLeftSidebarExpanded = false;
-                          });
-                        },
+                    ? Container(
+                        margin: EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          color: Theme.of(context).colorScheme.surface,
+                        ),
+                        child: LeftSidebar(
+                          onCollapsePressed: () {
+                            setState(() {
+                              _isLeftSidebarExpanded = false;
+                            });
+                          },
+                        ),
                       )
-                    : LeftSidebarMini(
-                        onLibraryIconPressed: () {
-                          setState(() {
-                            _isLeftSidebarExpanded = true;
-                          });
-                        },
+                    : Container(
+                        margin: EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          color: Theme.of(context).colorScheme.surface,
+                        ),
+                        child: LeftSidebarMini(
+                          onLibraryIconPressed: () {
+                            setState(() {
+                              _isLeftSidebarExpanded = true;
+                            });
+                          },
+                        ),
                       ),
                 // Main Content Area
                 // Expanded(
@@ -72,7 +86,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     margin: EdgeInsets.all(5),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(6),
-                      color: const Color(0xFF1F1F1F),
+                      color: Theme.of(context).colorScheme.surface,
                     ),
                     child: const UserProfile(),
                   ),

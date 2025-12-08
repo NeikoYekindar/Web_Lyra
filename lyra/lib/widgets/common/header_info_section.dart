@@ -41,9 +41,14 @@ class HeaderInfoSection extends StatelessWidget {
             gradient:
                 background ??
                 LinearGradient(
-                  colors: [Colors.grey.shade900, Colors.black87],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                  colors: [
+                    Theme.of(context).colorScheme.primaryContainer,
+                    Theme.of(
+                      context,
+                    ).colorScheme.primaryContainer.withOpacity(0.3),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
           ),
         ),

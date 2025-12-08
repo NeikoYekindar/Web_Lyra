@@ -54,7 +54,7 @@ class _PrimaryButtonState extends State<PrimaryButton> {
 
   @override
   Widget build(BuildContext context) {
-    final bg = widget.backgroundColor ?? const Color(0xFFDA0707);
+    final bg = widget.backgroundColor ?? Theme.of(context).colorScheme.primary;
     final hoverBg = bg.withOpacity(_isHovered ? 0.92 : 1.0);
     final content = widget.isLoading
         ? SizedBox(
@@ -173,9 +173,13 @@ class _OutlineButtonCustomState extends State<OutlineButtonCustom> {
 
   @override
   Widget build(BuildContext context) {
-    final disabledColor = const Color(0xFF565656);
-    final enabledTextColor = widget.textColor ?? Colors.white;
-    final enabledBorderColor = widget.borderColor ?? Colors.white;
+    final disabledColor = Theme.of(
+      context,
+    ).colorScheme.onSurface.withOpacity(0.38);
+    final enabledTextColor =
+        widget.textColor ?? Theme.of(context).colorScheme.onPrimary;
+    final enabledBorderColor =
+        widget.borderColor ?? Theme.of(context).colorScheme.outline;
 
     final bool enabled = widget.onPressed != null && !widget.isLoading;
     final bc = enabled ? enabledBorderColor : disabledColor;

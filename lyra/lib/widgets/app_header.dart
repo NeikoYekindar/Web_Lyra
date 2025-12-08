@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'theme_toggle_button.dart';
 import '../screens/theme_test_screen.dart';
 import 'package:lyra/theme/app_theme.dart';
+import 'popup/ava_button.dart';
 
 class AppHeader extends StatelessWidget {
   const AppHeader({super.key});
@@ -158,16 +159,7 @@ class AppHeader extends StatelessWidget {
           const SizedBox(width: 10),
 
           // User avatar
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              image: const DecorationImage(
-                image: AssetImage('assets/images/avatar.png'),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
+          Container(width: 44, height: 44, child: const AvatarButton()),
           const SizedBox(width: 16),
         ],
       ),

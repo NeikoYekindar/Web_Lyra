@@ -140,6 +140,11 @@ class _UserProfileState extends State<UserProfile> {
         imageFit: BoxFit.fill,
       ),
     );
+    track_recent.sort(
+      (a, b) => DateTime.parse(
+        b['last_listen'],
+      ).compareTo(DateTime.parse(a['last_listen'])),
+    );
     final recentTracks = List.generate(
       track_recent.length,
       (i) => TrackItem(
@@ -154,7 +159,7 @@ class _UserProfileState extends State<UserProfile> {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(6),
-        color: const Color(0xFF1F1F1F),
+        color: Theme.of(context).colorScheme.surface,
       ),
       child: NotificationListener<ScrollNotification>(
         onNotification: (notif) {
@@ -172,7 +177,7 @@ class _UserProfileState extends State<UserProfile> {
                 child: Text(
                   "Your Playlists",
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
                   ),
@@ -216,7 +221,7 @@ class _UserProfileState extends State<UserProfile> {
                 child: Text(
                   "Following",
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
                   ),
@@ -260,7 +265,7 @@ class _UserProfileState extends State<UserProfile> {
                 child: Text(
                   "Recently Played",
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),

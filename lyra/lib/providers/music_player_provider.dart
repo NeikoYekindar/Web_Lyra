@@ -43,7 +43,7 @@ class MusicPlayerProvider extends ChangeNotifier {
       'title': 'Chúng Ta Của Tương Lai',
       'artist': 'Sơn Tùng M-TP',
       // Use any reachable image/asset. Replace with real URL or asset path.
-      'albumArtUrl': 'assets/images/album_1.png',
+      'albumArtUrl': 'assets/images/album_3.png',
       'durationMs': 249000,
       'positionMs': 0,
     });
