@@ -17,7 +17,6 @@ class AuthProvider extends ChangeNotifier {
   String? get error => _error;
   AuthResponse? get auth => _auth;
   bool get isLoggedIn => _auth != null;
-  String get baseUrl => _service.baseUrl;
 
   Future<bool> login(String email, String password) async {
     _isLoading = true;

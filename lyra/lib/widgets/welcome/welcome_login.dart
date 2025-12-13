@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+// import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lyra/providers/auth_provider.dart';
@@ -8,6 +9,7 @@ import 'package:lyra/widgets/reset_pass/fp_enter_email.dart';
 
 class WelcomeLogin extends StatefulWidget {
   final VoidCallback? onBackPressed;
+
   const WelcomeLogin({super.key, this.onBackPressed});
 
   @override
@@ -42,11 +44,12 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
             width: 600,
             height: double.infinity,
             padding: const EdgeInsets.only(left: 24, bottom: 24),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(16),
                 topLeft: Radius.circular(16),
               ),
+
               image: DecorationImage(
                 image: AssetImage('assets/images/bg_login.png'),
                 fit: BoxFit.cover,
@@ -85,12 +88,13 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
               ],
             ),
           ),
+
           Container(
             width: 600,
             height: double.infinity,
             padding: const EdgeInsets.only(left: 48, right: 48),
-            decoration: const BoxDecoration(
-              color: Color(0xFF111111),
+            decoration: BoxDecoration(
+              color: const Color(0xFF111111),
               borderRadius: BorderRadius.only(
                 topRight: Radius.circular(16),
                 bottomRight: Radius.circular(16),
@@ -103,7 +107,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                 const SizedBox(height: 24),
                 IconButton(
                   onPressed: widget.onBackPressed,
-                  icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                  icon: Icon(Icons.arrow_back, color: Colors.white, size: 24),
                   style: IconButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     overlayColor: Colors.white.withOpacity(0.1),
@@ -145,6 +149,11 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                       horizontal: 16,
                       vertical: 20,
                     ),
+                    // labelText: 'Email or Username',
+                    // labelStyle: GoogleFonts.inter(
+                    //   color: Colors.grey[400],
+                    //   fontSize: 14,
+                    // ),
                     hintText: 'Enter your email or username',
                     hintStyle: GoogleFonts.inter(
                       color: Colors.grey[600],
@@ -154,15 +163,15 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                     fillColor: const Color(0xFF1E1E1E),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(
-                        color: Color(0xFF2A2A2A),
+                      borderSide: BorderSide(
+                        color: const Color(0xFF2A2A2A),
                         width: 1,
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFDC0404),
+                      borderSide: BorderSide(
+                        color: const Color(0xFFDC0404),
                         width: 2,
                       ),
                     ),
@@ -191,6 +200,11 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                       horizontal: 16,
                       vertical: 20,
                     ),
+                    // labelText: 'Password',
+                    // labelStyle: GoogleFonts.inter(
+                    //   color: Colors.grey[400],
+                    //   fontSize: 14,
+                    // ),
                     hintText: 'Enter password',
                     hintStyle: GoogleFonts.inter(
                       color: Colors.grey[600],
@@ -213,15 +227,15 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(
-                        color: Color(0xFF2A2A2A),
+                      borderSide: BorderSide(
+                        color: const Color(0xFF2A2A2A),
                         width: 1,
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFDC0404),
+                      borderSide: BorderSide(
+                        color: const Color(0xFFDC0404),
                         width: 2,
                       ),
                     ),
@@ -284,7 +298,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) =>  EnterEmailScreen(),
+                              builder: (_) => EnterEmailScreen(),
                             ),
                           );
                         },
@@ -300,6 +314,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 32),
                 Consumer<AuthProvider>(
                   builder: (context, auth, _) => ElevatedButton(
@@ -319,9 +334,9 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                               return;
                             }
                             final ok = await context.read<AuthProvider>().login(
-                                  email,
-                                  password,
-                                );
+                              email,
+                              password,
+                            );
                             if (ok && mounted) {
                               Navigator.of(context).pushReplacement(
                                 MaterialPageRoute(
@@ -331,7 +346,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                             } else if (mounted) {
                               final msg =
                                   context.read<AuthProvider>().error ??
-                                      'Login failed';
+                                  'Login failed';
                               ScaffoldMessenger.of(
                                 context,
                               ).showSnackBar(SnackBar(content: Text(msg)));
@@ -398,7 +413,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                         minimumSize: const Size(150, 65),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(color: Color(0xFF222222)),
+                          side: const BorderSide(color: Color(0xFFF222222)),
                         ),
                       ),
                       child: Row(
@@ -423,14 +438,14 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                     const Spacer(),
                     ElevatedButton(
                       onPressed: () {
-                        // Handle Apple login
+                        // Handle Google login
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF111111),
                         minimumSize: const Size(150, 65),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(color: Color(0xFF222222)),
+                          side: const BorderSide(color: Color(0xFFF222222)),
                         ),
                       ),
                       child: Row(
@@ -455,14 +470,14 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                     const Spacer(),
                     ElevatedButton(
                       onPressed: () {
-                        // Handle Facebook login
+                        // Handle Google login
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF111111),
                         minimumSize: const Size(150, 65),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(color: Color(0xFF222222)),
+                          side: const BorderSide(color: Color(0xFFF222222)),
                         ),
                       ),
                       child: Row(

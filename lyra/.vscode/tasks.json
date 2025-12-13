@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run profile_screen on Chrome",
+			"type": "shell",
+			"command": "flutter run -d chrome --target=lib/screens/profile_screen.dart",
+			"args": [],
+			"problemMatcher": [
+				"$dart"
+			],
+			"group": "build"
+		}
+	]
+}
