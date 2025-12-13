@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lyra/navigation/profile_action.dart';
 import 'package:lyra/screens/welcome_screen.dart';
-import 'ava_navigator.dart'; // ProfileNavigatorMenu
+import 'ava_navigator.dart'; 
 import 'package:lyra/widgets/popup/logout_dialog.dart';
 import 'package:lyra/shell/app_nav.dart';
 import 'package:lyra/shell/app_routes.dart';
@@ -68,12 +68,12 @@ class _AvatarButtonState extends State<AvatarButton> {
   }
 
   // ===============================================================
-  // HANDLE ACTION (CHUẨN APPSHELL)
+  // HANDLE ACTION
   // ===============================================================
   void _handleProfileAction(BuildContext context, ProfileAction action) {
     switch (action) {
       case ProfileAction.dashboard:
-        AppNav.go(AppRoutes.home); // account → dashboard
+        AppNav.go(AppRoutes.home); 
         break;
 
       case ProfileAction.profile:
@@ -81,7 +81,7 @@ class _AvatarButtonState extends State<AvatarButton> {
         break;
 
       case ProfileAction.support:
-        AppNav.go(AppRoutes.home); // hoặc support nếu có
+        AppNav.go(AppRoutes.home);
         break;
 
       case ProfileAction.settings:
@@ -89,7 +89,6 @@ class _AvatarButtonState extends State<AvatarButton> {
         break;
 
       case ProfileAction.logout:
-        // Show the logout confirmation dialog
         showDialog(
           context: context,
           builder: (_) => const LogoutDialog(),

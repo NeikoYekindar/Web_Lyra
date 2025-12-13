@@ -14,9 +14,7 @@ class LyricsOverlay extends StatelessWidget {
           Positioned.fill(
             child: GestureDetector(onTap: LyricsOverlayController.hide),
           ),
-          const Center(
-            child: LyricWidget(), // ✅ dùng widget của bạn
-          ),
+          const Center(child: LyricWidget()),
         ],
       ),
     );

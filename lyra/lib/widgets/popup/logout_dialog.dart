@@ -102,14 +102,11 @@ class LogoutDialog extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () async {
-                      // Close the dialog first
                       Navigator.pop(context);
 
-                      // Clear current user and persist the change
                       CurrentUser.instance.logout();
                       await CurrentUser.instance.saveToPrefs();
 
-                      // Navigate to WelcomeScreen and clear existing navigation stack
                       Navigator.of(context).pushAndRemoveUntil(
                         MaterialPageRoute(
                           builder: (_) => const WelcomeScreen(),

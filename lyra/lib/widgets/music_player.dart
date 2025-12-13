@@ -99,7 +99,7 @@ class MusicPlayer extends StatelessWidget {
             child: Align(
               alignment: Alignment.center,
               child: SizedBox(
-                height: 72, // 🔥 KHÓA CHIỀU CAO — FIX GỐC
+                height: 72,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -258,7 +258,6 @@ class MusicPlayer extends StatelessWidget {
                     return Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // 🔊 / 🔇 Volume icon
                         GestureDetector(
                           onTap: player.toggleMute,
                           behavior: HitTestBehavior.opaque,

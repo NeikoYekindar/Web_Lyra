@@ -71,10 +71,8 @@ class _LyricWidgetState extends State<LyricWidget> {
 
     final player = context.read<MusicPlayerProvider>();
 
-    // 🔥 nghe position stream (CHUẨN – nhẹ – realtime)
     _posSub = player.positionMsStream.listen(_onPosition);
 
-    // 🔥 load lyric ban đầu
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadLyricsForCurrentTrack();
     });
@@ -95,7 +93,6 @@ class _LyricWidgetState extends State<LyricWidget> {
     final track = player.currentTrack;
     if (track == null) return;
 
-    // 🔥 đổi bài → reload lyric
     if (_lastTrack?.id != track.id) {
       _loadLyricsForCurrentTrack();
       return;
@@ -294,7 +291,7 @@ class _LyricViewState extends State<LyricView> {
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(
-          maxWidth: 820, // 🔥 khung giới hạn width
+          maxWidth: 820, 
         ),
         child: ScrollConfiguration(
           behavior: _NoScrollbarBehavior(),
@@ -305,7 +302,6 @@ class _LyricViewState extends State<LyricView> {
               final isCurrent = index == _current;
               final isHover = index == _hover;
 
-              // 🔥 opacity giảm dần theo khoảng cách
               final dist = (index - _current).abs();
               double opacity = 1.0 - dist * 0.18;
               if (opacity < 0.25) opacity = 0.25;
@@ -341,7 +337,7 @@ class _LyricViewState extends State<LyricView> {
                     ),
                     child: Text(
                       widget.lyrics[index].text,
-                      textAlign: TextAlign.start, // ✅ giữ căn trái
+                      textAlign: TextAlign.start, 
                     ),
                   ),
                 ),

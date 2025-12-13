@@ -8,7 +8,7 @@ class ProfileNavigatorMenu extends StatelessWidget {
   const ProfileNavigatorMenu({super.key, required this.onSelect});
 
   void _select(BuildContext context, ProfileAction action) {
-    Navigator.of(context).maybePop(); // đóng popup
+    Navigator.of(context).maybePop();
     onSelect(action);
   }
 

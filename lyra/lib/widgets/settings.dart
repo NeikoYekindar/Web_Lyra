@@ -355,14 +355,11 @@ class _SettingsWidState extends State<SettingsWid> {
                 SizedBox(height: 40),
                 LogoutButton(
                   onTap: () {
-                    // Mock event: show log hoặc mở dialog
                     showDialog(
                       context: context,
                       barrierDismissible: false,
                       builder: (context) => const LogoutDialog(),
                     );
-
-                    // Hoặc showDialog(context: context, builder: ...) nếu muốn mở popup
                   },
                 ),
               ],

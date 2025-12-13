@@ -193,8 +193,7 @@ class _UserProfileState extends State<UserProfile> {
                     behavior: ScrollConfiguration.of(context).copyWith(
                       dragDevices: {
                         PointerDeviceKind.touch,
-                        PointerDeviceKind
-                            .mouse, // quan trọng khi chạy debug / desktop / web
+                        PointerDeviceKind.mouse,
                       },
                     ),
                     child: ListView.builder(
@@ -258,7 +257,7 @@ class _UserProfileState extends State<UserProfile> {
                 ),
               ),
             ),
-            // Thêm nội dung để có thể scroll dọc
+
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(16),
