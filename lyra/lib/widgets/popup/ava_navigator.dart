@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lyra/navigation/middle_nav_key.dart';
-import 'package:lyra/screens/profile_screen.dart';
-import 'package:lyra/screens/settings_screen.dart';
-import 'package:lyra/screens/dashboard_screen.dart';
-import 'package:lyra/screens/welcome_screen.dart';
+import 'package:lyra/navigation/profile_action.dart';
 
 class ProfileNavigatorMenu extends StatelessWidget {
-  final void Function(String action)? onSelect;
+  final void Function(ProfileAction action) onSelect;
 
-  const ProfileNavigatorMenu({super.key, this.onSelect});
+  const ProfileNavigatorMenu({super.key, required this.onSelect});
+
+  void _select(BuildContext context, ProfileAction action) {
+    Navigator.of(context).maybePop(); // đóng popup
+    onSelect(action);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,113 +30,49 @@ class ProfileNavigatorMenu extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _MenuItem(
-              label: "Account",
+              label: "Dashboard",
               trailing: Icons.open_in_new_rounded,
-              onPressed: () => _doSelect(context, "account"),
+              onPressed: () => _select(context, ProfileAction.dashboard),
             ),
             _MenuItem(
               label: "Profile",
-              onPressed: () => _doSelect(context, "profile"),
+              onPressed: () => _select(context, ProfileAction.profile),
             ),
             _MenuItem(
               label: "Support",
               trailing: Icons.open_in_new_rounded,
-              onPressed: () => _doSelect(context, "support"),
+              onPressed: () => _select(context, ProfileAction.support),
             ),
             _MenuItem(
               label: "Settings",
-              onPressed: () => _doSelect(context, "settings"),
+              onPressed: () => _select(context, ProfileAction.settings),
             ),
 
             // Divider
             Container(
               height: 1,
-              width: double.infinity,
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
               margin: const EdgeInsets.symmetric(vertical: 6),
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
             ),
 
             _MenuItem(
               label: "Log out",
               color: Colors.red[300],
-              onPressed: () => _doSelect(context, "logout"),
+              onPressed: () => _select(context, ProfileAction.logout),
             ),
           ],
         ),
       ),
     );
   }
-
-  void _doSelect(BuildContext context, String action) {
-    if (onSelect != null) {
-      // close popup/menu if any, then call custom handler
-      Navigator.of(context).maybePop();
-      onSelect!(action);
-      return;
-    }
-
-    // close popup/menu if any
-    Navigator.of(context).maybePop();
-
-    // default navigation mapping - try nested navigator first
-    if (middleNavigatorKey.currentState != null) {
-      switch (action) {
-        case 'account':
-          middleNavigatorKey.currentState!.pushNamed('/account');
-          return;
-        case 'profile':
-          middleNavigatorKey.currentState!.pushNamed('/profile');
-          return;
-        case 'support':
-          middleNavigatorKey.currentState!.pushNamed('/support');
-          return;
-        case 'settings':
-          middleNavigatorKey.currentState!.pushNamed('/settings');
-          return;
-        case 'logout':
-          // logout likely needs root-level replacement
-          Navigator.of(context).pushReplacementNamed('/login');
-          return;
-        default:
-          middleNavigatorKey.currentState!.pushNamed('/');
-          return;
-      }
-    }
-
-    // fallback to pushing full-screen widgets directly (MaterialApp has no named routes)
-    switch (action) {
-      case 'logout':
-        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-          (r) => false,
-        );
-        break;
-      case 'account':
-      case 'profile':
-        Navigator.of(
-          context,
-          rootNavigator: true,
-        ).push(MaterialPageRoute(builder: (_) => const ProfileScreen()));
-        break;
-      case 'support':
-      case 'settings':
-        Navigator.of(
-          context,
-          rootNavigator: true,
-        ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
-        break;
-      default:
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => const DashboardScreen()));
-    }
-  }
 }
+
+// ----------------------------------------------------------------------
 
 class _MenuItem extends StatefulWidget {
   final String label;
   final IconData? trailing;
-  final Function()? onPressed;
+  final VoidCallback? onPressed;
   final Color? color;
 
   const _MenuItem({
@@ -154,17 +91,21 @@ class _MenuItemState extends State<_MenuItem> {
   bool _pressed = false;
 
   Color _bg(BuildContext context) {
-    if (_pressed)
+    if (_pressed) {
       return Theme.of(context).colorScheme.tertiary.withOpacity(0.15);
-    if (_hovering)
+    }
+    if (_hovering) {
       return Theme.of(context).colorScheme.tertiary.withOpacity(0.08);
+    }
     return Colors.transparent;
   }
 
   Color _textColor(BuildContext context) {
+    if (widget.color != null) return widget.color!;
     if (_pressed) return Theme.of(context).colorScheme.onSurface;
-    if (_hovering)
+    if (_hovering) {
       return Theme.of(context).colorScheme.onSurface.withOpacity(0.8);
+    }
     return Theme.of(context).colorScheme.onSurfaceVariant;
   }
 
@@ -195,8 +136,8 @@ class _MenuItemState extends State<_MenuItem> {
                   widget.label,
                   style: GoogleFonts.inter(
                     fontSize: 17,
-                    color: _textColor(context),
                     fontWeight: FontWeight.w500,
+                    color: _textColor(context),
                   ),
                 ),
               ),

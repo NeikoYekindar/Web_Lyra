@@ -5,13 +5,16 @@ class Track {
   final String albumArtUrl; // can be asset path or network url
   final int durationMs;
   final int positionMs;
-
+  final String audioUrl; // URL to playable audio file
+  final String lyricUrl; // URL to lyric file
   const Track({
     required this.id,
     required this.title,
     required this.artist,
     required this.albumArtUrl,
     required this.durationMs,
+    required this.audioUrl,
+    required this.lyricUrl,
     this.positionMs = 0,
   });
 
@@ -25,13 +28,15 @@ class Track {
     int? durationMs,
     int? positionMs,
   }) => Track(
-        id: id ?? this.id,
-        title: title ?? this.title,
-        artist: artist ?? this.artist,
-        albumArtUrl: albumArtUrl ?? this.albumArtUrl,
-        durationMs: durationMs ?? this.durationMs,
-        positionMs: positionMs ?? this.positionMs,
-      );
+    id: id ?? this.id,
+    title: title ?? this.title,
+    artist: artist ?? this.artist,
+    albumArtUrl: albumArtUrl ?? this.albumArtUrl,
+    durationMs: durationMs ?? this.durationMs,
+    positionMs: positionMs ?? this.positionMs,
+    audioUrl: audioUrl,
+    lyricUrl: lyricUrl,
+  );
 
   factory Track.fromApi(Map<String, dynamic> json) {
     // Assumed keys; adjust if your API differs.
@@ -42,15 +47,17 @@ class Track {
       albumArtUrl: json['albumArtUrl'] ?? json['image'] ?? '',
       durationMs: json['durationMs'] ?? json['duration'] ?? 0,
       positionMs: json['positionMs'] ?? 0,
+      audioUrl: json['audioUrl'] ?? '',
+      lyricUrl: json['lyricUrl'] ?? '',
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'artist': artist,
-        'albumArtUrl': albumArtUrl,
-        'durationMs': durationMs,
-        'positionMs': positionMs,
-      };
+    'id': id,
+    'title': title,
+    'artist': artist,
+    'albumArtUrl': albumArtUrl,
+    'durationMs': durationMs,
+    'positionMs': positionMs,
+  };
 }

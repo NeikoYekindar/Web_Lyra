@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lyra/models/current_user.dart';
+import 'package:lyra/screens/welcome_screen.dart';
 
 class LogoutDialog extends StatelessWidget {
   const LogoutDialog({super.key});
@@ -99,9 +101,21 @@ class LogoutDialog extends StatelessWidget {
                 // Logout button
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      // Close the dialog first
                       Navigator.pop(context);
-                      // TODO: Your logout logic
+
+                      // Clear current user and persist the change
+                      CurrentUser.instance.logout();
+                      await CurrentUser.instance.saveToPrefs();
+
+                      // Navigate to WelcomeScreen and clear existing navigation stack
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (_) => const WelcomeScreen(),
+                        ),
+                        (route) => false,
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
