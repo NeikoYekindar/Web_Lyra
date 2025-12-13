@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:lyra/widgets/home_center.dart';
+import 'package:lyra/widgets/settings.dart';
 
-class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class DashboardScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(6),
           color: Theme.of(context).colorScheme.surface,
         ),
-        child: const HomeCenter(),
+        child: const SettingsWid(),
       ),
     );
   }

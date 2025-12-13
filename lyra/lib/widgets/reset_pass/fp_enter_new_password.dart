@@ -434,13 +434,12 @@ class PasswordStrengthIndicator extends StatelessWidget {
 
   Color _colorForIndex(int idx) {
     if (score == 0) return Colors.red.shade400;
-    if (score == 1)
-      return idx < 1 ? Colors.orange.shade400 : Colors.grey.shade800;
-    if (score == 2)
-      return idx < 2 ? Colors.orange.shade300 : Colors.grey.shade800;
-    if (score == 3)
-      return idx < 3 ? Colors.yellow.shade600 : Colors.grey.shade800;
-    return Colors.green.shade400;
+    if (idx >= score) return Colors.grey.shade800;
+    if (score == 1) return Colors.orange.shade400;
+    if (score == 2) return Colors.orange.shade300;
+    if (score == 3) return Colors.yellow.shade600;
+    if (score == 4) return Colors.green.shade400;
+    return Colors.grey.shade800;
   }
 
   @override
