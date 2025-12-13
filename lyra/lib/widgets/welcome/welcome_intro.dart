@@ -3,20 +3,22 @@ import 'package:lyra/theme/app_theme.dart';
 // import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lyra/widgets/common/custom_button.dart';
 
 class WelcomeIntro extends StatefulWidget {
   final VoidCallback? onLoginPressed;
   final VoidCallback? onSignupPressed;
-
-  const WelcomeIntro({super.key, this.onLoginPressed, this.onSignupPressed});
+  
+  const WelcomeIntro({
+    super.key,
+    this.onLoginPressed,
+    this.onSignupPressed,
+  });
 
   @override
   State<WelcomeIntro> createState() => _WelcomeIntroState();
 }
 
-class _WelcomeIntroState extends State<WelcomeIntro>
-    with SingleTickerProviderStateMixin {
+class _WelcomeIntroState extends State<WelcomeIntro> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -33,13 +35,10 @@ class _WelcomeIntroState extends State<WelcomeIntro>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
 
-    _slideAnimation =
-        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-          CurvedAnimation(
-            parent: _animationController,
-            curve: Curves.easeOutCubic,
-          ),
-        );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic));
 
     _animationController.forward();
   }
@@ -58,7 +57,9 @@ class _WelcomeIntroState extends State<WelcomeIntro>
       padding: const EdgeInsets.all(24.0),
       decoration: BoxDecoration(
         image: DecorationImage(
-          image: AssetImage('assets/images/bg_welcome.png'),
+          image: AssetImage(
+                'assets/images/bg_welcome.png'
+          ),
           fit: BoxFit.cover,
         ),
       ),
@@ -66,6 +67,7 @@ class _WelcomeIntroState extends State<WelcomeIntro>
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          
           const SizedBox(height: 200),
           FadeTransition(
             opacity: _fadeAnimation,
@@ -121,37 +123,17 @@ class _WelcomeIntroState extends State<WelcomeIntro>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                PrimaryButton(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 75,
-                    vertical: 12,
-                  ),
-                  child: Text(
-                    'Sign up',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                _AnimatedButton(
+                  text: 'Sign up',
+                  isPrimary: true,
                   onPressed: () {
                     widget.onSignupPressed?.call();
                   },
                 ),
                 const SizedBox(width: 16),
-                OutlineButtonCustom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 75,
-                    vertical: 12,
-                  ),
-                  child: Text(
-                    'Sign in',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                _AnimatedButton(
+                  text: 'Sign in',  
+                  isPrimary: false,
                   onPressed: () {
                     widget.onLoginPressed?.call();
                   },
@@ -256,6 +238,8 @@ class _WelcomeIntroState extends State<WelcomeIntro>
               ),
             ],
           ),
+
+
         ],
       ),
     );
@@ -293,24 +277,20 @@ class _AnimatedButtonState extends State<_AnimatedButton> {
         child: ElevatedButton(
           onPressed: widget.onPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: widget.isPrimary
-                ? (_isHovered
-                      ? const Color(0xFFFF0808)
-                      : const Color(0xFFDC0404))
-                : (_isHovered
-                      ? const Color(0xFF2A2A2A)
-                      : const Color(0xFF111111)),
+            backgroundColor: widget.isPrimary 
+                ? (_isHovered ? const Color(0xFFFF0808) : const Color(0xFFDC0404))
+                : (_isHovered ? const Color(0xFF2A2A2A) : const Color(0xFF111111)),
             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
             elevation: _isHovered ? 8 : 0,
-            shadowColor: widget.isPrimary
+            shadowColor: widget.isPrimary 
                 ? const Color(0xFFDC0404).withOpacity(0.5)
                 : Colors.transparent,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(50),
-              side: widget.isPrimary
+              side: widget.isPrimary 
                   ? BorderSide.none
                   : BorderSide(
-                      color: _isHovered
+                      color: _isHovered 
                           ? Colors.white.withOpacity(0.5)
                           : Colors.white.withOpacity(0.3),
                       width: 1.5,
@@ -367,7 +347,7 @@ class _FeatureCardState extends State<_FeatureCard> {
               duration: const Duration(milliseconds: 300),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: _isHovered
+                color: _isHovered 
                     ? const Color(0xFFDC0404).withOpacity(0.1)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
@@ -383,9 +363,7 @@ class _FeatureCardState extends State<_FeatureCard> {
                 width: 60,
                 height: 60,
                 colorFilter: ColorFilter.mode(
-                  _isHovered
-                      ? const Color(0xFFDC0404)
-                      : const Color(0xFFFF4444),
+                  _isHovered ? const Color(0xFFDC0404) : const Color(0xFFFF4444),
                   BlendMode.srcIn,
                 ),
               ),

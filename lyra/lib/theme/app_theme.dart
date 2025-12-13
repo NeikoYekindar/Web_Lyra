@@ -5,15 +5,13 @@ class AppTheme {
   // New palette based on provided image
   // Core brand reds
   static const Color redPrimary = Color(0xFFE62429); // main brand color
-  static const Color redPrimaryDark = Color(
-    0xFF801417,
-  ); // darker container / pressed state
+  static const Color redPrimaryDark = Color(0xFF801417); // darker container / pressed state
 
   // Neutral scale
   static const Color black = Color(0xFF000000);
   static const Color neutral900 = Color(0xFF1F1F1F); // dark background
   static const Color neutral800 = Color(0xFF303030); // surfaces / cards
-
+ 
   static const Color neutral500 = Color(0xFF909090); // disabled / hint
   static const Color neutral400 = Color(0xFFB3B3B3); // secondary text on dark
   static const Color white = Color(0xFFFFFFFF);
@@ -33,10 +31,10 @@ class AppTheme {
   static const Color lightSurface = Color(0xFFF5F5F5); // subtle light surface
   static const Color lightCard = white;
   static const Color lightText = black;
-  static const Color lightSecondaryText =
-      neutral800; // use dark gray for secondary
+  static const Color lightSecondaryText = neutral800; // use dark gray for secondary
   static const Color lightrcmsong = Color(0xFFD13F43);
-
+  
+  
   // Dark Theme
   static ThemeData get darkTheme {
     final colorScheme = ColorScheme(
@@ -68,6 +66,7 @@ class AppTheme {
       inverseSurface: redPrimaryDark,
       onInverseSurface: white,
       inversePrimary: redPrimaryDark,
+      
     );
     return ThemeData(
       brightness: Brightness.dark,
@@ -113,29 +112,14 @@ class AppTheme {
       ),
       textTheme: GoogleFonts.interTextTheme(
         ThemeData.dark().textTheme.copyWith(
-          headlineLarge: const TextStyle(
-            fontWeight: FontWeight.w700,
-            color: white,
-          ),
-          headlineMedium: const TextStyle(
-            fontWeight: FontWeight.w700,
-            color: white,
-          ),
-          titleLarge: const TextStyle(
-            fontWeight: FontWeight.w600,
-            color: white,
-          ),
-          titleMedium: const TextStyle(
-            fontWeight: FontWeight.w500,
-            color: white,
-          ),
+          headlineLarge: const TextStyle(fontWeight: FontWeight.w700, color: white),
+          headlineMedium: const TextStyle(fontWeight: FontWeight.w700, color: white),
+          titleLarge: const TextStyle(fontWeight: FontWeight.w600, color: white),
+          titleMedium: const TextStyle(fontWeight: FontWeight.w500, color: white),
           bodyLarge: const TextStyle(color: white),
           bodyMedium: const TextStyle(color: white),
           bodySmall: TextStyle(color: neutral400),
-          labelLarge: const TextStyle(
-            fontWeight: FontWeight.w600,
-            color: white,
-          ),
+          labelLarge: const TextStyle(fontWeight: FontWeight.w600, color: white),
           labelMedium: TextStyle(color: neutral400),
           labelSmall: TextStyle(color: neutral400),
         ),
@@ -143,18 +127,18 @@ class AppTheme {
       fontFamily: GoogleFonts.inter().fontFamily,
     );
   }
-
+  
   // Light Theme
   static ThemeData get lightTheme {
     final colorScheme = ColorScheme(
       brightness: Brightness.light,
-      primary: redPrimary,
+      primary: black,
       onPrimary: white,
       primaryContainer: redPrimaryDark,
       onPrimaryContainer: white,
       secondary: neutral800,
       onSecondary: white,
-      secondaryContainer: white,
+      secondaryContainer: lightSurface,
       onSecondaryContainer: black,
       tertiary: neutral500,
       onTertiary: black,
@@ -166,7 +150,7 @@ class AppTheme {
       onBackground: black,
       surface: lightSurface,
       onSurface: black,
-      // Use full light background for variant to ensure clear difference from surface in widgets
+  // Use full light background for variant to ensure clear difference from surface in widgets
       surfaceVariant: lightBackground,
       onSurfaceVariant: neutral800,
       outline: neutral500,
@@ -222,29 +206,14 @@ class AppTheme {
       ),
       textTheme: GoogleFonts.interTextTheme(
         ThemeData.light().textTheme.copyWith(
-          headlineLarge: const TextStyle(
-            fontWeight: FontWeight.w700,
-            color: black,
-          ),
-          headlineMedium: const TextStyle(
-            fontWeight: FontWeight.w700,
-            color: black,
-          ),
-          titleLarge: const TextStyle(
-            fontWeight: FontWeight.w600,
-            color: black,
-          ),
-          titleMedium: const TextStyle(
-            fontWeight: FontWeight.w500,
-            color: black,
-          ),
+          headlineLarge: const TextStyle(fontWeight: FontWeight.w700, color: black),
+          headlineMedium: const TextStyle(fontWeight: FontWeight.w700, color: black),
+          titleLarge: const TextStyle(fontWeight: FontWeight.w600, color: black),
+          titleMedium: const TextStyle(fontWeight: FontWeight.w500, color: black),
           bodyLarge: const TextStyle(color: black),
           bodyMedium: const TextStyle(color: black),
           bodySmall: TextStyle(color: neutral800),
-          labelLarge: const TextStyle(
-            fontWeight: FontWeight.w600,
-            color: black,
-          ),
+          labelLarge: const TextStyle(fontWeight: FontWeight.w600, color: black),
           labelMedium: TextStyle(color: neutral800),
           labelSmall: TextStyle(color: neutral800),
         ),
@@ -284,12 +253,10 @@ class AppExtraColors extends ThemeExtension<AppExtraColors> {
   }) {
     return AppExtraColors(
       headerAndAll: headerAndAll ?? this.headerAndAll,
-      playerControlsBackground:
-          playerControlsBackground ?? this.playerControlsBackground,
+      playerControlsBackground: playerControlsBackground ?? this.playerControlsBackground,
       miniPlayerBackground: miniPlayerBackground ?? this.miniPlayerBackground,
       playlistItemHover: playlistItemHover ?? this.playlistItemHover,
-      lyricsSectionBackground:
-          lyricsSectionBackground ?? this.lyricsSectionBackground,
+      lyricsSectionBackground: lyricsSectionBackground ?? this.lyricsSectionBackground,
       equalizer: equalizer ?? this.equalizer,
     );
   }
@@ -299,26 +266,10 @@ class AppExtraColors extends ThemeExtension<AppExtraColors> {
     if (other is! AppExtraColors) return this;
     return AppExtraColors(
       headerAndAll: Color.lerp(headerAndAll, other.headerAndAll, t)!,
-      playerControlsBackground: Color.lerp(
-        playerControlsBackground,
-        other.playerControlsBackground,
-        t,
-      )!,
-      miniPlayerBackground: Color.lerp(
-        miniPlayerBackground,
-        other.miniPlayerBackground,
-        t,
-      )!,
-      playlistItemHover: Color.lerp(
-        playlistItemHover,
-        other.playlistItemHover,
-        t,
-      )!,
-      lyricsSectionBackground: Color.lerp(
-        lyricsSectionBackground,
-        other.lyricsSectionBackground,
-        t,
-      )!,
+      playerControlsBackground: Color.lerp(playerControlsBackground, other.playerControlsBackground, t)!,
+      miniPlayerBackground: Color.lerp(miniPlayerBackground, other.miniPlayerBackground, t)!,
+      playlistItemHover: Color.lerp(playlistItemHover, other.playlistItemHover, t)!,
+      lyricsSectionBackground: Color.lerp(lyricsSectionBackground, other.lyricsSectionBackground, t)!,
       equalizer: Color.lerp(equalizer, other.equalizer, t)!,
     );
   }
@@ -331,32 +282,23 @@ class AppColors {
   static void setTheme(bool isDark) => _isDark = isDark;
 
   // Dynamic getters using new palette
-  static Color get background =>
-      _isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
-  static Color get surface =>
-      _isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+  static Color get background => _isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
+  static Color get surface => _isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
   static Color get card => _isDark ? AppTheme.darkCard : AppTheme.lightCard;
-  static Color get textPrimary =>
-      _isDark ? AppTheme.darkText : AppTheme.lightText;
-  static Color get textSecondary =>
-      _isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText;
-  static Color get divider =>
-      _isDark ? AppTheme.neutral800 : AppTheme.neutral400;
+  static Color get textPrimary => _isDark ? AppTheme.darkText : AppTheme.lightText;
+  static Color get textSecondary => _isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText;
+  static Color get divider => _isDark ? AppTheme.neutral800 : AppTheme.neutral400;
   static Color get muted => _isDark ? AppTheme.neutral500 : AppTheme.neutral500;
-  static Color get onTertiary =>
-      _isDark ? AppTheme.lightText : AppTheme.darkText;
-  static Color get surfaceVariant =>
-      _isDark ? AppTheme.neutral800 : AppTheme.lightBackground;
-  static Color get tertiaryContainer =>
-      _isDark ? AppTheme.rcmsong : AppTheme.lightrcmsong;
-  static Color get primary =>
-      _isDark ? AppTheme.redPrimary : const Color.fromARGB(255, 255, 255, 255);
+  static Color get onTertiary => _isDark ?AppTheme.lightText  :AppTheme.darkText ;
+  static Color get surfaceVariant => _isDark ? AppTheme.neutral800 : AppTheme.lightBackground;
+  static Color get tertiaryContainer => _isDark ? AppTheme.rcmsong : AppTheme.lightrcmsong;
+  static Color get primary => _isDark ? AppTheme.redPrimary : const Color.fromARGB(255, 255, 255, 255);
   // Static brand colors
   static const Color red = AppTheme.redPrimary;
   static const Color redDark = AppTheme.redPrimaryDark;
   static const Color white = AppTheme.white;
   static const Color black = AppTheme.black;
-
+  
   // Custom colors - Bạn có thể thêm bao nhiêu tùy thích với tên tùy chỉnh
   static const Color musicPlayerBackground = Color(0xFF1A1A1A);
   static const Color sidebarBackground = Color(0xFF0F0F0F);
@@ -369,32 +311,20 @@ class AppColors {
   static const Color gradientStart = Color(0xFFE62429);
   static const Color gradientEnd = Color(0xFF801417);
   // static const Color colortextrcmbutton = Color(0xFFFFFFFF);
-
+  
   // Dynamic custom colors (thay đổi theo theme)
-  static Color get musicCardHover =>
-      _isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF0F0F0);
-  static Color get searchBarBackground =>
-      _isDark ? const Color(0xFF252525) : const Color(0xFFFFFFFF);
-  static Color get buttonHover =>
-      _isDark ? const Color(0xFF404040) : const Color(0xFFE0E0E0);
-  static Color get borderColor =>
-      _isDark ? const Color(0xFF404040) : const Color(0xFFE0E0E0);
-  static Color get shadowColor =>
-      _isDark ? Colors.black.withOpacity(0.3) : Colors.grey.withOpacity(0.2);
-  static Color textrcmbutton(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark
-      ? const Color(0xFFFFFFFF)
-      : const Color(0xFFE62429); // white for dark, red for light
-  static Color get colortextrcmbutton =>
-      _isDark ? const Color(0xFFFFFFFF) : const Color(0xFFE62429);
-  static Color bgrcmbutton(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark
-      ? const Color(0xFFE62429)
-      : const Color(0xFFFFFFFF); // white for dark, red for light
-  static Color bg_left_sidebar(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark
-      ? const Color(0xFF1F1F1F)
-      : const Color(0xFFFFFFFF); // dark for dark, light for light
+  static Color get musicCardHover => _isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF0F0F0);
+  static Color get searchBarBackground => _isDark ? const Color(0xFF252525) : const Color(0xFFFFFFFF);
+  static Color get buttonHover => _isDark ? const Color(0xFF404040) : const Color(0xFFE0E0E0);
+  static Color get borderColor => _isDark ? const Color(0xFF404040) : const Color(0xFFE0E0E0);
+  static Color get shadowColor => _isDark ? Colors.black.withOpacity(0.3) : Colors.grey.withOpacity(0.2);
+  static Color textrcmbutton(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFFFFFFFF) : const Color(0xFFE62429); // white for dark, red for light
+  static Color get colortextrcmbutton => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFFE62429);
+  static Color bgrcmbutton(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFFE62429) : const Color(0xFFFFFFFF); // white for dark, red for light
+  static Color bg_left_sidebar(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1F1F1F) : const Color(0xFFFFFFFF); // dark for dark, light for light
+  static Color bg_right_sidebar(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1F1F1F) : const Color(0xFFFFFFFF);
+  static Color card_right_sidebar_detai_song(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFF2D2D2D) : const Color(0xFFF0F0F0);
+  static Color text_min_right_sidebar_detail_song(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade400 : const Color.fromARGB(255, 41, 41, 41);
 }
 
 // Extension để dễ dàng truy cập AppExtraColors

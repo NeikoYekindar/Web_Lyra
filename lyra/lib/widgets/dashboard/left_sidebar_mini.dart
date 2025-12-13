@@ -4,8 +4,11 @@ import 'package:lyra/theme/app_theme.dart';
 
 class LeftSidebarMini extends StatefulWidget {
   final VoidCallback? onLibraryIconPressed;
-
-  const LeftSidebarMini({super.key, this.onLibraryIconPressed});
+  
+  const LeftSidebarMini({
+    super.key,
+    this.onLibraryIconPressed,
+  });
 
   @override
   State<LeftSidebarMini> createState() => _LeftSidebarMiniState();
@@ -23,12 +26,11 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
     _loadAlbumImages();
     _loadPlayListUser();
   }
-
   Future<void> _loadPlayListUser() async {
     try {
       // Giả lập API call
       await Future.delayed(const Duration(milliseconds: 800));
-
+      
       final List<Map<String, dynamic>> apiResponse = [
         {
           'id': '1',
@@ -38,14 +40,14 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
           'image': 'assets/images/khongbuon.png',
         },
         {
-          'id': '2',
+          'id': '2', 
           'name': 'EM XIN "SAY HI" 2025',
           'type': 'Playlist',
           'owner': 'TrumUIT',
           'image': 'assets/images/emxinsayhi_2025.png',
         },
         {
-          'id': '3',
+          'id': '3', 
           'name': 'Playlist Sơn Tùng M-TP',
           'type': 'Playlist',
           'owner': 'TrumUIT',
@@ -59,14 +61,14 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
           'image': 'assets/images/khongbuon.png',
         },
         {
-          'id': '2',
+          'id': '2', 
           'name': 'EM XIN "SAY HI" 2025',
           'type': 'Playlist',
           'owner': 'TrumUIT',
           'image': 'assets/images/emxinsayhi_2025.png',
         },
         {
-          'id': '3',
+          'id': '3', 
           'name': 'Playlist Sơn Tùng M-TP',
           'type': 'Playlist',
           'owner': 'TrumUIT',
@@ -80,14 +82,14 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
           'image': 'assets/images/khongbuon.png',
         },
         {
-          'id': '2',
+          'id': '2', 
           'name': 'EM XIN "SAY HI" 2025',
           'type': 'Playlist',
           'owner': 'TrumUIT',
           'image': 'assets/images/emxinsayhi_2025.png',
         },
         {
-          'id': '3',
+          'id': '3', 
           'name': 'Playlist Sơn Tùng M-TP',
           'type': 'Playlist',
           'owner': 'TrumUIT',
@@ -101,14 +103,14 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
           'image': 'assets/images/khongbuon.png',
         },
         {
-          'id': '2',
+          'id': '2', 
           'name': 'EM XIN "SAY HI" 2025',
           'type': 'Playlist',
           'owner': 'TrumUIT',
           'image': 'assets/images/emxinsayhi_2025.png',
         },
         {
-          'id': '3',
+          'id': '3', 
           'name': 'Playlist Sơn Tùng M-TP',
           'type': 'Playlist',
           'owner': 'TrumUIT',
@@ -122,14 +124,14 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
           'image': 'assets/images/khongbuon.png',
         },
         {
-          'id': '2',
+          'id': '2', 
           'name': 'EM XIN "SAY HI" 2025',
           'type': 'Playlist',
           'owner': 'TrumUIT',
           'image': 'assets/images/emxinsayhi_2025.png',
         },
         {
-          'id': '3',
+          'id': '3', 
           'name': 'Playlist Sơn Tùng M-TP',
           'type': 'Playlist',
           'owner': 'TrumUIT',
@@ -143,14 +145,14 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
           'image': 'assets/images/khongbuon.png',
         },
         {
-          'id': '2',
+          'id': '2', 
           'name': 'EM XIN "SAY HI" 2025',
           'type': 'Playlist',
           'owner': 'TrumUIT',
           'image': 'assets/images/emxinsayhi_2025.png',
         },
         {
-          'id': '3',
+          'id': '3', 
           'name': 'Playlist Sơn Tùng M-TP',
           'type': 'Playlist',
           'owner': 'TrumUIT',
@@ -158,7 +160,7 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
         },
         // Thêm các bài hát khác tương tự
       ];
-
+      
       if (mounted) {
         setState(() {
           PlaylistsUserImages = apiResponse;
@@ -175,19 +177,20 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
     }
   }
 
+
   // Giả lập API call để lấy danh sách album
   Future<void> _loadAlbumImages() async {
     try {
       // Giả lập API call với delay
       await Future.delayed(const Duration(milliseconds: 500));
-
+      
       final List<String> apiResponse = [
         'assets/images/album_1.png',
         'assets/images/album_2.png',
         'assets/images/album_3.png',
         'assets/images/album_3.png',
       ];
-
+      
       if (mounted) {
         setState(() {
           albumImages = apiResponse;
@@ -209,62 +212,43 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
   Widget build(BuildContext context) {
     return Container(
       width: 80,
-
+      
       padding: const EdgeInsets.all(10),
       margin: const EdgeInsets.only(right: 8, bottom: 10, left: 8),
       decoration: BoxDecoration(
-        color: AppColors.bg_left_sidebar(context),
-        borderRadius: BorderRadius.circular(6),
+        color: AppColors.bg_left_sidebar(context), 
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildCustomIconMenuItemLibrary(
-            'assets/icons/library_icon.svg',
-            true,
-            60,
-            widget.onLibraryIconPressed,
-          ),
+          _buildCustomIconMenuItemLibrary('assets/icons/library_icon.svg', true, 60, widget.onLibraryIconPressed),
           const SizedBox(height: 8),
-          _buildCustomIconMenuItem(
-            'assets/icons/library_add_icon.svg',
-            false,
-            60,
-          ),
+          _buildCustomIconMenuItem('assets/icons/library_add_icon.svg', false, 60),
           const SizedBox(height: 16),
-
+          
           // Hiển thị danh sách album icons
           Expanded(
             child: _isLoadingAlbums
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  )
-                : ListView.separated(
-                    itemCount: PlaylistsUserImages.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      return _buildAlbumIconPNG(
-                        PlaylistsUserImages[index]['image'],
-                        false,
-                      );
-                    },
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
                   ),
+                )
+              : ListView.separated(
+                  itemCount: PlaylistsUserImages.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 8),
+                  itemBuilder: (context, index) {
+                    return _buildAlbumIconPNG(PlaylistsUserImages[index]['image'], false);
+                  },
+                ),
           ),
         ],
       ),
     );
   }
-
-  Widget _buildCustomIconMenuItemLibrary(
-    String svgPath,
-    bool isActive,
-    double size,
-    VoidCallback? onPressed,
-  ) {
+    Widget _buildCustomIconMenuItemLibrary(String svgPath, bool isActive, double size, VoidCallback? onPressed) {
     return Container(
       width: size,
       height: size,
@@ -274,11 +258,13 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
       ),
       child: IconButton(
         onPressed: onPressed ?? () {},
-        style: IconButton.styleFrom(overlayColor: Colors.transparent),
+        style: IconButton.styleFrom(
+          overlayColor: Colors.transparent,
+        ),
         icon: SvgPicture.asset(
           svgPath,
           width: 25,
-          height: 25,
+          height: 25
           // colorFilter: ColorFilter.mode(
           //   isActive ? Colors.white : Colors.grey,
           //   BlendMode.srcIn,
@@ -287,6 +273,7 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
       ),
     );
   }
+  
 
   Widget _buildCustomIconMenuItem(String svgPath, bool isActive, double size) {
     return Container(
@@ -298,7 +285,9 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
       ),
       child: IconButton(
         onPressed: () {},
-        style: IconButton.styleFrom(overlayColor: Colors.transparent),
+        style: IconButton.styleFrom(
+          overlayColor: Colors.transparent,
+        ),
         icon: SvgPicture.asset(
           svgPath,
           width: 45,
@@ -324,7 +313,9 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
         onPressed: () {
           print('Clicked album: $pngPath'); // Debug log
         },
-        style: IconButton.styleFrom(overlayColor: Colors.transparent),
+        style: IconButton.styleFrom(
+          overlayColor: Colors.transparent,
+        ),
         icon: ClipRRect(
           borderRadius: BorderRadius.circular(6),
           child: Image.asset(
@@ -349,7 +340,11 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Center(
-                  child: Icon(Icons.album, color: Colors.white, size: 60),
+                  child: Icon(
+                    Icons.album,
+                    color: Colors.white,
+                    size: 60,
+                  ),
                 ),
               );
             },

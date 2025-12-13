@@ -6,8 +6,6 @@ import 'providers/auth_provider.dart';
 import 'theme/app_theme.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/dashboard_screen.dart';
-import 'widgets/music_player.dart';
-
 void main() {
   runApp(const MyApp());
 }
@@ -22,10 +20,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => MusicPlayerProvider()),
         // Backend base URL for login API
-        ChangeNotifierProvider(
-          create: (_) =>
-              AuthProvider(baseUrl: 'https://3dd50a8c5b1c.ngrok-free.app'),
-        ),
+        ChangeNotifierProvider(create: (_) => AuthProvider(baseUrl: 'https://3dd50a8c5b1c.ngrok-free.app')),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
@@ -34,13 +29,13 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
-            themeMode: themeProvider.isDarkMode
-                ? ThemeMode.dark
-                : ThemeMode.light,
+            themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
             home: const DashboardScreen(),
           );
         },
       ),
-    );
+    ); 
   }
 }
+
+

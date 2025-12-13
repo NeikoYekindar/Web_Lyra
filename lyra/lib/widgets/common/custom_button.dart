@@ -1,62 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:lyra/theme/app_theme.dart';
 
-class PrimaryButton extends StatefulWidget {
+/// Primary (filled) red button - no border
+class PrimaryButton extends StatelessWidget {
   final Widget child;
+  final Widget? icon; // optional leading icon
   final VoidCallback? onPressed;
-  final bool isLoading;
-  final Widget? icon;
   final double? width;
   final double? height;
-  final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry padding;
+  final BorderRadiusGeometry borderRadius;
+  final bool isLoading;
   final Color? backgroundColor;
-  final BorderRadius? borderRadius;
 
   const PrimaryButton({
-    Key? key,
+    super.key,
     required this.child,
-    this.onPressed,
-    this.isLoading = false,
     this.icon,
+    this.onPressed,
     this.width,
     this.height,
-    this.padding,
+    this.padding = const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+    this.borderRadius = const BorderRadius.all(Radius.circular(6)),
+    this.isLoading = false,
     this.backgroundColor,
-    this.borderRadius,
-  }) : super(key: key);
-
-  @override
-  State<PrimaryButton> createState() => _PrimaryButtonState();
-}
-
-class _PrimaryButtonState extends State<PrimaryButton> {
-  double _scale = 1.0;
-  bool _isHovered = false;
-
-  void _onTapDown(TapDownDetails details) {
-    setState(() => _scale = 0.96);
-  }
-
-  void _onTapUp(TapUpDetails details) {
-    setState(() => _scale = _isHovered ? 1.04 : 1.0);
-  }
-
-  void _onTapCancel() {
-    setState(() => _scale = _isHovered ? 1.04 : 1.0);
-  }
-
-  void _onHover(bool hover) {
-    setState(() {
-      _isHovered = hover;
-      _scale = hover ? 1.04 : 1.0;
-    });
-  }
+  });
 
   @override
   Widget build(BuildContext context) {
-    final bg = widget.backgroundColor ?? Theme.of(context).colorScheme.primary;
-    final hoverBg = bg.withOpacity(_isHovered ? 0.92 : 1.0);
-    final content = widget.isLoading
+    final bg = backgroundColor ?? const Color(0xFFDA0707);
+    final content = isLoading
         ? SizedBox(
             width: 16,
             height: 16,
@@ -68,131 +41,66 @@ class _PrimaryButtonState extends State<PrimaryButton> {
         : Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (widget.icon != null) ...[
-                widget.icon!,
-                const SizedBox(width: 8),
-              ],
-              Flexible(child: widget.child),
+              if (icon != null) ...[icon!, const SizedBox(width: 8)],
+              Flexible(child: child),
             ],
           );
 
-    final BorderRadius borderRadius =
-        widget.borderRadius ?? BorderRadius.circular(8.0);
-    final EdgeInsetsGeometry padding =
-        widget.padding ??
-        const EdgeInsets.symmetric(horizontal: 20, vertical: 12);
-
     return Material(
       color: Colors.transparent,
-      child: MouseRegion(
-        onEnter: (_) => _onHover(true),
-        onExit: (_) => _onHover(false),
-        child: GestureDetector(
-          onTapDown: _onTapDown,
-          onTapUp: _onTapUp,
-          onTapCancel: _onTapCancel,
-          child: AnimatedScale(
-            scale: _scale,
-            duration: const Duration(milliseconds: 120),
-            curve: Curves.easeOut,
-            child: InkWell(
-              onTap: widget.onPressed,
-              borderRadius: borderRadius,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 120),
-                curve: Curves.easeOut,
-                width: widget.width,
-                height: widget.height,
-                padding: padding,
-                decoration: BoxDecoration(
-                  color: hoverBg,
-                  borderRadius: borderRadius,
-                ),
-                child: Center(child: content),
-              ),
-            ),
-          ),
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: borderRadius as BorderRadius?,
+        child: Container(
+          width: width,
+          height: height,
+          padding: padding,
+          decoration: BoxDecoration(color: bg, borderRadius: borderRadius),
+          child: Center(child: content),
         ),
       ),
     );
   }
 }
 
-class OutlineButtonCustom extends StatefulWidget {
+/// Outline (transparent) button with border
+class OutlineButtonCustom extends StatelessWidget {
   final Widget child;
-  final VoidCallback? onPressed;
-  final bool isLoading;
   final Widget? icon;
+  final VoidCallback? onPressed;
   final double? width;
   final double? height;
-  final EdgeInsetsGeometry? padding;
-  final Color? textColor;
+  final EdgeInsetsGeometry padding;
+  final BorderRadiusGeometry borderRadius;
   final Color? borderColor;
-  final BorderRadius? borderRadius;
+  final Color? textColor;
+  final bool isLoading;
 
   const OutlineButtonCustom({
-    Key? key,
+    super.key,
     required this.child,
-    this.onPressed,
-    this.isLoading = false,
     this.icon,
+    this.onPressed,
     this.width,
     this.height,
-    this.padding,
-    this.textColor,
+    this.padding = const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+    this.borderRadius = const BorderRadius.all(Radius.circular(6)),
     this.borderColor,
-    this.borderRadius,
-  }) : super(key: key);
-
-  @override
-  State<OutlineButtonCustom> createState() => _OutlineButtonCustomState();
-}
-
-class _OutlineButtonCustomState extends State<OutlineButtonCustom> {
-  double _scale = 1.0;
-  bool _isHovered = false;
-
-  void _onTapDown(TapDownDetails details) {
-    setState(() => _scale = 0.96);
-  }
-
-  void _onTapUp(TapUpDetails details) {
-    setState(() => _scale = _isHovered ? 1.04 : 1.0);
-  }
-
-  void _onTapCancel() {
-    setState(() => _scale = _isHovered ? 1.04 : 1.0);
-  }
-
-  void _onHover(bool hover) {
-    setState(() {
-      _isHovered = hover;
-      _scale = hover ? 1.04 : 1.0;
-    });
-  }
+    this.textColor,
+    this.isLoading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final disabledColor = Theme.of(
-      context,
-    ).colorScheme.onSurface.withOpacity(0.38);
-    final enabledTextColor =
-        widget.textColor ?? Theme.of(context).colorScheme.onPrimary;
-    final enabledBorderColor =
-        widget.borderColor ?? Theme.of(context).colorScheme.outline;
+    final disabledColor = const Color(0xFF565656);
+    final enabledTextColor = textColor ?? Colors.white;
+    final enabledBorderColor = borderColor ?? Colors.white;
 
-    final bool enabled = widget.onPressed != null && !widget.isLoading;
+    final bool enabled = onPressed != null && !isLoading;
     final bc = enabled ? enabledBorderColor : disabledColor;
     final tc = enabled ? enabledTextColor : disabledColor;
-    final hoverBorder = _isHovered ? bc.withOpacity(0.7) : bc;
 
-    final BorderRadius borderRadius =
-        widget.borderRadius ?? BorderRadius.circular(8.0);
-    final EdgeInsetsGeometry padding =
-        widget.padding ??
-        const EdgeInsets.symmetric(horizontal: 20, vertical: 12);
-
-    final content = widget.isLoading
+    final content = isLoading
         ? SizedBox(
             width: 16,
             height: 16,
@@ -204,17 +112,17 @@ class _OutlineButtonCustomState extends State<OutlineButtonCustom> {
         : Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (widget.icon != null) ...[
+              if (icon != null) ...[
                 IconTheme(
                   data: IconThemeData(color: tc),
-                  child: widget.icon!,
+                  child: icon!,
                 ),
                 const SizedBox(width: 8),
               ],
               Flexible(
                 child: DefaultTextStyle(
                   style: TextStyle(color: tc),
-                  child: widget.child,
+                  child: child,
                 ),
               ),
             ],
@@ -222,35 +130,19 @@ class _OutlineButtonCustomState extends State<OutlineButtonCustom> {
 
     return Material(
       color: Colors.transparent,
-      child: MouseRegion(
-        onEnter: (_) => _onHover(true),
-        onExit: (_) => _onHover(false),
-        child: GestureDetector(
-          onTapDown: _onTapDown,
-          onTapUp: _onTapUp,
-          onTapCancel: _onTapCancel,
-          child: AnimatedScale(
-            scale: _scale,
-            duration: const Duration(milliseconds: 120),
-            curve: Curves.easeOut,
-            child: InkWell(
-              onTap: widget.onPressed,
-              borderRadius: borderRadius,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 120),
-                curve: Curves.easeOut,
-                width: widget.width,
-                height: widget.height,
-                padding: padding,
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                  borderRadius: borderRadius,
-                  border: Border.all(color: hoverBorder, width: 1),
-                ),
-                child: Center(child: content),
-              ),
-            ),
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: borderRadius as BorderRadius?,
+        child: Container(
+          width: width,
+          height: height,
+          padding: padding,
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: borderRadius,
+            border: Border.all(color: bc, width: 1),
           ),
+          child: Center(child: content),
         ),
       ),
     );

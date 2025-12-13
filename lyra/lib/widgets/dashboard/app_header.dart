@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import '../theme_toggle_button.dart';
 import '../../screens/theme_test_screen.dart';
 import 'package:lyra/theme/app_theme.dart';
-import 'popup/ava_button.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'app_header_controller.dart';
+import '/screens/dashboard/dashboard_controller.dart';
+import 'package:provider/provider.dart';
 
 class AppHeader extends StatelessWidget {
-  const AppHeader({super.key});
+  final VoidCallback? onBrowseAllPressed;
+  final Function(String)? onSearchChanged;
+  const AppHeader({super.key, this.onBrowseAllPressed, this.onSearchChanged});
+  
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +41,7 @@ class AppHeader extends StatelessWidget {
           //     size: 20,
           //   ),
           // ),
+
           const SizedBox(width: 32),
 
           // Logo
@@ -66,29 +73,38 @@ class AppHeader extends StatelessWidget {
           //     ),
           //   ),
           // ),
+
           const SizedBox(width: 16),
 
           // Search bar
           Expanded(
             child: Container(
               height: 50,
-              // width: 600, // XÓA
-              // margin: const EdgeInsets.symmetric(horizontal: 300), // XÓA
+              width: 400,
+              margin: const EdgeInsets.symmetric(horizontal: 450),
               padding: const EdgeInsets.symmetric(horizontal: 8),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceVariant,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                ),
+                border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.3)),
+                
               ),
               child: Row(
                 children: [
                   const SizedBox(width: 16),
-                  Icon(
-                    Icons.search,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    size: 20,
+                  IconButton(
+                    onPressed:() {},  
+                    // Thay thế Icon bằng SvgPicture.asset
+                    icon: SvgPicture.asset(
+                      'assets/icons/SearchLeftSideBar.svg', // Đường dẫn đến file svg của bạn
+                      width: 20, // Kích thước tương đương size: 30 cũ
+                      height: 20,
+                      // Để đổi màu SVG sang trắng giống như icon cũ (color: Colors.white)
+                      colorFilter: const ColorFilter.mode(
+                        Colors.white, 
+                        BlendMode.srcIn,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -97,9 +113,7 @@ class AppHeader extends StatelessWidget {
                       decoration: InputDecoration(
                         hintText: 'What do you want to play?',
                         hintStyle: TextStyle(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
                           fontSize: 14,
                         ),
                         border: InputBorder.none,
@@ -110,13 +124,30 @@ class AppHeader extends StatelessWidget {
                       ),
                     ),
                   ),
-                  IconButton(
-                    onPressed: () {},
-                    icon: Icon(
-                      Icons.mic,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      size: 20,
+                  SvgPicture.asset(
+                      'assets/icons/LineInHeader.svg', // Đường dẫn đến file svg của bạn
+                      width: 30, // Kích thước tương đương size: 30 cũ
+                      height: 30,
+                      // Để đổi màu SVG sang trắng giống như icon cũ (color: Colors.white)
+                      colorFilter: const ColorFilter.mode(
+                        Colors.white, 
+                        BlendMode.srcIn,
+                      ),
                     ),
+                  const SizedBox(width: 2),
+                  IconButton(
+                  onPressed: ()=>ctrl.toggleBrowserAll(context),
+                    icon: SvgPicture.asset(
+                      'assets/icons/Soundwave.svg', // Đường dẫn đến file svg của bạn
+                      width: 20, // Kích thước tương đương size: 30 cũ
+                      height: 20,
+                      // Để đổi màu SVG sang trắng giống như icon cũ (color: Colors.white)
+                      colorFilter: const ColorFilter.mode(
+                        Colors.white, 
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                    
                   ),
                 ],
               ),
@@ -134,10 +165,10 @@ class AppHeader extends StatelessWidget {
               size: 24,
             ),
           ),
-
+          
           // Theme Toggle Button
           const ThemeToggleButton(showLabel: false, iconSize: 24),
-
+          
           const SizedBox(width: 10),
 
           // Theme Test Button
@@ -157,11 +188,21 @@ class AppHeader extends StatelessWidget {
             ),
             tooltip: 'Test Theme',
           ),
-
+          
           const SizedBox(width: 10),
 
           // User avatar
-          Container(width: 44, height: 44, child: const AvatarButton()),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              image: const DecorationImage(
+                image: AssetImage('assets/images/avatar.png'),
+                fit: BoxFit.cover,
+              ),
+            ),
+            
+          ),
           const SizedBox(width: 16),
         ],
       ),

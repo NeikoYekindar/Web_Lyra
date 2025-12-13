@@ -24,13 +24,6 @@ class _EnterResetCodeScreenState extends State<EnterResetCode> {
   List<FocusNode> _codeFocusNodes = [];
   bool _suppressOnChanged = false;
 
-  void _clearCodeFields() {
-    for (final c in _codeControllers) {
-      c.clear();
-    }
-    FocusScope.of(context).requestFocus(_codeFocusNodes[0]);
-  }
-
   Future<void> _sendVerificationEmail() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -207,83 +200,45 @@ class _EnterResetCodeScreenState extends State<EnterResetCode> {
                                   maxLength: 1,
                                   decoration: InputDecoration(
                                     counterText: '',
-                                    enabledBorder: const OutlineInputBorder(
+                                    enabledBorder: OutlineInputBorder(
                                       borderSide: BorderSide(
-                                        color: Colors.white,
+                                        color: const Color(0xFFFFFFFF),
                                       ),
                                     ),
-                                    focusedBorder: const OutlineInputBorder(
+                                    focusedBorder: OutlineInputBorder(
                                       borderSide: BorderSide(
-                                        color: Color(0xFFDA0707),
+                                        color: const Color(0xFFDA0707),
                                       ),
                                     ),
                                   ),
-                                  onChanged: (value) {
+                                  onChanged: (val) {
                                     if (_suppressOnChanged) return;
 
-                                    // Handle paste of multiple characters
-                                    if (value.length > 0) {
-                                      final digits = value.replaceAll(
-                                        RegExp(r'[^0-9]'),
-                                        '',
-                                      );
+                                    // If user pasted multiple characters, distribute them into fields
+                                    // but do NOT change focus (no auto-advance).
+                                    if (val.length > 1) {
+                                      final chars = val
+                                          .replaceAll(RegExp(r'[^0-9]'), '')
+                                          .split('');
                                       _suppressOnChanged = true;
-
-                                      // Fill fields starting from current index
                                       for (
                                         int i = 0;
-                                        i < digits.length && (index + i) < 6;
+                                        i < chars.length &&
+                                            (index + i) <
+                                                _codeControllers.length;
                                         i++
                                       ) {
                                         _codeControllers[index + i].text =
-                                            digits[i];
+                                            chars[i];
                                       }
-
-                                      // Move focus to next empty field or last filled field
-                                      final targetIndex =
-                                          (index + digits.length).clamp(0, 5);
-                                      WidgetsBinding.instance
-                                          .addPostFrameCallback((_) {
-                                            if (targetIndex < 6) {
-                                              _codeFocusNodes[targetIndex]
-                                                  .requestFocus();
-                                            } else {
-                                              FocusScope.of(context).unfocus();
-                                            }
-                                          });
-
                                       Future.microtask(
                                         () => _suppressOnChanged = false,
                                       );
                                       return;
                                     }
 
-                                    // Handle single digit input
-                                    if (value.isNotEmpty &&
-                                        RegExp(r'^[0-9]$').hasMatch(value)) {
-                                      // Move to next field
-                                      if (index < 5) {
-                                        WidgetsBinding.instance
-                                            .addPostFrameCallback((_) {
-                                              _codeFocusNodes[index + 1]
-                                                  .requestFocus();
-                                            });
-                                      } else {
-                                        // Last field, unfocus
-                                        WidgetsBinding.instance
-                                            .addPostFrameCallback((_) {
-                                              FocusScope.of(context).unfocus();
-                                            });
-                                      }
-                                    }
-                                    // Handle backspace (empty field)
-                                    else if (value.isEmpty && index > 0) {
-                                      WidgetsBinding.instance
-                                          .addPostFrameCallback((_) {
-                                            _codeFocusNodes[index - 1]
-                                                .requestFocus();
-                                          });
-                                    }
+                                    // Do not auto-advance or move focus on single digit input or backspace.
+                                    // Leave focus management to the user.
                                   },
                                 ),
                               );
@@ -300,18 +255,15 @@ class _EnterResetCodeScreenState extends State<EnterResetCode> {
                                 onPressed:
                                     _resendSecondsLeft == 0 && !_isLoading
                                     ? () async {
-                                        // Clear existing code fields when resending
-                                        _clearCodeFields();
-
-                                        // Show resend notification
+                                        // Trigger resend action here (call provider API if implemented)
+                                        // For now we show a snackbar and start countdown
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(
-                                          const SnackBar(
+                                          SnackBar(
                                             content: Text(
-                                              'Verification code has been resent to your email',
+                                              'Resend code requested',
                                             ),
-                                            backgroundColor: Colors.blue,
                                           ),
                                         );
                                         _startResendCountdown(60);
@@ -334,64 +286,8 @@ class _EnterResetCodeScreenState extends State<EnterResetCode> {
                                       ),
                                     )
                                   : PrimaryButton(
-                                      onPressed: () {
-                                        final code = _codeControllers
-                                            .map((c) => c.text)
-                                            .join();
+                                      onPressed: _sendVerificationEmail,
 
-                                        // Check if all fields are filled
-                                        if (code.length < 6) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                'Please enter all 6 digits',
-                                              ),
-                                              backgroundColor: Colors.orange,
-                                            ),
-                                          );
-                                          return;
-                                        }
-
-                                        // Verify code (mock verification with '123456')
-                                        if (code != '123456') {
-                                          // Clear all fields when code is wrong
-                                          _clearCodeFields();
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                'Invalid verification code. Please try again.',
-                                              ),
-                                              backgroundColor: Colors.red,
-                                            ),
-                                          );
-                                        } else {
-                                          // Code is correct
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                'Verification successful! Redirecting...',
-                                              ),
-                                              backgroundColor: Colors.green,
-                                              duration: Duration(seconds: 2),
-                                            ),
-                                          );
-                                          // Navigate to next screen after a short delay
-                                          Future.delayed(
-                                            const Duration(milliseconds: 500),
-                                            () {
-                                              Navigator.pop(
-                                                context,
-                                              ); // or navigate to password reset screen
-                                            },
-                                          );
-                                        }
-                                      },
                                       child: Text(
                                         'SUBMIT',
                                         style: GoogleFonts.inter(
