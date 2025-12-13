@@ -213,7 +213,7 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
       padding: const EdgeInsets.all(10),
       margin: const EdgeInsets.only(right: 8, bottom: 10, left: 8),
       decoration: BoxDecoration(
-        color: AppColors.bg_left_sidebar(context),
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(

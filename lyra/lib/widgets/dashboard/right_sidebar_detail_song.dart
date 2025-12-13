@@ -9,7 +9,6 @@ import 'right_sidebar_controller.dart';
 import '../../services/left_sidebar_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-
 class MockArtistService {
   static Future<Map<String, dynamic>?> getArtistInfo(String artistName) async {
     // Ở đây bạn gọi API backend để lấy ảnh artist và số lượng người nghe
@@ -18,49 +17,53 @@ class MockArtistService {
       'image': 'assets/images/image 18.png', // Ví dụ ảnh Sơn Tùng
       'listeners': '2,044,507 monthly listeners',
       'bio': 'Nguyễn Thanh Tùng, born in 1994...',
-      'more_info': 'Nguyễn Thanh Tùng, born in 1994, known professionally as Sơn Tùng M-TP, is a Vietnamese singer, songwriter, producer, and actor. He is not only known as one of the ...'
+      'more_info':
+          'Nguyễn Thanh Tùng, born in 1994, known professionally as Sơn Tùng M-TP, is a Vietnamese singer, songwriter, producer, and actor. He is not only known as one of the ...',
     };
   }
 }
-class RightSidebarDetailSong extends StatelessWidget {  
-    const RightSidebarDetailSong({super.key});
-    @override
-    Widget build(BuildContext context) {
-      final player = Provider.of<MusicPlayerProvider>(context);
-      final track = player.currentTrack;
 
-      return Container(
-        width: 360,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.bg_left_sidebar(context),
-          borderRadius: BorderRadius.circular(12),
-        ),
-       margin: const EdgeInsets.only(bottom: 10, left: 8, right: 8),
+class RightSidebarDetailSong extends StatelessWidget {
+  const RightSidebarDetailSong({super.key});
+  @override
+  Widget build(BuildContext context) {
+    final player = Provider.of<MusicPlayerProvider>(context);
+    final track = player.currentTrack;
 
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children:[
-            Row(
+    return Container(
+      width: 360,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+
+        borderRadius: BorderRadius.circular(12),
+      ),
+      margin: const EdgeInsets.only(bottom: 10, left: 8, right: 8),
+
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
               Text(
                 'Now Playing',
                 style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold),
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const Spacer(),
               IconButton(
                 onPressed: () => Navigator.of(context).pop(),
                 icon: const Icon(Icons.close, color: Colors.grey),
-                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
 
-            Expanded(
+          Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               child: Column(
@@ -75,17 +78,22 @@ class RightSidebarDetailSong extends StatelessWidget {
                       color: Colors.grey.shade800,
                       image: track != null && track.albumArtUrl.isNotEmpty
                           ? (track.albumArtUrl.startsWith('http')
-                              ? DecorationImage(
-                                  image: NetworkImage(track.albumArtUrl),
-                                  fit: BoxFit.cover)
-                              : DecorationImage(
-                                  image: AssetImage(track.albumArtUrl),
-                                  fit: BoxFit.cover))
+                                ? DecorationImage(
+                                    image: NetworkImage(track.albumArtUrl),
+                                    fit: BoxFit.cover,
+                                  )
+                                : DecorationImage(
+                                    image: AssetImage(track.albumArtUrl),
+                                    fit: BoxFit.cover,
+                                  ))
                           : null,
                     ),
                     child: (track == null || track.albumArtUrl.isEmpty)
-                        ? const Icon(Icons.music_note,
-                            color: Colors.white, size: 60)
+                        ? const Icon(
+                            Icons.music_note,
+                            color: Colors.white,
+                            size: 60,
+                          )
                         : null,
                   ),
                   const SizedBox(height: 20),
@@ -94,9 +102,10 @@ class RightSidebarDetailSong extends StatelessWidget {
                   Text(
                     track?.title ?? 'No Track Playing',
                     style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold),
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -105,7 +114,10 @@ class RightSidebarDetailSong extends StatelessWidget {
                   // Tên nghệ sĩ
                   Text(
                     track?.artist ?? 'Unknown Artist',
-                    style: TextStyle(color: AppColors.text_min_right_sidebar_detail_song(context), fontSize: 16),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 16,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -116,39 +128,47 @@ class RightSidebarDetailSong extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // Header Next Queue
-                  Row(children: [
-                    Text(
-                      'Next in queue',
-                      style: TextStyle(
+                  Row(
+                    children: [
+                      Text(
+                        'Next in queue',
+                        style: TextStyle(
                           color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 16,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    const Spacer(),
-                    TextButton(
-                      onPressed: () {
-                        // Xử lý mở full queue
-                      },
-                      child: Text(
-                        'Open queue',
-                        style: TextStyle(
-                            color: AppColors.text_min_right_sidebar_detail_song(context), fontSize: 12),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ]),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () {
+                          // Xử lý mở full queue
+                        },
+                        child: Text(
+                          'Open queue',
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 10),
 
                   // List Queue
                   // LƯU Ý QUAN TRỌNG: Không dùng Expanded hay SingleChildScrollView ở đây nữa
                   // vì nó đã nằm trong SingleChildScrollView cha rồi.
                   const _NextQueueSection(),
-                  
+
                   // Khoảng đệm dưới cùng để không bị sát mép khi cuộn
                   const SizedBox(height: 20),
                 ],
               ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -164,13 +184,15 @@ class _ArtistInfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // Gọi API lấy thông tin chi tiết nghệ sĩ
     return FutureBuilder<Map<String, dynamic>?>(
-      future: MockArtistService.getArtistInfo(artistName), // Thay bằng Service thật
+      future: MockArtistService.getArtistInfo(
+        artistName,
+      ), // Thay bằng Service thật
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Container(
-             height: 100, 
-             alignment: Alignment.center,
-             child: const CircularProgressIndicator(strokeWidth: 2)
+            height: 100,
+            alignment: Alignment.center,
+            child: const CircularProgressIndicator(strokeWidth: 2),
           );
         }
 
@@ -185,7 +207,7 @@ class _ArtistInfoCard extends StatelessWidget {
         return Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: AppColors.card_right_sidebar_detai_song(context),
+            color: Theme.of(context).colorScheme.secondaryContainer,
             borderRadius: BorderRadius.circular(12),
           ),
           clipBehavior: Clip.antiAlias, // Để ảnh bo góc theo container
@@ -240,66 +262,89 @@ class _ArtistInfoCard extends StatelessWidget {
                   ),
                 ],
               ),
-              
+
               // Phần thông tin bên dưới ảnh
               Padding(
                 padding: const EdgeInsets.all(12.0),
-                child: Column(  
-                  crossAxisAlignment: CrossAxisAlignment.start, // Căn lề trái cho toàn bộ nội dung
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment
+                      .start, // Căn lề trái cho toàn bộ nội dung
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    
-                       Row(
-                      
-                        children: [
-                          Text(
-                            listeners ?? 'N/A Listeners',
-                            style:  TextStyle(color: AppColors.text_min_right_sidebar_detail_song(context), fontSize: 12),
+                    Row(
+                      children: [
+                        Text(
+                          listeners ?? 'N/A Listeners',
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+
+                            fontSize: 12,
                           ),
-                          const Spacer(),
-                          ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
+                        ),
+                        const Spacer(),
+                        ElevatedButton(
+                          onPressed: () {},
+                          style:
+                              ElevatedButton.styleFrom(
                                 backgroundColor: Colors.transparent,
-                                foregroundColor: Theme.of(context).colorScheme.onSurface,
+                                foregroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface,
                                 side: const BorderSide(color: Colors.grey),
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 0,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
                                 elevation: 0,
                                 // Thêm dòng này nếu bạn muốn chắc chắn không có bóng đổ khi hover
-                                shadowColor: Colors.transparent, 
+                                shadowColor: Colors.transparent,
                               ).copyWith(
                                 // Logic xử lý riêng cho overlayColor
-                                overlayColor: MaterialStateProperty.resolveWith<Color?>(
-                                  (Set<MaterialState> states) {
-                                    if (states.contains(MaterialState.hovered)) {
-                                      return Colors.transparent; // Trả về màu trong suốt khi hover
-                                    }
-                                    return null; // Giữ nguyên hiệu ứng mặc định cho các trạng thái khác (như khi bấm)
-                                  },
-                                ),
+                                overlayColor:
+                                    MaterialStateProperty.resolveWith<Color?>((
+                                      Set<MaterialState> states,
+                                    ) {
+                                      if (states.contains(
+                                        MaterialState.hovered,
+                                      )) {
+                                        return Colors
+                                            .transparent; // Trả về màu trong suốt khi hover
+                                      }
+                                      return null; // Giữ nguyên hiệu ứng mặc định cho các trạng thái khác (như khi bấm)
+                                    }),
                               ),
-                              child: const Text('Follow', style: TextStyle(fontSize: 12)),
-                            )
-                          
-                          // Bạn có thể thêm đoạn Bio ngắn ở đây
-                        ],
+                          child: const Text(
+                            'Follow',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
 
-                      ),
+                        // Bạn có thể thêm đoạn Bio ngắn ở đây
+                      ],
+                    ),
                     const SizedBox(height: 8),
                     if (more_info != null && more_info!.isNotEmpty)
-                        Text(
-                          more_info!,
-                          maxLines: 2, // Giới hạn 2 dòng để không bị dài quá
-                          overflow: TextOverflow.ellipsis, // Hiện dấu ... nếu dài quá
-                          style: TextStyle(color: AppColors.text_min_right_sidebar_detail_song(context), fontSize: 12),
+                      Text(
+                        more_info!,
+                        maxLines: 2, // Giới hạn 2 dòng để không bị dài quá
+                        overflow:
+                            TextOverflow.ellipsis, // Hiện dấu ... nếu dài quá
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+
+                          fontSize: 12,
                         ),
-                    
+                      ),
+
                     // Nút Follow
-                    
                   ],
                 ),
-              )
+              ),
             ],
           ),
         );
@@ -307,8 +352,6 @@ class _ArtistInfoCard extends StatelessWidget {
     );
   }
 }
-
-
 
 class _NextQueueSection extends StatelessWidget {
   const _NextQueueSection();
@@ -337,7 +380,9 @@ class _NextQueueSection extends StatelessWidget {
         if (list.isEmpty) {
           return Container(
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.2),
+              color: Theme.of(
+                context,
+              ).colorScheme.surfaceVariant.withOpacity(0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             padding: const EdgeInsets.all(12),
@@ -350,8 +395,11 @@ class _NextQueueSection extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6),
                     color: Colors.grey.shade800,
                   ),
-                  child: const Icon(Icons.queue_music,
-                      color: Colors.white, size: 22),
+                  child: const Icon(
+                    Icons.queue_music,
+                    color: Colors.white,
+                    size: 22,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -361,15 +409,18 @@ class _NextQueueSection extends StatelessWidget {
                       const Text(
                         'Không có bài hát tiếp theo',
                         style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600),
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Hàng đợi hiện đang trống',
                         style: TextStyle(
-                            color: Colors.grey.shade400, fontSize: 12),
+                          color: Colors.grey.shade400,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
@@ -379,14 +430,17 @@ class _NextQueueSection extends StatelessWidget {
           );
         }
         final item = list.first;
-        final title = item['title']?.toString() ?? item['name']?.toString() ?? 'Bài hát';
-        final artist = item['artist']?.toString() ?? item['owner']?.toString() ?? '';
-        final coverUrl = item['albumArtUrl']?.toString() ?? item['image']?.toString() ?? '';
+        final title =
+            item['title']?.toString() ?? item['name']?.toString() ?? 'Bài hát';
+        final artist =
+            item['artist']?.toString() ?? item['owner']?.toString() ?? '';
+        final coverUrl =
+            item['albumArtUrl']?.toString() ?? item['image']?.toString() ?? '';
         final hasImage = coverUrl.isNotEmpty;
 
         return Container(
           decoration: BoxDecoration(
-            color: AppColors.card_right_sidebar_detai_song(context),
+            color: Theme.of(context).colorScheme.secondaryContainer,
             borderRadius: BorderRadius.circular(8),
           ),
           padding: const EdgeInsets.all(8),
@@ -397,45 +451,64 @@ class _NextQueueSection extends StatelessWidget {
                 height: 56,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(6),
-                  color: AppColors.card_right_sidebar_detai_song(context),
+                  color: Theme.of(context).colorScheme.secondaryContainer,
                   image: hasImage
                       ? (coverUrl.startsWith('http')
-                          ? DecorationImage(
-                              image: NetworkImage(coverUrl), fit: BoxFit.cover)
-                          : DecorationImage(
-                              image: AssetImage(coverUrl), fit: BoxFit.cover))
+                            ? DecorationImage(
+                                image: NetworkImage(coverUrl),
+                                fit: BoxFit.cover,
+                              )
+                            : DecorationImage(
+                                image: AssetImage(coverUrl),
+                                fit: BoxFit.cover,
+                              ))
                       : null,
                 ),
                 child: hasImage
                     ? null
-                    : const Icon(Icons.music_note, color: Colors.white, size: 24),
+                    : const Icon(
+                        Icons.music_note,
+                        color: Colors.white,
+                        size: 24,
+                      ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            color: Theme.of(  context).colorScheme.onSurface,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600)),
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text(artist,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            color: AppColors.text_min_right_sidebar_detail_song(context), fontSize: 13)),
+                    Text(
+                      artist,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+
+                        fontSize: 13,
+                      ),
+                    ),
                   ],
                 ),
               ),
               // Nút Play nhỏ bên cạnh nếu cần
               IconButton(
-                icon:  Icon(Icons.play_arrow_rounded, color: Theme.of( context).colorScheme.onSurface),
+                icon: Icon(
+                  Icons.play_arrow_rounded,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
                 onPressed: () {},
-              )
+              ),
             ],
           ),
         );
