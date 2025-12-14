@@ -8,6 +8,7 @@ import 'right_playlist_user_card.dart';
 import 'right_sidebar_controller.dart';
 import '../../services/left_sidebar_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../shell/app_shell_controller.dart';
 
 class MockArtistService {
   static Future<Map<String, dynamic>?> getArtistInfo(String artistName) async {
@@ -31,15 +32,12 @@ class RightSidebarDetailSong extends StatelessWidget {
     final track = player.currentTrack;
 
     return Container(
-      width: 360,
+      // Let parent provide width/margin so this matches other panels
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(6),
       ),
-      margin: const EdgeInsets.only(bottom: 10, left: 8, right: 8),
-
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,14 +54,25 @@ class RightSidebarDetailSong extends StatelessWidget {
               ),
               const Spacer(),
               IconButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () {
+                  final shell = Provider.of<AppShellController?>(
+                    context,
+                    listen: false,
+                  );
+                  if (shell != null) {
+                    shell.closeNowPlayingDetail();
+                  } else {
+                    // fallback: if controller isn't found just pop
+                    Navigator.of(context).pop();
+                  }
+                },
                 icon: const Icon(Icons.close, color: Colors.grey),
               ),
             ],
           ),
           const SizedBox(height: 16),
 
-          Expanded(
+          Flexible(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               child: Column(

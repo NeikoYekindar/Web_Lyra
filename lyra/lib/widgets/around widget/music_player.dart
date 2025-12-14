@@ -3,9 +3,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import '../providers/music_player_provider.dart';
-import '../models/track.dart';
+import '/providers/music_player_provider.dart';
+import '/models/track.dart';
 import 'package:lyra/shell/app_shell_controller.dart';
+import 'package:lyra/widgets/around%20widget/music_player_controller.dart';
+import 'package:lyra/shell/app_nav.dart';
+import 'package:lyra/shell/app_routes.dart';
 
 class MusicPlayer extends StatelessWidget {
   const MusicPlayer({super.key});
@@ -13,6 +16,7 @@ class MusicPlayer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shell = context.watch<AppShellController>();
+    final ctrl = MusicPlayerController();
     return Container(
       height: 86,
       color: Theme.of(context).colorScheme.surface,
@@ -222,23 +226,25 @@ class MusicPlayer extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                _icon(context, "assets/icons/now playing view.svg"),
+                // Now-playing detail toggle (colors when active)
+                NowPlayingToggle(ctrl: ctrl),
                 const SizedBox(width: 10),
 
                 // Lyrics button
-                Consumer<MusicPlayerProvider>(
-                  builder: (context, player, _) {
+                Builder(
+                  builder: (ctx) {
+                    final shellLocal = ctx.watch<AppShellController>();
                     return IconButton(
                       onPressed: () {
-                        context.read<AppShellController>().toggleLyrics();
+                        ctx.read<AppShellController>().toggleLyrics();
                       },
                       icon: SvgPicture.asset(
                         'assets/icons/lyrics.svg',
                         width: 20,
                         colorFilter: ColorFilter.mode(
-                          shell.showLyrics
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                          shellLocal.showLyrics
+                              ? Theme.of(ctx).colorScheme.primary
+                              : Theme.of(ctx).colorScheme.onSurfaceVariant,
                           BlendMode.srcIn,
                         ),
                       ),
@@ -258,22 +264,50 @@ class MusicPlayer extends StatelessWidget {
                     return Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        GestureDetector(
-                          onTap: player.toggleMute,
-                          behavior: HitTestBehavior.opaque,
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: SvgPicture.asset(
-                              player.isMuted
-                                  ? "assets/icons/VolumeMute.svg"
-                                  : "assets/icons/Volume.svg",
-                              colorFilter: ColorFilter.mode(
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                                BlendMode.srcIn,
+                        Builder(
+                          builder: (ctx) {
+                            final player = ctx.watch<MusicPlayerProvider>();
+                            final muted = player.isMuted;
+                            final vol = player.volume;
+
+                            String assetPath;
+                            if (muted || vol <= 0) {
+                              assetPath = 'assets/icons/muted.svg';
+                            } else if (vol < 0.5) {
+                              assetPath = 'assets/icons/Smallvolume.svg';
+                            } else {
+                              assetPath = 'assets/icons/Fullvolume.svg';
+                            }
+
+                            return IconButton(
+                              onPressed: () =>
+                                  ctx.read<MusicPlayerProvider>().toggleMute(),
+                              icon: SizedBox(
+                                width: 30,
+                                height: 30,
+                                child: Center(
+                                  child: SvgPicture.asset(
+                                    assetPath,
+                                    width: 20,
+                                    height: 20,
+                                    colorFilter: ColorFilter.mode(
+                                      muted
+                                          ? Theme.of(
+                                              ctx,
+                                            ).colorScheme.onSurfaceVariant
+                                          : Theme.of(ctx).colorScheme.onSurface,
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints.tightFor(
+                                width: 28,
+                                height: 28,
+                              ),
+                            );
+                          },
                         ),
 
                         const SizedBox(width: 4),
@@ -312,7 +346,29 @@ class MusicPlayer extends StatelessWidget {
                 ),
 
                 const SizedBox(width: 10),
-                _icon(context, "assets/icons/maximise-02.svg"),
+                // Maximize player button — use AppShellController (dashboard logic moved)
+                IconButton(
+                  onPressed: () {
+                    final shellCtrl = Provider.of<AppShellController?>(
+                      context,
+                      listen: false,
+                    );
+                    if (shellCtrl != null) {
+                      shellCtrl.toggleMaximizePlayer();
+                    }
+                  },
+                  icon: SvgPicture.asset(
+                    'assets/icons/maximise-02.svg',
+                    width: 20,
+                    height: 20,
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.onSurfaceVariant,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
               ],
             ),
           ),
@@ -343,5 +399,60 @@ class MusicPlayer extends StatelessWidget {
     final m = total ~/ 60;
     final s = total % 60;
     return '$m:${s.toString().padLeft(2, '0')}';
+  }
+}
+
+class NowPlayingToggle extends StatefulWidget {
+  final MusicPlayerController ctrl;
+  const NowPlayingToggle({required this.ctrl, super.key});
+
+  @override
+  State<NowPlayingToggle> createState() => _NowPlayingToggleState();
+}
+
+class _NowPlayingToggleState extends State<NowPlayingToggle> {
+  @override
+  Widget build(BuildContext context) {
+    try {
+      final shellCtrl = context.watch<AppShellController?>();
+      final bool isActive = shellCtrl?.isRightSidebarDetail ?? false;
+
+      return IconButton(
+        onPressed: () {
+          if (shellCtrl != null) {
+            widget.ctrl.toggleNowPlayingDetail(context);
+          }
+        },
+        icon: SvgPicture.asset(
+          'assets/icons/now playing view.svg',
+          width: 20,
+          height: 20,
+          colorFilter: ColorFilter.mode(
+            isActive
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.onSurfaceVariant,
+            BlendMode.srcIn,
+          ),
+        ),
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(),
+      );
+    } catch (_) {
+      // Provider not available; show disabled icon
+      return IconButton(
+        onPressed: null,
+        icon: SvgPicture.asset(
+          'assets/icons/now playing view.svg',
+          width: 20,
+          height: 20,
+          colorFilter: ColorFilter.mode(
+            Theme.of(context).colorScheme.onSurfaceVariant,
+            BlendMode.srcIn,
+          ),
+        ),
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(),
+      );
+    }
   }
 }

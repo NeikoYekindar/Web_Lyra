@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lyra/widgets/lyric_wid.dart';
+import 'package:lyra/widgets/center%20widget/lyric_wid.dart';
 import 'lyrics_overlay_controller.dart';
 
 class LyricsOverlay extends StatelessWidget {

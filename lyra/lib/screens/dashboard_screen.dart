@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lyra/widgets/home_center.dart';
+import 'package:lyra/widgets/center%20widget/home_center.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});

@@ -82,31 +82,34 @@ class HeaderInfoSection extends StatelessWidget {
 
                 const SizedBox(width: 20),
 
-                // Texts + actions
+                // Texts + actions — allow vertical scrolling when space is constrained
                 Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (type != null) ...[type!],
-                      title,
+                  child: SingleChildScrollView(
+                    primary: false,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (type != null) ...[type!],
+                        title,
 
-                      if (subtitle != null) ...[subtitle!],
-                      if (bio != null) ...[bio!],
-                      if (actions != null && actions!.isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        Row(
-                          children: actions!
-                              .map(
-                                (e) => Padding(
-                                  padding: const EdgeInsets.only(right: 12),
-                                  child: e,
-                                ),
-                              )
-                              .toList(),
-                        ),
+                        if (subtitle != null) ...[subtitle!],
+                        if (bio != null) ...[bio!],
+                        if (actions != null && actions!.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Row(
+                            children: actions!
+                                .map(
+                                  (e) => Padding(
+                                    padding: const EdgeInsets.only(right: 12),
+                                    child: e,
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ],

@@ -6,7 +6,9 @@ import 'package:lyra/shell/app_routes.dart';
 // center screens / widgets
 import 'package:lyra/screens/dashboard_screen.dart';
 import 'package:lyra/screens/profile_screen.dart';
-import 'package:lyra/widgets/settings.dart';
+import 'package:lyra/widgets/center%20widget/settings.dart';
+import 'package:lyra/widgets/around%20widget/browse_all.dart';
+import 'package:lyra/widgets/center%20widget/lyric_wid.dart';
 
 class AppNav {
   /// Navigator key cho CENTER (nested navigator)
@@ -39,6 +41,18 @@ class AppNav {
       // =========================
       case AppRoutes.support:
         return _page(const DashboardScreen()); // hoặc SupportScreen nếu có
+
+      // =========================
+      // BROWSE ALL
+      // =========================
+      case AppRoutes.browseAll:
+        return _page(const BrowseAllCenter());
+
+      // =========================
+      // LYRICS (LYRIC OVERLAY)
+      // =========================
+      case AppRoutes.lyrics:
+        return _page(const LyricWidget());
 
       // =========================
       // FALLBACK

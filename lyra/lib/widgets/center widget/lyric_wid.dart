@@ -5,8 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
-import '../providers/music_player_provider.dart';
-import '../models/track.dart';
+import '../../providers/music_player_provider.dart';
+import '../../models/track.dart';
 
 // =======================================================
 // MODEL
@@ -290,9 +290,7 @@ class _LyricViewState extends State<LyricView> {
   Widget build(BuildContext context) {
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: 820, 
-        ),
+        constraints: const BoxConstraints(maxWidth: 820),
         child: ScrollConfiguration(
           behavior: _NoScrollbarBehavior(),
           child: ListView.builder(
@@ -310,7 +308,7 @@ class _LyricViewState extends State<LyricView> {
                   ? Theme.of(context).colorScheme.onSurface
                   : Theme.of(context).colorScheme.onSurfaceVariant;
 
-              final hoverColor =Theme.of(context).colorScheme.onSurface;
+              final hoverColor = Theme.of(context).colorScheme.onSurface;
 
               return MouseRegion(
                 key: _itemKeys[index],
@@ -337,7 +335,7 @@ class _LyricViewState extends State<LyricView> {
                     ),
                     child: Text(
                       widget.lyrics[index].text,
-                      textAlign: TextAlign.start, 
+                      textAlign: TextAlign.start,
                     ),
                   ),
                 ),

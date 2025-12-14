@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lyra/widgets/settings.dart';
+import 'package:lyra/widgets/center%20widget/settings.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
