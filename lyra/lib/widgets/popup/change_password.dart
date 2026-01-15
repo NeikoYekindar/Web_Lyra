@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/foundation.dart';
 // Removed unused imports
 import 'package:confetti/confetti.dart';
+import 'package:lyra/l10n/app_localizations.dart';
 
 class ChangePassword extends StatefulWidget {
   const ChangePassword({super.key});
@@ -194,7 +195,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Change Password',
+                                AppLocalizations .of(context)!.changePassword,
                                 style: GoogleFonts.inter(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
@@ -232,7 +233,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                                   color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
-                              labelText: 'Old Password',
+                              labelText: AppLocalizations.of(context)!.oldPassword,
                               labelStyle: GoogleFonts.inter(
                                 color: colorScheme.onSurface,
                                 fontSize: 16,
@@ -272,7 +273,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                                   color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
-                              labelText: 'New Password',
+                              labelText: AppLocalizations.of(context)!.newPassword,
                               labelStyle: GoogleFonts.inter(
                                 color: colorScheme.onSurface,
                                 fontSize: 16,
@@ -304,7 +305,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                           Row(
                             children: [
                               Text(
-                                'Strength:',
+                                AppLocalizations.of(context)!.strength,
                                 style: GoogleFonts.inter(
                                   color: colorScheme.onSurfaceVariant,
                                 ),
@@ -336,7 +337,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                                   color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
-                              labelText: 'Confirm New Password',
+                              labelText: AppLocalizations.of(context)!.confirmNewPassword,
                               labelStyle: GoogleFonts.inter(
                                 color: colorScheme.onSurface,
                                 fontSize: 16,
@@ -365,7 +366,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                           Align(
                             alignment: Alignment.centerRight,
                             child: Text(
-                              'Forgot your password?',
+                              AppLocalizations.of(context)!.forgotPassword,
                               style: GoogleFonts.inter(
                                 color: colorScheme.onSecondaryContainer,
                                 fontSize: 14,

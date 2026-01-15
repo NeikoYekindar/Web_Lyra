@@ -5,6 +5,8 @@ import 'package:lyra/widgets/common/header_info_section.dart';
 import 'package:lyra/widgets/common/favorite_card.dart';
 import '../../models/current_user.dart';
 import '../../models/user.dart';
+import 'package:lyra/l10n/app_localizations.dart';
+
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -90,7 +92,7 @@ class ProfileView extends StatelessWidget {
                         subtitle: Row(
                           children: [
                             Text(
-                              "18 Public Playlists",
+                              "18 "+ AppLocalizations.of(context)!.publicPlaylist,
                               style: GoogleFonts.inter(
                                 color: Theme.of(context).colorScheme.secondary,
                                 fontSize: 11,
@@ -104,7 +106,7 @@ class ProfileView extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              "36 Following",
+                              "36 "+ AppLocalizations.of(context)!.following,
                               style: GoogleFonts.inter(
                                 color: Theme.of(context).colorScheme.onSurface,
                                 fontSize: 11,

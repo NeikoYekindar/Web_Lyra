@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lyra/theme/app_theme.dart';
+import 'package:lyra/l10n/app_localizations.dart';
+
 // import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
 // Removed flutter_svg import (unused after cleanup)
 
@@ -477,7 +479,7 @@ class _HomeCenterState extends State<HomeCenter> {
                                         elevation: 0,
                                       ),
                                       child: Text(
-                                        _isPlaying ? 'Pause' : 'Play',
+                                        _isPlaying ? AppLocalizations.of(context)!.pause : AppLocalizations.of(context)!.play,
                                         style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -603,7 +605,7 @@ class _HomeCenterState extends State<HomeCenter> {
             const SizedBox(height: 16),
 
             Text(
-              'Trending songs',
+              AppLocalizations.of(context)!.trendingSongs,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 20,

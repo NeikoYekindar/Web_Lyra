@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lyra/l10n/app_localizations.dart';
 import 'package:lyra/widgets/common/header_info_section.dart';
 import 'package:lyra/widgets/common/silver_app_bar.dart';
 import 'package:lyra/widgets/common/playlist_card.dart';
@@ -218,7 +219,7 @@ class _UserProfileState extends State<UserProfile> {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  "Following",
+                  AppLocalizations.of(context)!.following,
                   style: GoogleFonts.inter(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 30,
@@ -262,7 +263,7 @@ class _UserProfileState extends State<UserProfile> {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  "Recently Played",
+                  AppLocalizations.of(context)!.recentlyPlayed,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 20,

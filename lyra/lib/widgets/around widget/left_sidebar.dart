@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lyra/l10n/app_localizations.dart';
 import 'package:lyra/theme/app_theme.dart';
 import 'package:lyra/services/left_sidebar_service.dart';
 
@@ -95,7 +96,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Your Library',
+                  AppLocalizations.of(context)!.yourLibrary,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 16,
@@ -195,7 +196,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
 
                 const Spacer(),
                 Text(
-                  'Recent',
+                  AppLocalizations.of(context)!.recent,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 16,

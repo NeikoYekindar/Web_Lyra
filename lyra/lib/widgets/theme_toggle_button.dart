@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
+import 'package:lyra/l10n/app_localizations.dart';
+
 
 class ThemeToggleButton extends StatelessWidget {
   final bool showLabel;
@@ -33,7 +35,7 @@ class ThemeToggleButton extends StatelessWidget {
                   themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
                   size: iconSize,
                 ),
-                tooltip: themeProvider.isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+                tooltip: themeProvider.isDarkMode ? AppLocalizations.of(context)!.switchToLightMode : AppLocalizations.of(context)!.switchToDarkMode,
               );
       },
     );

@@ -9,6 +9,8 @@ import '../popup/ava_button.dart';
 import 'package:lyra/shell/app_nav.dart';
 import 'package:lyra/shell/app_routes.dart';
 import 'package:lyra/shell/app_shell_controller.dart';
+import 'package:lyra/l10n/app_localizations.dart';
+
 
 class AppHeader extends StatelessWidget {
   final VoidCallback? onBrowseAllPressed;
@@ -88,7 +90,7 @@ class AppHeader extends StatelessWidget {
                       child: TextField(
                         onChanged: onSearchChanged,
                         decoration: InputDecoration(
-                          hintText: 'What do you want to play?',
+                          hintText: AppLocalizations.of(context)!.search,
                           hintStyle: TextStyle(
                             color: Theme.of(
                               context,

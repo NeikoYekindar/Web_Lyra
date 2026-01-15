@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:collection/collection.dart';
+import 'package:lyra/l10n/app_localizations.dart';
 import 'package:lyra/widgets/common/favorite_card.dart';
 import '../../models/current_user.dart';
 import '../../models/user.dart';
@@ -13,7 +14,7 @@ class EditProfilePopup extends StatefulWidget {
 }
 
 class _EditProfilePopupState extends State<EditProfilePopup> {
-  String gender = "Male";
+  String gender = 'Male';
   DateTime dob = DateTime(2004, 5, 7);
   late TextEditingController displayNameController;
   late TextEditingController emailController;
@@ -40,7 +41,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
     _initialEmail = user?.email ?? '';
     // Initialize bio from user if present
     _initialBio = user?.bio ?? '';
-    _initialGender = user?.gender ?? 'Male';
+    _initialGender = user?.gender ?? AppLocalizations.of(context)!.male;
     _initialDob = user?.dateOfBirth ?? DateTime(2004, 5, 7);
     _initialGenres = user?.favoriteGenres != null
         ? List<String>.from(user!.favoriteGenres!)
@@ -149,7 +150,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Edit profile",
+                        AppLocalizations.of(context)!.editProfile,
                         style: GoogleFonts.inter(
                           color: Theme.of(
                             context,
@@ -184,7 +185,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Profile Image',
+                        AppLocalizations.of(context)!.profileImage,
                         style: GoogleFonts.inter(
                           color: Theme.of(
                             context,
@@ -297,8 +298,8 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
 
                   /// DISPLAY NAME
                   buildInput(
-                    "Display name",
-                    CurrentUser.instance.user?.displayName ?? "Your Name",
+                    AppLocalizations.of(context)!.displayName,
+                    CurrentUser.instance.user?.displayName ?? AppLocalizations.of(context)!.yourName,
                     controller: displayNameController,
                   ),
                   const SizedBox(height: 10),
@@ -367,7 +368,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                       ),
                       decoration: InputDecoration(
                         border: InputBorder.none,
-                        hintText: "Write something...",
+                        hintText: AppLocalizations.of(context)!.writeSomething,
                         hintStyle: GoogleFonts.inter(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -385,7 +386,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
 
                   /// GENRES
                   Text(
-                    "Favorite Genres",
+                    AppLocalizations.of(context)!.favoriteGenres,
                     style: GoogleFonts.inter(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 16,
@@ -447,7 +448,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                             ),
                           ),
                           child: Text(
-                            'Cancel',
+                            AppLocalizations.of(context)!.cancel,
                             style: GoogleFonts.inter(fontSize: 14),
                           ),
                         ),
@@ -563,7 +564,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                                   ),
                                 )
                               : Text(
-                                  'Save',
+                                  AppLocalizations.of(context)!.save,
                                   style: GoogleFonts.inter(
                                     color: _hasChanges
                                         ? colorScheme.onPrimary
@@ -676,7 +677,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
-          "Gender",
+          AppLocalizations.of(context)!.gender,
           style: GoogleFonts.inter(
             color: Theme.of(context).colorScheme.onSurface,
             fontSize: 16,
@@ -729,7 +730,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
-          "Date of Birth",
+          AppLocalizations.of(context)!.dateOfBirth,
           style: GoogleFonts.inter(
             color: Theme.of(context).colorScheme.onSurface,
             fontSize: 16,

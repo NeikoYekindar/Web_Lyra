@@ -10,6 +10,7 @@ import 'package:lyra/widgets/popup/edit_profile.dart';
 import 'package:lyra/models/current_user.dart';
 import 'package:lyra/models/user.dart';
 import 'package:lyra/widgets/popup/logout_dialog.dart';
+import 'package:lyra/l10n/app_localizations.dart';
 
 class SettingsWid extends StatefulWidget {
   const SettingsWid({super.key});
@@ -79,7 +80,7 @@ class _SettingsWidState extends State<SettingsWid> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Settings",
+                  AppLocalizations.of(context)!.settings,
                   style: GoogleFonts.inter(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
@@ -88,7 +89,7 @@ class _SettingsWidState extends State<SettingsWid> {
                 ),
                 const SizedBox(height: 45),
                 Text(
-                  "Profile",
+                  AppLocalizations.of(context)!.profile,
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -205,7 +206,7 @@ class _SettingsWidState extends State<SettingsWid> {
                                     ),
                                   ),
                                   SettingItem_bold(
-                                    title: 'Gender',
+                                    title: AppLocalizations.of(context)!.gender,
                                     value: Text(
                                       user?.gender ?? 'Male',
                                       style: GoogleFonts.inter(
@@ -217,7 +218,7 @@ class _SettingsWidState extends State<SettingsWid> {
                                     ),
                                   ),
                                   SettingItem_bold(
-                                    title: 'Date of Birth',
+                                    title: AppLocalizations.of(context)!.dateOfBirth,
                                     value: Text(
                                       user != null && user.dateOfBirth != null
                                           ? '${user.dateOfBirth!.day.toString().padLeft(2, '0')}/${user.dateOfBirth!.month.toString().padLeft(2, '0')}/${user.dateOfBirth!.year}'
@@ -243,7 +244,7 @@ class _SettingsWidState extends State<SettingsWid> {
                                     ),
                                   ),
                                   SettingItem_bold(
-                                    title: 'Favorite',
+                                    title: AppLocalizations.of(context)!.favorite,
                                     value: Wrap(
                                       spacing: 8,
                                       runSpacing: 8,
@@ -268,7 +269,7 @@ class _SettingsWidState extends State<SettingsWid> {
                   ),
                 ),
                 SettingItem_bold(
-                  title: 'Change Password',
+                  title: AppLocalizations.of(context)!.changePassword,
                   value: ChangePasswordButton(
                     onTap: () {
                       showGeneralDialog(
@@ -305,7 +306,7 @@ class _SettingsWidState extends State<SettingsWid> {
                 ),
                 SizedBox(height: 20),
                 Text(
-                  "Language",
+                  AppLocalizations.of(context)!.language,
                   style: GoogleFonts.inter(
                     fontSize: 15,
                     color: Theme.of(context).colorScheme.onSurface,
@@ -314,7 +315,7 @@ class _SettingsWidState extends State<SettingsWid> {
                 ),
                 SettingItem_regu(
                   title:
-                      'Choose your language - changes will be updated after reload',
+                      AppLocalizations.of(context)!.languagePreference,
                   value: ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: 250, minWidth: 200),
                     child: Container(width: 250, child: LanguageDropdown()),
@@ -322,7 +323,7 @@ class _SettingsWidState extends State<SettingsWid> {
                 ),
                 SizedBox(height: 20),
                 Text(
-                  "Social",
+                  AppLocalizations.of(context)!.social,
                   style: GoogleFonts.inter(
                     fontSize: 15,
                     color: Theme.of(context).colorScheme.onSurface,
@@ -331,7 +332,7 @@ class _SettingsWidState extends State<SettingsWid> {
                 ),
                 SettingItem_regu(
                   title:
-                      'On your profile, people can see who’s following you and who you’re following',
+                      AppLocalizations.of(context)!.profileVisibility,
                   value: FancyToggle(
                     value: _socialToggle,
                     onChanged: (bool newValue) {
@@ -342,7 +343,7 @@ class _SettingsWidState extends State<SettingsWid> {
                   ),
                 ),
                 SettingItem_regu(
-                  title: 'Share my listening activity on Lyra',
+                  title: AppLocalizations.of(context)!.shareListeningActivity,
                   value: FancyToggle(
                     value: _activityToggle,
                     onChanged: (bool newValue) {
@@ -420,7 +421,7 @@ class _ChangePasswordButtonState extends State<ChangePasswordButton> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Edit',
+                AppLocalizations.of(context)!.edit,
                 style: GoogleFonts.inter(
                   fontSize: 13,
                   color: _backgroundColor(context),
@@ -498,7 +499,7 @@ class _LogoutButtonState extends State<LogoutButton> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Log out',
+                AppLocalizations.of(context)!.logout,
                 style: GoogleFonts.inter(
                   fontSize: 15,
                   color: _iconColor(context),

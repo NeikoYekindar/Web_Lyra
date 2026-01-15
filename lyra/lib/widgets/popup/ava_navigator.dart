@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lyra/navigation/profile_action.dart';
+import 'package:lyra/l10n/app_localizations.dart';
+
 
 class ProfileNavigatorMenu extends StatelessWidget {
   final void Function(ProfileAction action) onSelect;
@@ -30,21 +32,21 @@ class ProfileNavigatorMenu extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _MenuItem(
-              label: "Dashboard",
+              label: AppLocalizations.of(context)!.dashboard,
               trailing: Icons.open_in_new_rounded,
               onPressed: () => _select(context, ProfileAction.dashboard),
             ),
             _MenuItem(
-              label: "Profile",
+              label: AppLocalizations.of(context)!.profile,
               onPressed: () => _select(context, ProfileAction.profile),
             ),
             _MenuItem(
-              label: "Support",
+              label: AppLocalizations.of(context)!.support,
               trailing: Icons.open_in_new_rounded,
               onPressed: () => _select(context, ProfileAction.support),
             ),
             _MenuItem(
-              label: "Settings",
+              label: AppLocalizations.of(context)!.settings,
               onPressed: () => _select(context, ProfileAction.settings),
             ),
 
@@ -56,7 +58,7 @@ class ProfileNavigatorMenu extends StatelessWidget {
             ),
 
             _MenuItem(
-              label: "Log out",
+              label: AppLocalizations.of(context)!.logout,
               color: Colors.red[300],
               onPressed: () => _select(context, ProfileAction.logout),
             ),
