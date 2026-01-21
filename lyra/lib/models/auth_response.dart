@@ -5,14 +5,14 @@ class AuthResponse {
   final String accessToken;
   final String refreshToken;
   final String expiresIn;
-  final UserModel user;
+  final UserModel? user;
 
   const AuthResponse({
     required this.tokenType,
     required this.accessToken,
     required this.refreshToken,
     required this.expiresIn,
-    required this.user,
+    this.user,
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
@@ -21,16 +21,33 @@ class AuthResponse {
       accessToken: json['access_token']?.toString() ?? '',
       refreshToken: json['refresh_token']?.toString() ?? '',
       expiresIn: json['expires_in']?.toString() ?? '',
-      user: UserModel.fromJson(json['user'] as Map<String, dynamic>),
+      user: json['user'] != null
+          ? UserModel.fromJson(json['user'] as Map<String, dynamic>)
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'token_type': tokenType,
-        'access_token': accessToken,
-        'refresh_token': refreshToken,
-        'expires_in': expiresIn,
-        'user': user.toJson(),
-      };
-      
+    'token_type': tokenType,
+    'access_token': accessToken,
+    'refresh_token': refreshToken,
+    'expires_in': expiresIn,
+    if (user != null) 'user': user!.toJson(),
+  };
+}
+
+class SendResponse {
+  final String? message;
+  final bool success;
+
+  SendResponse({this.message, this.success = false});
+
+  factory SendResponse.fromJson(Map<String, dynamic> json) {
+    return SendResponse(
+      message: json['message']?.toString(),
+      success: json['success'] == true,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {'message': message, 'success': success};
 }

@@ -71,7 +71,9 @@ class _TrackItemState extends State<TrackItem> {
               // Ảnh bài hát
               ClipRRect(
                 borderRadius: BorderRadius.circular(6),
-                child: buildCoverImage(widget.image),
+                child: buildCoverImage(
+                  widget.image.isEmpty ? 'assets/images/HTH.png' : widget.image,
+                ),
               ),
               const SizedBox(width: 12),
 

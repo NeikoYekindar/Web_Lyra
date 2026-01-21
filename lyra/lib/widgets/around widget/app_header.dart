@@ -11,7 +11,6 @@ import 'package:lyra/shell/app_routes.dart';
 import 'package:lyra/shell/app_shell_controller.dart';
 import 'package:lyra/l10n/app_localizations.dart';
 
-
 class AppHeader extends StatelessWidget {
   final VoidCallback? onBrowseAllPressed;
   final Function(String)? onSearchChanged;
@@ -90,7 +89,8 @@ class AppHeader extends StatelessWidget {
                       child: TextField(
                         onChanged: onSearchChanged,
                         decoration: InputDecoration(
-                          hintText: AppLocalizations.of(context)!.search,
+                          hintText:
+                              AppLocalizations.of(context)?.search ?? 'Search',
                           hintStyle: TextStyle(
                             color: Theme.of(
                               context,

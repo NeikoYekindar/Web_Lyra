@@ -32,6 +32,12 @@ class CurrentUser {
     userNotifier.value = null;
   }
 
+  /// Clear user data from SharedPreferences
+  Future<void> clearPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('current_user');
+  }
+
   /// Update the current user fields partially and notify listeners.
   void update(UserModel Function(UserModel) updater) {
     if (_user == null) return;

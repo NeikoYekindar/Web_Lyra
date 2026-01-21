@@ -3,9 +3,14 @@ import 'package:lyra/widgets/common/circle_icon_container.dart';
 import 'package:lyra/widgets/common/custom_button.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:confetti/confetti.dart';
+import 'package:lyra/core/di/service_locator.dart';
+import 'package:lyra/widgets/welcome/welcome_login.dart';
 
 class EnterNewPasswordScreen extends StatefulWidget {
-  const EnterNewPasswordScreen({super.key});
+  final String email;
+
+  const EnterNewPasswordScreen({Key? key, required this.email})
+    : super(key: key);
 
   @override
   _EnterNewPasswordScreenState createState() => _EnterNewPasswordScreenState();
@@ -58,18 +63,53 @@ class _EnterNewPasswordScreenState extends State<EnterNewPasswordScreen> {
       _isLoading = true;
     });
 
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final userService = ServiceLocator().userService;
+      await userService.resetPassword(
+        email: widget.email,
+        newPassword: _passwordController.text,
+      );
 
-    // Show snackbar then switch to success UI
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Password updated.')));
+      if (!mounted) return;
 
-    setState(() {
-      _isLoading = false;
-      _isSuccess = true;
-    });
-    _confettiController.play();
+      setState(() {
+        _isLoading = false;
+        _isSuccess = true;
+      });
+      _confettiController.play();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password reset successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Navigate to login after 2 seconds
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (_) => const WelcomeLogin(),
+            ),
+            (route) => false,
+          );
+        }
+      });
+    } catch (error) {
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to reset password: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -399,15 +439,22 @@ class _EnterNewPasswordScreenState extends State<EnterNewPasswordScreen> {
                       color: Color(0xFFDA0707),
                     ),
                     const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                      child: Text(
-                        'Back to Login',
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFFDA0707),
-                          fontSize: 14,
+                    MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (_) => WelcomeLogin()),
+                          );
+                        },
+
+                        child: Text(
+                          'Back to Login',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFDA0707),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),

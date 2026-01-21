@@ -5,16 +5,24 @@ import 'dart:async';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lyra/providers/auth_provider.dart';
+import 'package:lyra/core/di/service_locator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lyra/widgets/common/circle_icon_container.dart';
 import 'package:lyra/widgets/common/custom_button.dart';
-import 'package:lyra/widgets/reset_pass/fp_enter_new_password.dart';
+import 'package:lyra/widgets/welcome/welcome_create_profile.dart';
+import 'package:lyra/models/current_user.dart';
 
 class WelcomeVerifyEmail extends StatefulWidget {
   final String? initialEmail;
+  final VoidCallback? onBackPressed;
+  final String? createdUserId;
 
-  WelcomeVerifyEmail({Key? key, this.initialEmail}) : super(key: key);
+  WelcomeVerifyEmail({
+    Key? key,
+    this.initialEmail,
+    this.onBackPressed,
+    this.createdUserId,
+  }) : super(key: key);
 
   @override
   _WelcomeVerifyEmailScreenState createState() =>
@@ -40,38 +48,40 @@ class _WelcomeVerifyEmailScreenState extends State<WelcomeVerifyEmail> {
     });
 
     try {
-      // await Provider.of<AuthProvider>(context, listen: false)
-      //     .sendEmailVerification(_emailController.text.trim());
+      final code = _codeControllers.map((c) => c.text.trim()).join();
+      if (code.length != 6) {
+        throw Exception('Please enter all 6 digits');
+      }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Verification email sent. Please check your inbox.'),
-        ),
-      );
-      // mock verification: accept code '123456'
-      final entered = _codeControllers.map((c) => c.text.trim()).join();
-      if (entered == '123456') {
-        return true;
-      } else {
-        // For mock, show error if code incorrect
+      final userService = ServiceLocator().userService;
+      final email = widget.initialEmail ?? _emailController.text.trim();
+
+      await userService.verifyOtp(email: email, otp: code);
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Invalid code (mock). Try 123456 for testing.'),
+            content: Text('Email verified successfully!'),
+            backgroundColor: Colors.green,
           ),
         );
-        return false;
       }
+      return true;
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to send verification email. Please try again.'),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Verification failed: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
       return false;
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -108,6 +118,11 @@ class _WelcomeVerifyEmailScreenState extends State<WelcomeVerifyEmail> {
     _codeFocusNodes = List.generate(6, (_) => FocusNode());
     if (widget.initialEmail != null) {
       _emailController.text = widget.initialEmail!;
+
+      // Auto-send OTP when screen loads
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _sendInitialOtp();
+      });
     }
 
     // restore resend timer if saved
@@ -128,6 +143,39 @@ class _WelcomeVerifyEmailScreenState extends State<WelcomeVerifyEmail> {
     }
   }
 
+  Future<void> _sendInitialOtp() async {
+    try {
+      setState(() => _isLoading = true);
+      final userService = ServiceLocator().userService;
+      final email = widget.initialEmail ?? _emailController.text.trim();
+
+      await userService.sendVerifyEmail(email);
+
+      if (mounted) {
+        _startResendCountdown(60);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Verification code sent to $email'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send code: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   void _updateCodeComplete() {
     final complete = _codeControllers.every((c) => c.text.trim().isNotEmpty);
     if (complete != _isCodeComplete) setState(() => _isCodeComplete = complete);
@@ -142,7 +190,10 @@ class _WelcomeVerifyEmailScreenState extends State<WelcomeVerifyEmail> {
         backgroundColor: const Color(0xFF0A0A0A), // hoặc Color(0xFF0A0A0A)
         foregroundColor: Colors.white, // text/icon color
         elevation: 3,
-        leading: BackButton(color: Colors.white),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: widget.onBackPressed ?? () => Navigator.maybePop(context),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -221,60 +272,63 @@ class _WelcomeVerifyEmailScreenState extends State<WelcomeVerifyEmail> {
                           return SizedBox(
                             width: 60,
                             height: 60,
-                            child: TextFormField(
-                              controller: _codeControllers[index],
-                              focusNode: _codeFocusNodes[index],
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                fontSize: 36,
-                                height: 1.0,
-                                color: Colors.white,
-                              ),
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                              maxLength: 1,
-                              decoration: InputDecoration(
-                                counterText: '',
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: const Color(0xFFFFFFFF),
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: const Color(0xFFDA0707),
-                                  ),
-                                ),
-                              ),
-                              onChanged: (val) {
-                                if (_suppressOnChanged) return;
-
-                                // If user pasted multiple characters, distribute them into fields
-                                // but do NOT change focus (no auto-advance).
-                                if (val.length > 1) {
-                                  final chars = val
-                                      .replaceAll(RegExp(r'[^0-9]'), '')
-                                      .split('');
-                                  _suppressOnChanged = true;
-                                  for (
-                                    int i = 0;
-                                    i < chars.length &&
-                                        (index + i) < _codeControllers.length;
-                                    i++
-                                  ) {
-                                    _codeControllers[index + i].text = chars[i];
-                                  }
-                                  Future.microtask(
-                                    () => _suppressOnChanged = false,
-                                  );
-                                  return;
+                            child: RawKeyboardListener(
+                              focusNode: FocusNode(),
+                              onKey: (event) {
+                                if (event is RawKeyDownEvent &&
+                                    event.logicalKey ==
+                                        LogicalKeyboardKey.backspace &&
+                                    _codeControllers[index].text.isEmpty &&
+                                    index > 0) {
+                                  _codeFocusNodes[index - 1].requestFocus();
+                                  _codeControllers[index - 1].clear();
                                 }
-
-                                // Do not auto-advance or move focus on single digit input or backspace.
-                                // Leave focus management to the user.
                               },
+                              child: TextFormField(
+                                controller: _codeControllers[index],
+                                focusNode: _codeFocusNodes[index],
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontSize: 36,
+                                  color: Colors.white,
+                                ),
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
+                                maxLength: 1,
+                                decoration: InputDecoration(
+                                  counterText: '',
+                                  enabledBorder: const OutlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.white),
+                                  ),
+                                  focusedBorder: const OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: Color(0xFFDA0707),
+                                    ),
+                                  ),
+                                ),
+                                onChanged: (value) {
+                                  if (value.length > 1) {
+                                    final digits = value
+                                        .replaceAll(RegExp(r'\D'), '')
+                                        .split('');
+                                    for (
+                                      int i = 0;
+                                      i < digits.length && i < 6;
+                                      i++
+                                    ) {
+                                      _codeControllers[i].text = digits[i];
+                                    }
+                                    _codeFocusNodes.last.requestFocus();
+                                    return;
+                                  }
+
+                                  if (value.isNotEmpty && index < 5) {
+                                    _codeFocusNodes[index + 1].requestFocus();
+                                  }
+                                },
+                              ),
                             ),
                           );
                         }),
@@ -289,14 +343,41 @@ class _WelcomeVerifyEmailScreenState extends State<WelcomeVerifyEmail> {
                           OutlineButtonCustom(
                             onPressed: _resendSecondsLeft == 0 && !_isLoading
                                 ? () async {
-                                    // Trigger resend action here (call provider API if implemented)
-                                    // For now we show a snackbar and start countdown
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Resend code requested'),
-                                      ),
-                                    );
-                                    _startResendCountdown(60);
+                                    try {
+                                      setState(() => _isLoading = true);
+                                      final userService =
+                                          ServiceLocator().userService;
+                                      final email =
+                                          widget.initialEmail ??
+                                          _emailController.text.trim();
+
+                                      await userService.sendVerifyEmail(email);
+
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Verification code sent! Please check your inbox.',
+                                          ),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                      _startResendCountdown(60);
+                                    } catch (error) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Failed to resend code: $error',
+                                          ),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    } finally {
+                                      setState(() => _isLoading = false);
+                                    }
                                   }
                                 : null,
                             child: Text(
@@ -319,13 +400,33 @@ class _WelcomeVerifyEmailScreenState extends State<WelcomeVerifyEmail> {
                                   onPressed: !_isCodeComplete || _isLoading
                                       ? null
                                       : () async {
+                                          // Prevent double-tap by checking _isLoading again
+                                          if (_isLoading) return;
+
                                           final ok =
                                               await _sendVerificationEmail();
                                           if (ok && mounted) {
-                                            Navigator.of(context).push(
+                                            // Get userId from CurrentUser or use email-based placeholder
+                                            final user =
+                                                CurrentUser.instance.user;
+                                            final userId =
+                                                user?.userId ?? 'temp_user';
+
+                                            Navigator.of(
+                                              context,
+                                            ).pushReplacement(
                                               MaterialPageRoute(
                                                 builder: (_) =>
-                                                    const EnterNewPasswordScreen(),
+                                                    WelcomeCreateProfile(
+                                                      onBackPressed: () {
+                                                        // Skip and go to dashboard
+                                                        Navigator.of(
+                                                          context,
+                                                        ).pop();
+                                                      },
+                                                      userId:
+                                                          widget.createdUserId,
+                                                    ),
                                               ),
                                             );
                                           }

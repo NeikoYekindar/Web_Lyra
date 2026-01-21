@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:lyra/providers/auth_provider.dart';
-import 'package:lyra/screens/dashboard_screen.dart';
+import 'package:lyra/providers/auth_provider_v2.dart';
 
 /// LoginController: tách toàn bộ logic ra khỏi file UI.
 class LoginController extends ChangeNotifier {
@@ -27,7 +26,7 @@ class LoginController extends ChangeNotifier {
 
   /// Thực hiện login qua AuthProvider
   Future<void> submit(BuildContext context) async {
-    final auth = context.read<AuthProvider>();
+    final auth = context.read<AuthProviderV2>();
     final email = emailController.text.trim();
     final password = passwordController.text;
 
@@ -38,9 +37,8 @@ class LoginController extends ChangeNotifier {
 
     final ok = await auth.login(email, password);
     if (ok && context.mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
-      );
+      // Pop all routes to root and let AuthGate show AppShell
+      Navigator.of(context).popUntil((route) => route.isFirst);
     } else if (context.mounted) {
       final msg = auth.error ?? 'Login failed';
       _showSnack(context, msg);

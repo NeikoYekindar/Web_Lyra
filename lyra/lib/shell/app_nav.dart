@@ -3,16 +3,25 @@ import 'package:flutter/material.dart';
 // routes
 import 'package:lyra/shell/app_routes.dart';
 
+// models
+import 'package:lyra/models/artist.dart';
+
 // center screens / widgets
 import 'package:lyra/screens/dashboard_screen.dart';
 import 'package:lyra/screens/profile_screen.dart';
-import 'package:lyra/widgets/center%20widget/settings.dart';
+import 'package:lyra/screens/settings_screen.dart';
 import 'package:lyra/widgets/around%20widget/browse_all.dart';
 import 'package:lyra/widgets/center%20widget/lyric_wid.dart';
+import 'package:lyra/screens/artist_screen.dart';
 
 class AppNav {
   /// Navigator key cho CENTER (nested navigator)
-  static final GlobalKey<NavigatorState> key = GlobalKey<NavigatorState>();
+  /// Use a getter to ensure a consistent key reference
+  static GlobalKey<NavigatorState>? _key;
+  static GlobalKey<NavigatorState> get key {
+    _key ??= GlobalKey<NavigatorState>();
+    return _key!;
+  }
 
   /// Route generator cho CENTER
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -34,13 +43,7 @@ class AppNav {
       // SETTINGS
       // =========================
       case AppRoutes.settings:
-        return _page(const SettingsWid());
-
-      // =========================
-      // SUPPORT (NẾU CÓ)
-      // =========================
-      case AppRoutes.support:
-        return _page(const DashboardScreen()); // hoặc SupportScreen nếu có
+        return _page(const SettingsScreen());
 
       // =========================
       // BROWSE ALL
@@ -53,7 +56,9 @@ class AppNav {
       // =========================
       case AppRoutes.lyrics:
         return _page(const LyricWidget());
-
+      case AppRoutes.artist:
+        final artist = settings.arguments as Artist;
+        return _page(ArtistScreen(artist: artist));
       // =========================
       // FALLBACK
       // =========================

@@ -24,7 +24,7 @@ class _ProfileSliverAppBarState extends State<ProfileSliverAppBar> {
 
   @override
   Widget build(BuildContext context) {
-    const double expandedHeight = 350;
+    const double expandedHeight = 240;
 
     return ValueListenableBuilder<double>(
       valueListenable: widget.offset,
@@ -65,11 +65,28 @@ class _RoundedSliverDelegate extends SliverPersistentHeaderDelegate {
         topLeft: Radius.circular(6),
         topRight: Radius.circular(6),
       ),
+
       child: Container(
-        color: Theme.of(context).colorScheme.surface,
+        color: overlapsContent
+            ? Theme.of(context).colorScheme.surface
+            : Theme.of(context).colorScheme.surface,
         child: Stack(
           fit: StackFit.expand,
           children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Theme.of(context).colorScheme.primaryContainer,
+                    Theme.of(
+                      context,
+                    ).colorScheme.primaryContainer.withOpacity(0.3),
+                  ],
+                ),
+              ),
+            ),
             // HEADER LỚN — fade khi scroll (reactive to CurrentUser)
             Opacity(
               opacity: 1 - t,
@@ -94,7 +111,8 @@ class _RoundedSliverDelegate extends SliverPersistentHeaderDelegate {
                   }
 
                   return HeaderInfoSection(
-                    imageSize: 220 - (t * 60),
+                    background: null,
+                    imageSize: 180 - (t * 60),
                     imageShape: BoxShape.circle,
                     image: imageWidget,
                     type: Text(
@@ -107,7 +125,7 @@ class _RoundedSliverDelegate extends SliverPersistentHeaderDelegate {
                     title: Text(
                       displayName,
                       style: GoogleFonts.inter(
-                        fontSize: 80,
+                        fontSize: 60,
                         color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.bold,
                       ),
@@ -115,24 +133,28 @@ class _RoundedSliverDelegate extends SliverPersistentHeaderDelegate {
                     subtitle: Row(
                       children: [
                         Text(
-                          "18 Public Playlists",
+                          user?.publicPlaylists != null
+                              ? "${user!.publicPlaylists} Public Playlists"
+                              : "0 Public Playlists",
                           style: GoogleFonts.inter(
                             color: Theme.of(context).colorScheme.secondary,
-                            fontSize: 20,
+                            fontSize: 17,
                           ),
                         ),
                         Text(
                           "  •  ",
                           style: GoogleFonts.inter(
                             color: Theme.of(context).colorScheme.secondary,
-                            fontSize: 20,
+                            fontSize: 17,
                           ),
                         ),
                         Text(
-                          "36 Following",
+                          user?.following != null
+                              ? "${user!.following} Following"
+                              : "0 Following",
                           style: GoogleFonts.inter(
                             color: Theme.of(context).colorScheme.onSurface,
-                            fontSize: 20,
+                            fontSize: 1,
                           ),
                         ),
                       ],
@@ -145,8 +167,8 @@ class _RoundedSliverDelegate extends SliverPersistentHeaderDelegate {
             // ICON BUTTON — CHỒNG LÊN Ở GÓC PHẢI
             if (t < 1)
               Positioned(
-                top: 40,
-                right: 16,
+                top: 20,
+                right: 8,
                 child: IconButton(
                   icon: Icon(
                     Icons.open_in_new_outlined,
@@ -208,7 +230,7 @@ class _RoundedSliverDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => expandedHeight;
 
   @override
-  double get minExtent => kToolbarHeight + 10;
+  double get minExtent => kToolbarHeight;
 
   @override
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {

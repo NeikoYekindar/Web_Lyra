@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:http/http.dart';
+import 'package:lyra/core/di/service_locator.dart';
 import 'package:lyra/theme/app_theme.dart';
 import 'package:lyra/l10n/app_localizations.dart';
-
+import '../../services/music_service_v2.dart' hide Artist;
+import '../../models/track.dart';
+import '../../models/artist.dart';
+import 'package:provider/provider.dart';
+import '../../providers/music_player_provider.dart';
+import '../../shell/app_shell_controller.dart';
+import '../../shell/app_nav.dart';
+import '../../shell/app_routes.dart';
 // import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
 // Removed flutter_svg import (unused after cleanup)
 
@@ -16,137 +27,59 @@ class _HomeCenterState extends State<HomeCenter> {
   bool _isPlaying = false;
   int _selectedCategoryIndex = 0; // Index của category được chọn
   List<String> _categories = []; // Danh sách categories từ API
-  List<Map<String, dynamic>> _trendingSongs = [];
-  List<Map<String, dynamic>> _popularArtists = [];
+  List<Track> _trendingSongs = [];
+  List<Artist> _popularArtists = [];
   bool _isLoadingCategories = true;
   bool _isLoadingTrendingSongs = true;
+  bool _isLoadingPopularArtists = true;
   List<Map<String, dynamic>> _favoriteItems = []; // Danh sách yêu thích
   bool _isLoadingFavorites = true;
 
   @override
   void initState() {
     super.initState();
-    _loadCategories();
-    _loadFavoriteItems();
-    _loadTrendingSongs();
-    _loadPopularArtists();
+    _loadAllData();
+  }
+
+  // Load all data in parallel for better performance
+  Future<void> _loadAllData() async {
+    await Future.wait([
+      _loadCategories(),
+      _loadFavoriteItems(),
+      _loadTrendingSongs(),
+      _loadPopularArtists(),
+    ]);
   }
 
   Future<void> _loadPopularArtists() async {
     try {
-      // Giả lập API call
-      await Future.delayed(const Duration(milliseconds: 800));
-
-      final List<Map<String, dynamic>> apiResponse = [
-        {
-          'id': '1',
-          'name': 'Sơn Tùng M-TP',
-          'image': 'assets/images/artists_mtp.png',
-          'role': 'Singer',
-        },
-        {
-          'id': '2',
-          'name': 'Seachains',
-          'image': 'assets/images/seachains.png',
-          'role': 'Singer',
-        },
-        {
-          'id': '3',
-          'name': 'Soobin',
-          'image': 'assets/images/soobin.png',
-          'role': 'Singer',
-        },
-        {
-          'id': '4',
-          'name': 'Saabirose',
-          'image': 'assets/images/saabirose.png',
-          'role': 'Singer',
-        },
-        // Thêm các nghệ sĩ khác tương tự
-      ];
+      final musicservice = ServiceLocator().musicService;
+      final response = await musicservice.getTopArtists(limit: 10);
 
       if (mounted) {
         setState(() {
-          _popularArtists = apiResponse;
-          _isLoadingTrendingSongs = false;
+          _popularArtists = response;
+          _isLoadingPopularArtists = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _popularArtists = [];
+          _isLoadingPopularArtists = false;
         });
       }
-      print('Error loading popular artists: $e');
+      print('❌ Error loading popular artists: $e');
     }
   }
 
   Future<void> _loadTrendingSongs() async {
     try {
-      // Giả lập API call
-      await Future.delayed(const Duration(milliseconds: 800));
-
-      final List<Map<String, dynamic>> apiResponse = [
-        {
-          'id': '1',
-          'title': 'Không Buông',
-          'artist': 'hngle, Ari',
-          'image': 'assets/images/khongbuon.png',
-        },
-        {
-          'id': '2',
-          'title': 'EM XIN "SAY HI" 2025',
-          'artist': 'Cao Dân',
-          'image': 'assets/images/emxinsayhi_2025.png',
-        },
-        {
-          'id': '3',
-          'title': 'Playlist Sơn Tùng M-TP',
-          'artist': 'Trần Mai Trung Kiên',
-          'image': 'assets/images/playlist_mtp.png',
-        },
-        {
-          'id': '4',
-          'title': 'Không Buông',
-          'artist': 'hngle, Ari',
-          'image': 'assets/images/khongbuon.png',
-        },
-        {
-          'id': '5',
-          'title': 'Không Buông',
-          'artist': 'hngle, Ari',
-          'image': 'assets/images/khongbuon.png',
-        },
-        {
-          'id': '6',
-          'title': 'Không Buông',
-          'artist': 'hngle, Ari',
-          'image': 'assets/images/khongbuon.png',
-        },
-        {
-          'id': '7',
-          'title': 'Không Buông',
-          'artist': 'hngle, Ari',
-          'image': 'assets/images/khongbuon.png',
-        },
-        {
-          'id': '8',
-          'title': 'Không Buông',
-          'artist': 'hngle, Ari',
-          'image': 'assets/images/khongbuon.png',
-        },
-        {
-          'id': '9',
-          'title': 'Không Buông',
-          'artist': 'hngle, Ari',
-          'image': 'assets/images/khongbuon.png',
-        },
-        // Thêm các bài hát khác tương tự
-      ];
-
+      final musicservice = ServiceLocator().musicService;
+      final response = await musicservice.getTrendingTracks(limit: 10);
       if (mounted) {
         setState(() {
-          _trendingSongs = apiResponse;
+          _trendingSongs = response;
           _isLoadingTrendingSongs = false;
         });
       }
@@ -154,6 +87,7 @@ class _HomeCenterState extends State<HomeCenter> {
       if (mounted) {
         setState(() {
           _trendingSongs = [];
+          _isLoadingTrendingSongs = false;
         });
       }
       print('Error loading trending songs: $e');
@@ -169,13 +103,10 @@ class _HomeCenterState extends State<HomeCenter> {
       await Future.delayed(const Duration(seconds: 1)); // Giả lập network delay
       final List<String> apiResponse = [
         'All',
-        'Music',
-        'Podcasts',
-        'Audiobooks',
+
         'Playlists',
         'Artists',
         'Albums',
-        'Live Radio',
       ];
 
       if (mounted) {
@@ -312,13 +243,44 @@ class _HomeCenterState extends State<HomeCenter> {
   }
 
   // Method để xử lý khi user tap vào trending song
-  void _onTrendingSongTapped(Map<String, dynamic> song) {
-    print('Tapped trending song: ${song['title']} by ${song['artist']}');
-    // TODO: Implement play song or navigate to song detail
+  void _onTrendingSongTapped(Track song) async {
+    try {
+      final musicPlayerProvider = Provider.of<MusicPlayerProvider>(
+        context,
+        listen: false,
+      );
+      final shellController = Provider.of<AppShellController>(
+        context,
+        listen: false,
+      );
+
+      // Load the track into player with full trending songs as queue
+      await musicPlayerProvider.setTrack(song, queue: _trendingSongs);
+
+      // Always play the new track
+      musicPlayerProvider.play();
+
+      // Show player maximized view if not already shown
+      if (!shellController.isPlayerMaximized) {
+        shellController.toggleMaximizePlayer();
+      }
+
+      print('Playing: ${song.trackName} by ${song.artist}');
+      print('Queue size: ${_trendingSongs.length}');
+    } catch (e) {
+      print('Error playing song: $e');
+    }
   }
 
-  void _onPopularArtistTapped(Map<String, dynamic> artist) {
-    print('Tapped popular artist: ${artist['name']}');
+  void _onPopularArtistTapped(Artist artist) {
+    print('Tapped popular artist: ${artist.nickname}');
+
+    // Use SchedulerBinding to navigate after current frame to avoid GlobalKey conflicts
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        AppNav.key.currentState?.pushNamed(AppRoutes.artist, arguments: artist);
+      }
+    });
   }
 
   // Gọi API để lấy nội dung theo category
@@ -362,156 +324,188 @@ class _HomeCenterState extends State<HomeCenter> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: double.infinity,
-              height: 240,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(6),
-                color: Theme.of(context).colorScheme.tertiaryContainer,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start, // Căn trái
-                crossAxisAlignment:
-                    CrossAxisAlignment.center, // Căn giữa theo chiều dọc
-                children: [
-                  // Left Side - Image
-                  Container(
-                    width: 200,
-                    height: 200,
-                    margin: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Image(
-                      image: AssetImage('assets/images/HTH.png'),
-                      fit: BoxFit.cover,
-                    ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                // Adjust layout based on available width
+                final isNarrow = constraints.maxWidth < 600;
+                final isMedium = constraints.maxWidth < 900;
+
+                return Container(
+                  width: double.infinity,
+                  height: isNarrow ? 180 : 240,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                    color: Theme.of(context).colorScheme.tertiaryContainer,
                   ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Left Side - Image
+                      if (!isNarrow)
+                        Container(
+                          width: isNarrow ? 120 : (isMedium ? 150 : 200),
+                          height: isNarrow ? 120 : (isMedium ? 150 : 200),
+                          margin: EdgeInsets.all(isNarrow ? 12 : 20),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Image(
+                            image: AssetImage('assets/images/HTH.png'),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
 
-                  // Right Side - Text Info
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 30),
-                              Text(
-                                'Album',
-                                style: TextStyle(
-                                  color: const Color(0xFFFFFFFF),
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 20),
-                              Text(
-                                'Ai Cũng Phải Bắt Đầu Từ Đâu Đó',
-                                style: TextStyle(
-                                  color: const Color(0xFFFFFFFF),
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 10),
-                              // Text(
-                              //   'Sơn Tùng M-TP • Single',
-                              //   style: TextStyle(
-                              //     color: Colors.grey,
-                              //     fontSize: 16,
-                              //   ),
-                              // ),
-                              const Spacer(), // Đẩy container xuống dưới cùng
-                              Container(
-                                alignment: Alignment.bottomLeft,
-                                margin: const EdgeInsets.only(bottom: 10),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      width: 30,
-                                      height: 30,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(30),
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.primary,
-                                      ),
-                                      child: const Image(
-                                        image: AssetImage(
-                                          'assets/images/HTH_icon.png',
-                                        ),
-                                        fit: BoxFit.fill,
-                                      ),
+                      // Right Side - Text Info
+                      Expanded(
+                        child: Stack(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.all(isNarrow ? 12 : 20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  SizedBox(height: isNarrow ? 10 : 30),
+                                  Text(
+                                    'Album',
+                                    style: TextStyle(
+                                      color: const Color(0xFFFFFFFF),
+                                      fontSize: isNarrow
+                                          ? 14
+                                          : (isMedium ? 16 : 20),
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      'HIEUTHUHAI • 2023 • 13 songs, 39 min 44 sec ',
-                                      style: TextStyle(
-                                        color: const Color(0xFFB0B0B0),
-                                        fontSize: 16,
-                                      ),
+                                  ),
+                                  SizedBox(height: isNarrow ? 8 : 20),
+                                  Text(
+                                    'Ai Cũng Phải Bắt Đầu Từ Đâu Đó',
+                                    style: TextStyle(
+                                      color: const Color(0xFFFFFFFF),
+                                      fontSize: isNarrow
+                                          ? 16
+                                          : (isMedium ? 20 : 30),
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                    const Spacer(),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          _isPlaying = !_isPlaying;
-                                        });
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Theme.of(
-                                          context,
-                                        ).colorScheme.primary,
-                                        foregroundColor: Theme.of(
-                                          context,
-                                        ).colorScheme.onPrimary,
-
-                                        minimumSize: const Size(95, 50),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            16,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const Spacer(),
+                                  Container(
+                                    alignment: Alignment.bottomLeft,
+                                    margin: EdgeInsets.only(
+                                      bottom: isNarrow ? 5 : 10,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        if (!isNarrow)
+                                          Container(
+                                            width: 30,
+                                            height: 30,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(30),
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.primary,
+                                            ),
+                                            child: const Image(
+                                              image: AssetImage(
+                                                'assets/images/HTH_icon.png',
+                                              ),
+                                              fit: BoxFit.fill,
+                                            ),
+                                          ),
+                                        if (!isNarrow)
+                                          const SizedBox(width: 10),
+                                        Flexible(
+                                          child: Text(
+                                            isNarrow
+                                                ? 'HIEUTHUHAI • 2023'
+                                                : (isMedium
+                                                      ? 'HIEUTHUHAI • 2023 • 13 songs'
+                                                      : 'HIEUTHUHAI • 2023 • 13 songs, 39 min 44 sec '),
+                                            style: TextStyle(
+                                              color: const Color(0xFFB0B0B0),
+                                              fontSize: isNarrow
+                                                  ? 11
+                                                  : (isMedium ? 13 : 16),
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
-                                        elevation: 0,
-                                      ),
-                                      child: Text(
-                                        _isPlaying ? AppLocalizations.of(context)!.pause : AppLocalizations.of(context)!.play,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
+                                        const SizedBox(width: 10),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              _isPlaying = !_isPlaying;
+                                            });
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                            foregroundColor: Theme.of(
+                                              context,
+                                            ).colorScheme.onPrimary,
+                                            minimumSize: Size(
+                                              isNarrow ? 60 : 95,
+                                              isNarrow ? 36 : 50,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                            ),
+                                            elevation: 0,
+                                          ),
+                                          child: Text(
+                                            _isPlaying
+                                                ? (AppLocalizations.of(
+                                                        context,
+                                                      )?.pause ??
+                                                      'Pause')
+                                                : (AppLocalizations.of(
+                                                        context,
+                                                      )?.play ??
+                                                      'Play'),
+                                            style: TextStyle(
+                                              fontSize: isNarrow ? 12 : 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Close button positioned at top right
+                            Positioned(
+                              top: 5,
+                              right: 5,
+                              child: IconButton(
+                                onPressed: () {},
+                                icon: Icon(
+                                  Icons.close,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant
+                                      .withOpacity(0.6),
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                        // Close button positioned at top right
-                        Positioned(
-                          top: 5,
-                          right: 5,
-                          child: IconButton(
-                            onPressed: () {},
-                            icon: Icon(
-                              Icons.close,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant.withOpacity(0.6),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      if (!isNarrow) const SizedBox(width: 16),
+                    ],
                   ),
-                  const SizedBox(width: 16),
-                ],
-              ),
+                );
+              },
             ),
             const SizedBox(height: 16),
             Container(
@@ -572,7 +566,7 @@ class _HomeCenterState extends State<HomeCenter> {
             ),
             const SizedBox(height: 24),
 
-            // Favorite items grid (2 rows x 4 columns)
+            // Favorite items grid - responsive based on available width
             _isLoadingFavorites
                 ? const Center(
                     child: CircularProgressIndicator(
@@ -580,32 +574,46 @@ class _HomeCenterState extends State<HomeCenter> {
                       strokeWidth: 2,
                     ),
                   )
-                : GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 4, // 4 columns
-                          childAspectRatio:
-                              6, // Tỷ lệ rộng hơn để items thấp hơn
+                : LayoutBuilder(
+                    builder: (context, constraints) {
+                      // Calculate column count based on available width
+                      int crossAxisCount;
+                      if (constraints.maxWidth > 1200) {
+                        crossAxisCount = 4; // Wide screen: 4 columns
+                      } else if (constraints.maxWidth > 800) {
+                        crossAxisCount = 3; // Medium: 3 columns
+                      } else if (constraints.maxWidth > 500) {
+                        crossAxisCount = 2; // Narrow: 2 columns
+                      } else {
+                        crossAxisCount = 1; // Very narrow: 1 column
+                      }
+
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          childAspectRatio: 6,
                           crossAxisSpacing: 12,
-                          mainAxisSpacing: 8, // Giảm spacing giữa các hàng
+                          mainAxisSpacing: 8,
                         ),
-                    itemCount: _favoriteItems.length > 8
-                        ? 8
-                        : _favoriteItems.length,
-                    itemBuilder: (context, index) {
-                      final item = _favoriteItems[index];
-                      return _FavoriteItemCard(
-                        item: item,
-                        onTap: () => _onFavoriteItemTapped(item),
+                        itemCount: _favoriteItems.length > 8
+                            ? 8
+                            : _favoriteItems.length,
+                        itemBuilder: (context, index) {
+                          final item = _favoriteItems[index];
+                          return _FavoriteItemCard(
+                            item: item,
+                            onTap: () => _onFavoriteItemTapped(item),
+                          );
+                        },
                       );
                     },
                   ),
             const SizedBox(height: 16),
 
             Text(
-              AppLocalizations.of(context)!.trendingSongs,
+              AppLocalizations.of(context)?.trendingSongs ?? 'Trending Songs',
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 20,
@@ -614,20 +622,27 @@ class _HomeCenterState extends State<HomeCenter> {
             ),
             const SizedBox(height: 16),
 
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(color: Colors.transparent),
-              child: _isLoadingTrendingSongs
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppTheme.redPrimary,
-                        strokeWidth: 2,
+            _isLoadingTrendingSongs
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: AppTheme.redPrimary,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : SizedBox(
+                    height: 300,
+                    child: ScrollConfiguration(
+                      behavior: ScrollConfiguration.of(context).copyWith(
+                        dragDevices: {
+                          PointerDeviceKind.touch,
+                          PointerDeviceKind.mouse,
+                        },
                       ),
-                    )
-                  : SizedBox(
-                      height: 300,
                       child: ListView.separated(
+                        primary: false,
+                        shrinkWrap: true,
                         scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
                         itemCount: _trendingSongs.length,
                         separatorBuilder: (context, index) =>
                             const SizedBox(width: 20),
@@ -640,7 +655,7 @@ class _HomeCenterState extends State<HomeCenter> {
                         },
                       ),
                     ),
-            ),
+                  ),
             const SizedBox(height: 16),
 
             Text(
@@ -654,20 +669,27 @@ class _HomeCenterState extends State<HomeCenter> {
 
             const SizedBox(height: 16),
 
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(color: Colors.transparent),
-              child: _isLoadingTrendingSongs
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppTheme.redPrimary,
-                        strokeWidth: 2,
+            _isLoadingPopularArtists
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: AppTheme.redPrimary,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : SizedBox(
+                    height: 300,
+                    child: ScrollConfiguration(
+                      behavior: ScrollConfiguration.of(context).copyWith(
+                        dragDevices: {
+                          PointerDeviceKind.touch,
+                          PointerDeviceKind.mouse,
+                        },
                       ),
-                    )
-                  : SizedBox(
-                      height: 300,
                       child: ListView.separated(
+                        primary: false,
+                        shrinkWrap: true,
                         scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
                         itemCount: _popularArtists.length,
                         separatorBuilder: (context, index) =>
                             const SizedBox(width: 20),
@@ -680,7 +702,7 @@ class _HomeCenterState extends State<HomeCenter> {
                         },
                       ),
                     ),
-            ),
+                  ),
           ],
         ),
       ),
@@ -840,7 +862,7 @@ class _FavoriteItemCardState extends State<_FavoriteItemCard> {
 }
 
 class _PopularArtistCard extends StatefulWidget {
-  final Map<String, dynamic> artist;
+  final Artist artist;
   final VoidCallback onTap;
 
   const _PopularArtistCard({required this.artist, required this.onTap});
@@ -877,12 +899,42 @@ class _PopularArtistCardState extends State<_PopularArtistCard> {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(200),
-                      child: Image.asset(
-                        widget.artist['image'],
-                        width: 200,
-                        height: 200,
-                        fit: BoxFit.cover,
-                      ),
+                      child:
+                          widget.artist.imageUrl != null &&
+                              widget.artist.imageUrl!.startsWith('http')
+                          ? Image.network(
+                              widget.artist.imageUrl!,
+                              width: 200,
+                              height: 200,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                    width: 200,
+                                    height: 200,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[800],
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.person,
+                                      color: Colors.white54,
+                                      size: 80,
+                                    ),
+                                  ),
+                            )
+                          : Container(
+                              width: 200,
+                              height: 200,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[800],
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.person,
+                                color: Colors.white54,
+                                size: 80,
+                              ),
+                            ),
                     ),
 
                     if (_isHovered)
@@ -914,7 +966,7 @@ class _PopularArtistCardState extends State<_PopularArtistCard> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  widget.artist['name'],
+                  widget.artist.nickname,
                   style: TextStyle(
                     color: _isHovered
                         ? Theme.of(context).colorScheme.onSurface
@@ -929,7 +981,7 @@ class _PopularArtistCardState extends State<_PopularArtistCard> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  widget.artist['role'],
+                  'Artist',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 12,
@@ -948,7 +1000,7 @@ class _PopularArtistCardState extends State<_PopularArtistCard> {
 
 // Widget riêng để xử lý hover effect cho trending songs
 class _TrendingSongCard extends StatefulWidget {
-  final Map<String, dynamic> song;
+  final Track song;
   final VoidCallback onTap;
 
   const _TrendingSongCard({required this.song, required this.onTap});
@@ -983,12 +1035,7 @@ class _TrendingSongCardState extends State<_TrendingSongCard> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.asset(
-                      widget.song['image'],
-                      width: 200,
-                      height: 200,
-                      fit: BoxFit.cover,
-                    ),
+                    child: _buildTrackImage(widget.song.trackImageUrl),
                   ),
                   if (_isHovered)
                     Positioned(
@@ -1020,7 +1067,7 @@ class _TrendingSongCardState extends State<_TrendingSongCard> {
               ),
               const SizedBox(height: 8),
               Text(
-                widget.song['title'],
+                widget.song.trackName,
                 style: TextStyle(
                   color: _isHovered
                       ? Theme.of(context).colorScheme.onSurface
@@ -1035,7 +1082,9 @@ class _TrendingSongCardState extends State<_TrendingSongCard> {
               ),
               const SizedBox(height: 4),
               Text(
-                widget.song['artist'],
+                widget
+                    .song
+                    .artist, // Uses artist getter (nickname if available, else artistId)
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 12,
@@ -1043,9 +1092,71 @@ class _TrendingSongCardState extends State<_TrendingSongCard> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
+              const SizedBox(height: 6),
+              Text(
+                _formatDuration(widget.song.duration),
+                style: TextStyle(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.7),
+                  fontSize: 12,
+                ),
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  String _formatDuration(int seconds) {
+    final minutes = seconds ~/ 60;
+    final remainingSeconds = seconds % 60;
+    return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+
+  Widget _buildTrackImage(String imageUrl) {
+    // If empty or null, use default image immediately
+    if (imageUrl.isEmpty) {
+      return _buildDefaultImage();
+    }
+
+    // If it's a valid HTTP URL, try loading from network
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return Image.network(
+        imageUrl,
+        width: 200,
+        height: 200,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _buildDefaultImage(),
+      );
+    }
+
+    // If it's a relative path, try loading from assets
+    final assetPath = imageUrl.startsWith('assets/')
+        ? imageUrl
+        : 'assets/$imageUrl';
+
+    return Image.asset(
+      assetPath,
+      width: 200,
+      height: 200,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => _buildDefaultImage(),
+    );
+  }
+
+  Widget _buildDefaultImage() {
+    return Image.asset(
+      'assets/images/HTH.png',
+      width: 200,
+      height: 200,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Container(
+        width: 200,
+        height: 200,
+        color: Colors.grey[800],
+        child: const Icon(Icons.music_note, color: Colors.white54, size: 48),
       ),
     );
   }

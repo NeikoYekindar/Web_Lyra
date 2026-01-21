@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lyra/theme/app_theme.dart';
+import 'package:lyra/core/di/service_locator.dart';
+import 'package:provider/provider.dart';
+import '../../providers/music_player_provider.dart';
+import '../../models/track.dart';
+import '../../shell/app_shell_controller.dart';
 
 class LeftSidebarMini extends StatefulWidget {
   final VoidCallback? onLibraryIconPressed;
@@ -16,12 +21,49 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
   List<Map<String, dynamic>> PlaylistsUserImages = [];
   bool _isLoadingPlaylistsUser = true;
   bool _isLoadingAlbums = true;
+  List<Track> _recentTracks = [];
+  bool _isLoadingTracks = true;
+  List<Track> _queueTracks = []; // Queue lớn hơn cho playback
 
   @override
   void initState() {
     super.initState();
     _loadAlbumImages();
     _loadPlayListUser();
+    _loadRecentTracks();
+  }
+
+  Future<void> _loadRecentTracks() async {
+    try {
+      // Load both recent tracks and top tracks for queue
+      final recentTracks = await serviceLocator.musicService.getRecentTracks();
+
+      if (mounted) {
+        setState(() {
+          _recentTracks = recentTracks;
+          // Combine recent and top tracks for queue, remove duplicates
+          final allTracks = [...recentTracks];
+          final seenIds = <String>{};
+          _queueTracks = allTracks.where((track) {
+            if (seenIds.contains(track.trackId)) {
+              return false;
+            }
+            seenIds.add(track.trackId);
+            return true;
+          }).toList();
+          _isLoadingTracks = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading recent tracks: $e');
+      if (mounted) {
+        setState(() {
+          _recentTracks = [];
+          _queueTracks = [];
+          _isLoadingTracks = false;
+        });
+      }
+    }
   }
 
   Future<void> _loadPlayListUser() async {
@@ -233,26 +275,16 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
           ),
           const SizedBox(height: 16),
 
-          // Hiển thị danh sách album icons
+          // Hiển thị recent tracks icons
           Expanded(
-            child: _isLoadingAlbums
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  )
-                : ListView.separated(
-                    itemCount: PlaylistsUserImages.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      return _buildAlbumIconPNG(
-                        PlaylistsUserImages[index]['image'],
-                        false,
-                      );
-                    },
-                  ),
+            child: ListView.separated(
+              itemCount: _recentTracks.length > 3 ? 3 : _recentTracks.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 8),
+              itemBuilder: (context, index) {
+                final track = _recentTracks[index];
+                return _buildTrackIconMini(track, false);
+              },
+            ),
           ),
         ],
       ),
@@ -272,17 +304,14 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
         color: isActive ? const Color(0xFF2A2A2A) : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: IconButton(
-        onPressed: onPressed ?? () {},
-        style: IconButton.styleFrom(overlayColor: Colors.transparent),
-        icon: SvgPicture.asset(
-          svgPath,
-          width: 25,
-          height: 25,
-          // colorFilter: ColorFilter.mode(
-          //   isActive ? Colors.white : Colors.grey,
-          //   BlendMode.srcIn,
-          // ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: onPressed ?? () {},
+          child: Center(
+            child: SvgPicture.asset(svgPath, width: 25, height: 25),
+          ),
         ),
       ),
     );
@@ -296,17 +325,14 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
         color: isActive ? const Color(0xFF2A2A2A) : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: IconButton(
-        onPressed: () {},
-        style: IconButton.styleFrom(overlayColor: Colors.transparent),
-        icon: SvgPicture.asset(
-          svgPath,
-          width: 45,
-          height: 45,
-          // colorFilter: ColorFilter.mode(
-          //   isActive ? Colors.white : Colors.grey,
-          //   BlendMode.srcIn,
-          // ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () {},
+          child: Center(
+            child: SvgPicture.asset(svgPath, width: 45, height: 45),
+          ),
         ),
       ),
     );
@@ -320,39 +346,42 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
         color: isActive ? const Color(0xFF2A2A2A) : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: IconButton(
-        onPressed: () {
-          print('Clicked album: $pngPath'); // Debug log
-        },
-        style: IconButton.styleFrom(overlayColor: Colors.transparent),
-        icon: ClipRRect(
-          borderRadius: BorderRadius.circular(6),
-          child: Image.asset(
-            pngPath,
-            width: 50,
-            height: 50,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              // Fallback widget khi không load được PNG
-              return Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      _getAlbumColor(pngPath),
-                      _getAlbumColor(pngPath).withOpacity(0.7),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () {
+            print('Clicked album: $pngPath'); // Debug log
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: Image.asset(
+              pngPath,
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                // Fallback widget khi không load được PNG
+                return Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        _getAlbumColor(pngPath),
+                        _getAlbumColor(pngPath).withOpacity(0.7),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Center(
-                  child: Icon(Icons.album, color: Colors.white, size: 60),
-                ),
-              );
-            },
+                  child: const Center(
+                    child: Icon(Icons.album, color: Colors.white, size: 60),
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -365,5 +394,81 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
     if (pngPath.contains('album2')) return Colors.blue;
     if (pngPath.contains('album3')) return Colors.green;
     return Colors.orange; // Default color
+  }
+
+  Widget _buildTrackIconMini(Track track, bool isActive) {
+    return GestureDetector(
+      onTap: () => _onTrackTapped(track),
+      child: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFF2A2A2A) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: track.trackImageUrl.isNotEmpty
+              ? Image.network(
+                  track.trackImageUrl,
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade800,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Icon(
+                        Icons.music_note,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                    );
+                  },
+                )
+              : Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade800,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Icon(
+                    Icons.music_note,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                ),
+        ),
+      ),
+    );
+  }
+
+  void _onTrackTapped(Track track) async {
+    try {
+      final musicPlayerProvider = Provider.of<MusicPlayerProvider>(
+        context,
+        listen: false,
+      );
+      final shellController = Provider.of<AppShellController>(
+        context,
+        listen: false,
+      );
+
+      // Load track with full queue (at least 10 tracks)
+      await musicPlayerProvider.setTrack(track, queue: _queueTracks);
+      musicPlayerProvider.play();
+
+      // Show player if not shown
+      if (!shellController.isPlayerMaximized) {
+        shellController.toggleMaximizePlayer();
+      }
+    } catch (e) {
+      print('Error playing track: $e');
+    }
   }
 }

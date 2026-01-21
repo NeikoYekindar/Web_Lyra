@@ -1,1 +1,1 @@
-enum ProfileAction { dashboard, profile, support, settings, logout }
+enum ProfileAction { dashboard, profile, settings, logout }

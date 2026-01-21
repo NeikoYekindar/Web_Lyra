@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:lyra/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_player_provider.dart';
-import '../../providers/auth_provider.dart';
+import '../../providers/auth_provider_v2.dart';
 import '../../services/playlist_service.dart';
 import 'right_playlist_user_card.dart';
 import 'right_sidebar_controller.dart';
 import '../../services/left_sidebar_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../shell/app_shell_controller.dart';
+import 'package:lyra/models/track.dart';
 
 class MockArtistService {
   static Future<Map<String, dynamic>?> getArtistInfo(String artistName) async {
@@ -16,7 +17,7 @@ class MockArtistService {
     await Future.delayed(const Duration(seconds: 1));
     return {
       'image': 'assets/images/image 18.png', // Ví dụ ảnh Sơn Tùng
-      'listeners': '2,044,507 monthly listeners',
+      'listeners': '2,345,567 monthly listeners',
       'bio': 'Nguyễn Thanh Tùng, born in 1994...',
       'more_info':
           'Nguyễn Thanh Tùng, born in 1994, known professionally as Sơn Tùng M-TP, is a Vietnamese singer, songwriter, producer, and actor. He is not only known as one of the ...',
@@ -42,33 +43,47 @@ class RightSidebarDetailSong extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(
-                'Now Playing',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Spacer(),
-              IconButton(
-                onPressed: () {
-                  final shell = Provider.of<AppShellController?>(
-                    context,
-                    listen: false,
-                  );
-                  if (shell != null) {
-                    shell.closeNowPlayingDetail();
-                  } else {
-                    // fallback: if controller isn't found just pop
-                    Navigator.of(context).pop();
-                  }
-                },
-                icon: const Icon(Icons.close, color: Colors.grey),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Hide close button when too narrow
+              final showButton = constraints.maxWidth > 50;
+              return Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Now Playing',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (showButton)
+                    IconButton(
+                      onPressed: () {
+                        final shell = Provider.of<AppShellController?>(
+                          context,
+                          listen: false,
+                        );
+                        if (shell != null) {
+                          shell.closeNowPlayingDetail();
+                        } else {
+                          // fallback: if controller isn't found just pop
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      icon: const Icon(Icons.close, color: Colors.grey),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 32,
+                        height: 32,
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 16),
 
@@ -79,31 +94,20 @@ class RightSidebarDetailSong extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Ảnh Album
-                  Container(
-                    width: double.infinity,
-                    height: 300,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      width: double.infinity,
+                      height: 300,
                       color: Colors.grey.shade800,
-                      image: track != null && track.albumArtUrl.isNotEmpty
-                          ? (track.albumArtUrl.startsWith('http')
-                                ? DecorationImage(
-                                    image: NetworkImage(track.albumArtUrl),
-                                    fit: BoxFit.cover,
-                                  )
-                                : DecorationImage(
-                                    image: AssetImage(track.albumArtUrl),
-                                    fit: BoxFit.cover,
-                                  ))
-                          : null,
+                      child: track == null || track.albumArtUrl.isEmpty
+                          ? const Icon(
+                              Icons.music_note,
+                              color: Colors.white,
+                              size: 60,
+                            )
+                          : _buildSidebarImage(track.albumArtUrl),
                     ),
-                    child: (track == null || track.albumArtUrl.isEmpty)
-                        ? const Icon(
-                            Icons.music_note,
-                            color: Colors.white,
-                            size: 60,
-                          )
-                        : null,
                   ),
                   const SizedBox(height: 20),
 
@@ -137,34 +141,48 @@ class RightSidebarDetailSong extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // Header Next Queue
-                  Row(
-                    children: [
-                      Text(
-                        'Next in queue',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: () {
-                          // Xử lý mở full queue
-                        },
-                        child: Text(
-                          'Open queue',
-                          style: TextStyle(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-
-                            fontSize: 12,
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      // Hide button when width is too narrow
+                      final showButton = constraints.maxWidth > 120;
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Next in queue',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                      ),
-                    ],
+                          if (showButton)
+                            TextButton(
+                              onPressed: () {},
+                              style: TextButton.styleFrom(
+                                minimumSize: Size.zero,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: Text(
+                                'Open',
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
                   ),
+
                   const SizedBox(height: 10),
 
                   // List Queue
@@ -182,20 +200,96 @@ class RightSidebarDetailSong extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildSidebarImage(String imageUrl) {
+    if (imageUrl.isEmpty) {
+      return const Icon(Icons.music_note, color: Colors.white, size: 60);
+    }
+
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return Image.network(
+        imageUrl,
+        width: double.infinity,
+        height: 300,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Image.asset(
+          'assets/images/HTH.png',
+          width: double.infinity,
+          height: 300,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) =>
+              const Icon(Icons.music_note, color: Colors.white, size: 60),
+        ),
+      );
+    }
+
+    final assetPath = imageUrl.startsWith('assets/')
+        ? imageUrl
+        : 'assets/$imageUrl';
+    return Image.asset(
+      assetPath,
+      width: double.infinity,
+      height: 300,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Image.asset(
+        'assets/images/HTH.png',
+        width: double.infinity,
+        height: 300,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) =>
+            const Icon(Icons.music_note, color: Colors.white, size: 60),
+      ),
+    );
+  }
 }
 
-class _ArtistInfoCard extends StatelessWidget {
+class _ArtistInfoCard extends StatefulWidget {
   final String artistName;
-
   const _ArtistInfoCard({required this.artistName});
+
+  @override
+  State<_ArtistInfoCard> createState() => _ArtistInfoCardState();
+}
+
+class _ArtistInfoCardState extends State<_ArtistInfoCard> {
+  late Future<Map<String, dynamic>?> _future;
+  bool _isFollowing = false;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = MockArtistService.getArtistInfo(widget.artistName);
+  }
+
+  Future<void> _toggleFollow() async {
+    setState(() => _isLoading = true);
+
+    // Simulate API call delay
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    setState(() {
+      _isFollowing = !_isFollowing;
+      _isLoading = false;
+    });
+
+    // TODO: Call actual API to follow/unfollow artist
+    // try {
+    //   if (_isFollowing) {
+    //     await MusicServiceV2().followArtist(widget.artistName);
+    //   } else {
+    //     await MusicServiceV2().unfollowArtist(widget.artistName);
+    //   }
+    // } catch (e) {
+    //   debugPrint('Error toggling follow: $e');
+    // }
+  }
 
   @override
   Widget build(BuildContext context) {
     // Gọi API lấy thông tin chi tiết nghệ sĩ
     return FutureBuilder<Map<String, dynamic>?>(
-      future: MockArtistService.getArtistInfo(
-        artistName,
-      ), // Thay bằng Service thật
+      future: _future, // Thay bằng Service thật
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Container(
@@ -229,10 +323,22 @@ class _ArtistInfoCard extends StatelessWidget {
                   Container(
                     height: 180,
                     width: double.infinity,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: NetworkImage(imageUrl),
+                    color: Colors.grey.shade800,
+                    child: Image.network(
+                      imageUrl,
+                      width: double.infinity,
+                      height: 180,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Image.asset(
+                        'assets/images/HTH.png',
+                        width: double.infinity,
+                        height: 180,
                         fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.person,
+                          color: Colors.white54,
+                          size: 60,
+                        ),
                       ),
                     ),
                   ),
@@ -260,7 +366,7 @@ class _ArtistInfoCard extends StatelessWidget {
                     bottom: 12,
                     left: 12,
                     child: Text(
-                      artistName,
+                      widget.artistName,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -280,66 +386,49 @@ class _ArtistInfoCard extends StatelessWidget {
                       .start, // Căn lề trái cho toàn bộ nội dung
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
+                    Wrap(
+                      runSpacing: 8,
                       children: [
                         Text(
-                          listeners ?? 'N/A Listeners',
-                          style: TextStyle(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-
-                            fontSize: 12,
+                          listeners ?? '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _toggleFollow,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _isFollowing
+                                  ? Theme.of(context).colorScheme.surfaceVariant
+                                  : Theme.of(context).colorScheme.primary,
+                              foregroundColor: _isFollowing
+                                  ? Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant
+                                  : Theme.of(context).colorScheme.onPrimary,
+                            ),
+                            child: _isLoading
+                                ? SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onPrimary,
+                                    ),
+                                  )
+                                : Text(_isFollowing ? 'Following' : 'Follow'),
                           ),
                         ),
-                        const Spacer(),
-                        ElevatedButton(
-                          onPressed: () {},
-                          style:
-                              ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                foregroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface,
-                                side: const BorderSide(color: Colors.grey),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 0,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                elevation: 0,
-                                // Thêm dòng này nếu bạn muốn chắc chắn không có bóng đổ khi hover
-                                shadowColor: Colors.transparent,
-                              ).copyWith(
-                                // Logic xử lý riêng cho overlayColor
-                                overlayColor:
-                                    MaterialStateProperty.resolveWith<Color?>((
-                                      Set<MaterialState> states,
-                                    ) {
-                                      if (states.contains(
-                                        MaterialState.hovered,
-                                      )) {
-                                        return Colors
-                                            .transparent; // Trả về màu trong suốt khi hover
-                                      }
-                                      return null; // Giữ nguyên hiệu ứng mặc định cho các trạng thái khác (như khi bấm)
-                                    }),
-                              ),
-                          child: const Text(
-                            'Follow',
-                            style: TextStyle(fontSize: 12),
-                          ),
-                        ),
-
-                        // Bạn có thể thêm đoạn Bio ngắn ở đây
                       ],
                     ),
+
                     const SizedBox(height: 8),
-                    if (more_info != null && more_info!.isNotEmpty)
+                    if (more_info != null && more_info.isNotEmpty)
                       Text(
-                        more_info!,
+                        more_info,
                         maxLines: 2, // Giới hạn 2 dòng để không bị dài quá
                         overflow:
                             TextOverflow.ellipsis, // Hiện dấu ... nếu dài quá
@@ -367,26 +456,18 @@ class _NextQueueSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: LeftSidebarService.getPlaylistsUser(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(20.0),
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-          );
-        }
+    return Consumer<MusicPlayerProvider>(
+      builder: (context, player, _) {
+        final queue = player.queue;
+        final currentTrack = player.currentTrack;
 
-        final list = snapshot.data ?? const <Map<String, dynamic>>[];
+        // Filter out current track to show only "next" tracks
+        final nextTracks = currentTrack != null
+            ? queue.where((t) => t.trackId != currentTrack.trackId).toList()
+            : queue;
 
         // TRƯỜNG HỢP LIST RỖNG
-        if (list.isEmpty) {
+        if (nextTracks.isEmpty) {
           return Container(
             decoration: BoxDecoration(
               color: Theme.of(
@@ -395,7 +476,10 @@ class _NextQueueSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             padding: const EdgeInsets.all(12),
-            child: Row(
+            child: Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Container(
                   width: 48,
@@ -410,26 +494,31 @@ class _NextQueueSection extends StatelessWidget {
                     size: 22,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 200),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
-                        'Không có bài hát tiếp theo',
+                      Text(
+                        'No next track',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Hàng đợi hiện đang trống',
+                        'Queue is empty',
                         style: TextStyle(
-                          color: Colors.grey.shade400,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           fontSize: 12,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -438,90 +527,157 @@ class _NextQueueSection extends StatelessWidget {
             ),
           );
         }
-        final item = list.first;
-        final title =
-            item['title']?.toString() ?? item['name']?.toString() ?? 'Bài hát';
-        final artist =
-            item['artist']?.toString() ?? item['owner']?.toString() ?? '';
-        final coverUrl =
-            item['albumArtUrl']?.toString() ?? item['image']?.toString() ?? '';
+
+        final track = nextTracks.first;
+        final title = track.trackName;
+        final artist = track.artist;
+        final coverUrl = track.trackImageUrl;
         final hasImage = coverUrl.isNotEmpty;
 
-        return Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.secondaryContainer,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(6),
-                  color: Theme.of(context).colorScheme.secondaryContainer,
-                  image: hasImage
-                      ? (coverUrl.startsWith('http')
-                            ? DecorationImage(
-                                image: NetworkImage(coverUrl),
-                                fit: BoxFit.cover,
-                              )
-                            : DecorationImage(
-                                image: AssetImage(coverUrl),
-                                fit: BoxFit.cover,
-                              ))
-                      : null,
-                ),
-                child: hasImage
-                    ? null
-                    : const Icon(
-                        Icons.music_note,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      artist,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            // Hide content if too narrow to display anything meaningful
+            if (constraints.maxWidth < 60) {
+              return const SizedBox.shrink();
+            }
 
-                        fontSize: 13,
-                      ),
+            // Scale down for very narrow widths
+            final isNarrow = constraints.maxWidth < 150;
+            final imageSize = isNarrow ? 32.0 : 48.0;
+            final spacing = isNarrow ? 4.0 : 8.0;
+            final padding = isNarrow ? 4.0 : 8.0;
+            final fontSize = isNarrow ? 12.0 : 15.0;
+            final artistFontSize = isNarrow ? 10.0 : 13.0;
+            final buttonSize = isNarrow ? 28.0 : 36.0;
+            final iconSize = isNarrow ? 18.0 : 20.0;
+
+            return Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: EdgeInsets.all(padding),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      width: imageSize,
+                      height: imageSize,
+                      color: Theme.of(context).colorScheme.secondaryContainer,
+                      child: hasImage
+                          ? _buildQueueImage(coverUrl, imageSize)
+                          : Icon(
+                              Icons.music_note,
+                              color: Colors.white,
+                              size: imageSize * 0.5,
+                            ),
                     ),
-                  ],
-                ),
+                  ),
+                  SizedBox(width: spacing),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontSize: fontSize,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (!isNarrow) const SizedBox(height: 4),
+                        Text(
+                          artist,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                            fontSize: artistFontSize,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints.tightFor(
+                      width: buttonSize,
+                      height: buttonSize,
+                    ),
+                    icon: Icon(
+                      Icons.play_arrow_rounded,
+                      color: Theme.of(context).colorScheme.onSurface,
+                      size: iconSize,
+                    ),
+                    onPressed: () async {
+                      try {
+                        final existing = player.queue;
+                        final List<Track> rotated = [
+                          track,
+                          ...existing.where((t) => t.trackId != track.trackId),
+                        ];
+                        await player.setTrack(track, queue: rotated);
+                        player.play();
+                      } catch (e) {
+                        debugPrint('Error playing next track directly: $e');
+                      }
+                    },
+                  ),
+                ],
               ),
-              // Nút Play nhỏ bên cạnh nếu cần
-              IconButton(
-                icon: Icon(
-                  Icons.play_arrow_rounded,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                onPressed: () {},
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
+    );
+  }
+
+  Widget _buildQueueImage(String imageUrl, [double size = 48]) {
+    if (imageUrl.isEmpty) {
+      return Icon(Icons.music_note, color: Colors.white, size: size * 0.5);
+    }
+
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return Image.network(
+        imageUrl,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Image.asset(
+          'assets/images/HTH.png',
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) =>
+              Icon(Icons.music_note, color: Colors.white, size: size * 0.5),
+        ),
+      );
+    }
+
+    final assetPath = imageUrl.startsWith('assets/')
+        ? imageUrl
+        : 'assets/$imageUrl';
+    return Image.asset(
+      assetPath,
+      width: size,
+      height: size,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Image.asset(
+        'assets/images/HTH.png',
+        width: 48,
+        height: 48,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) =>
+            const Icon(Icons.music_note, color: Colors.white, size: 24),
+      ),
     );
   }
 }

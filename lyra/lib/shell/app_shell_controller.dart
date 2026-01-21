@@ -99,6 +99,6 @@ class AppShellController extends ChangeNotifier {
 
   /// Called after first frame to load initial data.
   void init(BuildContext context) {
-    context.read<MusicPlayerProvider>().loadDemoTrack();
+    // No longer loading demo track - will restore last played track instead
   }
 }

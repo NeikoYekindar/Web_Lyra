@@ -19,10 +19,16 @@ class RightSidebarController extends ChangeNotifier {
   void onClosePressed() {
     // TODO: close sidebar or trigger a callback via higher-level controller
   }
-  
+
   bool isLoadingNextPlaylist = false;
   List<Map<String, dynamic>> playlistsUser = [];
-  
+
+  void setPlaylists(List<Map<String, dynamic>> playlists) {
+    playlistsUser = playlists;
+    isLoadingNextPlaylist = false;
+    notifyListeners();
+  }
+
   Future<void> fetchUserPlaylists(
     Future<List<Map<String, dynamic>>> Function() fetcher,
   ) async {
@@ -39,7 +45,7 @@ class RightSidebarController extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   void onPlaylistUserTapped(Map<String, dynamic> playlist) {
     // TODO: navigate to playlist or start play
   }

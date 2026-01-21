@@ -26,12 +26,24 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   _showSignup = false;
                 });
               },
+              onLoginPressed: () {
+                setState(() {
+                  _showSignup = false;
+                  _showLogin = true;
+                });
+              },
             )
           : _showLogin
           ? WelcomeLogin(
               onBackPressed: () {
                 setState(() {
                   _showLogin = false;
+                });
+              },
+              onSignupPressed: () {
+                setState(() {
+                  _showLogin = false;
+                  _showSignup = true;
                 });
               },
             )

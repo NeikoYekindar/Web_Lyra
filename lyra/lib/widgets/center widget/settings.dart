@@ -80,7 +80,7 @@ class _SettingsWidState extends State<SettingsWid> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  AppLocalizations.of(context)!.settings,
+                  AppLocalizations.of(context)?.settings ?? 'Settings',
                   style: GoogleFonts.inter(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
@@ -89,7 +89,7 @@ class _SettingsWidState extends State<SettingsWid> {
                 ),
                 const SizedBox(height: 45),
                 Text(
-                  AppLocalizations.of(context)!.profile,
+                  AppLocalizations.of(context)?.profile ?? 'Profile',
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -110,7 +110,15 @@ class _SettingsWidState extends State<SettingsWid> {
 
                   child: ValueListenableBuilder<UserModel?>(
                     valueListenable: CurrentUser.instance.userNotifier,
+
                     builder: (context, UserModel? user, _) {
+                      debugPrint('favoriteGenres raw: ${user?.favoriteGenres}');
+                      debugPrint(
+                        'favoriteGenres joined: ${user?.favoriteGenres?.join(", ")}',
+                      );
+                      user?.favoriteGenres?.forEach(
+                        (g) => debugPrint('genre: $g'),
+                      );
                       final emailStr = user?.email ?? '';
                       final username = emailStr.isNotEmpty
                           ? emailStr.split('@').first
@@ -158,17 +166,18 @@ class _SettingsWidState extends State<SettingsWid> {
                                             : Icon(Icons.person, size: 110),
                                       ),
                                       const SizedBox(height: 10),
-                                      Text(
-                                        user?.displayName ?? 'Trùm UIT',
-                                        textAlign: TextAlign.center,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.onSurface,
+                                      if (user?.displayName != null)
+                                        Text(
+                                          user!.displayName,
+                                          textAlign: TextAlign.center,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.onSurface,
+                                          ),
                                         ),
-                                      ),
                                       Text(
                                         username,
                                         textAlign: TextAlign.center,
@@ -193,72 +202,90 @@ class _SettingsWidState extends State<SettingsWid> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
-                                  SettingItem_bold(
-                                    title: 'Email',
-                                    value: Text(
-                                      user?.email ?? '@gmail.com',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurfaceVariant,
+                                  if (user?.email != null)
+                                    SettingItem_bold(
+                                      title: 'Email',
+                                      value: Text(
+                                        user!.email,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  SettingItem_bold(
-                                    title: AppLocalizations.of(context)!.gender,
-                                    value: Text(
-                                      user?.gender ?? 'Male',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurfaceVariant,
+                                  if (user?.gender != null)
+                                    SettingItem_bold(
+                                      title:
+                                          AppLocalizations.of(
+                                            context,
+                                          )?.gender ??
+                                          'Gender',
+                                      value: Text(
+                                        user!.gender!,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  SettingItem_bold(
-                                    title: AppLocalizations.of(context)!.dateOfBirth,
-                                    value: Text(
-                                      user != null && user.dateOfBirth != null
-                                          ? '${user.dateOfBirth!.day.toString().padLeft(2, '0')}/${user.dateOfBirth!.month.toString().padLeft(2, '0')}/${user.dateOfBirth!.year}'
-                                          : '07/05/2004',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurfaceVariant,
+                                  if (user?.dateOfBirth != null)
+                                    SettingItem_bold(
+                                      title:
+                                          AppLocalizations.of(
+                                            context,
+                                          )?.dateOfBirth ??
+                                          'Date of Birth',
+                                      value: Text(
+                                        '${user!.dateOfBirth!.day.toString().padLeft(2, '0')}/${user.dateOfBirth!.month.toString().padLeft(2, '0')}/${user.dateOfBirth!.year}',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  SettingItem_bold(
-                                    title: 'Bio',
-                                    value: Text(
-                                      user?.bio ?? 'kakakakaka',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurfaceVariant,
+                                  if (user?.bio != null &&
+                                      user!.bio!.isNotEmpty)
+                                    SettingItem_bold(
+                                      title: 'Bio',
+                                      value: Text(
+                                        user.bio!,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  SettingItem_bold(
-                                    title: AppLocalizations.of(context)!.favorite,
-                                    value: Wrap(
-                                      spacing: 8,
-                                      runSpacing: 8,
-                                      children: (user?.favoriteGenres ?? types)
-                                          .map(
-                                            (type) => FavoriteCard(
-                                              item: type,
-                                              isPicked: true,
-                                              minHeight: 36,
-                                            ),
-                                          )
-                                          .toList(),
+
+                                  if (user?.favoriteGenres != null &&
+                                      user!.favoriteGenres!.isNotEmpty)
+                                    SettingItem_bold(
+                                      title:
+                                          AppLocalizations.of(
+                                            context,
+                                          )?.favorite ??
+                                          'Favorite',
+                                      value: Wrap(
+                                        spacing: 8,
+                                        runSpacing: 8,
+                                        children: user.favoriteGenres!
+                                            .map(
+                                              (type) => FavoriteCard(
+                                                item: type,
+                                                isPicked: true,
+                                                minHeight: 36,
+                                              ),
+                                            )
+                                            .toList(),
+                                      ),
                                     ),
-                                  ),
                                 ],
                               ),
                             ),
@@ -269,7 +296,9 @@ class _SettingsWidState extends State<SettingsWid> {
                   ),
                 ),
                 SettingItem_bold(
-                  title: AppLocalizations.of(context)!.changePassword,
+                  title:
+                      AppLocalizations.of(context)?.changePassword ??
+                      'Change Password',
                   value: ChangePasswordButton(
                     onTap: () {
                       showGeneralDialog(
@@ -306,7 +335,7 @@ class _SettingsWidState extends State<SettingsWid> {
                 ),
                 SizedBox(height: 20),
                 Text(
-                  AppLocalizations.of(context)!.language,
+                  AppLocalizations.of(context)?.language ?? 'Language',
                   style: GoogleFonts.inter(
                     fontSize: 15,
                     color: Theme.of(context).colorScheme.onSurface,
@@ -315,7 +344,8 @@ class _SettingsWidState extends State<SettingsWid> {
                 ),
                 SettingItem_regu(
                   title:
-                      AppLocalizations.of(context)!.languagePreference,
+                      AppLocalizations.of(context)?.languagePreference ??
+                      'Language Preference',
                   value: ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: 250, minWidth: 200),
                     child: Container(width: 250, child: LanguageDropdown()),
@@ -323,7 +353,7 @@ class _SettingsWidState extends State<SettingsWid> {
                 ),
                 SizedBox(height: 20),
                 Text(
-                  AppLocalizations.of(context)!.social,
+                  AppLocalizations.of(context)?.social ?? 'Social',
                   style: GoogleFonts.inter(
                     fontSize: 15,
                     color: Theme.of(context).colorScheme.onSurface,
@@ -332,7 +362,8 @@ class _SettingsWidState extends State<SettingsWid> {
                 ),
                 SettingItem_regu(
                   title:
-                      AppLocalizations.of(context)!.profileVisibility,
+                      AppLocalizations.of(context)?.profileVisibility ??
+                      'Profile Visibility',
                   value: FancyToggle(
                     value: _socialToggle,
                     onChanged: (bool newValue) {
@@ -343,7 +374,9 @@ class _SettingsWidState extends State<SettingsWid> {
                   ),
                 ),
                 SettingItem_regu(
-                  title: AppLocalizations.of(context)!.shareListeningActivity,
+                  title:
+                      AppLocalizations.of(context)?.shareListeningActivity ??
+                      'Share Listening Activity',
                   value: FancyToggle(
                     value: _activityToggle,
                     onChanged: (bool newValue) {
@@ -421,7 +454,7 @@ class _ChangePasswordButtonState extends State<ChangePasswordButton> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                AppLocalizations.of(context)!.edit,
+                AppLocalizations.of(context)?.edit ?? 'Edit',
                 style: GoogleFonts.inter(
                   fontSize: 13,
                   color: _backgroundColor(context),
@@ -499,7 +532,7 @@ class _LogoutButtonState extends State<LogoutButton> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                AppLocalizations.of(context)!.logout,
+                AppLocalizations.of(context)?.logout ?? 'Logout',
                 style: GoogleFonts.inter(
                   fontSize: 15,
                   color: _iconColor(context),

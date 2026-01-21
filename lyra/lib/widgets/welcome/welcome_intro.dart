@@ -62,201 +62,148 @@ class _WelcomeIntroState extends State<WelcomeIntro>
           fit: BoxFit.cover,
         ),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const SizedBox(height: 200),
-          FadeTransition(
-            opacity: _fadeAnimation,
-            child: SlideTransition(
-              position: _slideAnimation,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(height: 100),
+            FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: Text(
+                  'Your Music, Your Way',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 48,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: -1.5,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.3),
+                        offset: const Offset(0, 4),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            FadeTransition(
+              opacity: _fadeAnimation,
+              child: Column(
+                children: [
+                  Text(
+                    'Stream millions of songs with Lyra. Discover new artists, create',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      color: Colors.white.withOpacity(0.9),
+                      height: 1.5,
+                    ),
+                  ),
+                  Text(
+                    'playlists, and enjoy your favorite music anywhere.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      color: Colors.white.withOpacity(0.9),
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 65),
+            FadeTransition(
+              opacity: _fadeAnimation,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  PrimaryButton(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 75,
+                      vertical: 12,
+                    ),
+                    child: Text(
+                      'Sign up',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    onPressed: () {
+                      widget.onSignupPressed?.call();
+                    },
+                  ),
+                  const SizedBox(width: 16),
+                  OutlineButtonCustom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 75,
+                      vertical: 12,
+                    ),
+                    child: Text(
+                      'Sign in',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    onPressed: () {
+                      widget.onLoginPressed?.call();
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            FadeTransition(
+              opacity: _fadeAnimation,
               child: Text(
-                'Your Music, Your Way',
-                style: GoogleFonts.montserrat(
-                  fontSize: 48,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                  letterSpacing: -1.5,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withOpacity(0.3),
-                      offset: const Offset(0, 4),
-                      blurRadius: 8,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          FadeTransition(
-            opacity: _fadeAnimation,
-            child: Column(
-              children: [
-                Text(
-                  'Stream millions of songs with Lyra. Discover new artists, create',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    color: Colors.white.withOpacity(0.9),
-                    height: 1.5,
-                  ),
-                ),
-                Text(
-                  'playlists, and enjoy your favorite music anywhere.',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    color: Colors.white.withOpacity(0.9),
-                    height: 1.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 65),
-          FadeTransition(
-            opacity: _fadeAnimation,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                PrimaryButton(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 75,
-                    vertical: 12,
-                  ),
-                  child: Text(
-                    'Sign up',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  onPressed: () {
-                    widget.onSignupPressed?.call();
-                  },
-                ),
-                const SizedBox(width: 16),
-                OutlineButtonCustom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 75,
-                    vertical: 12,
-                  ),
-                  child: Text(
-                    'Sign in',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  onPressed: () {
-                    widget.onLoginPressed?.call();
-                  },
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          FadeTransition(
-            opacity: _fadeAnimation,
-            child: Text(
-              '',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: Colors.white.withOpacity(0.7),
-              ),
-            ),
-          ),
-          const Spacer(),
-          FadeTransition(
-            opacity: _fadeAnimation,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _FeatureCard(
-                  icon: 'assets/icons/music_welcome_icon.svg',
-                  title: 'Millions of Songs',
-                  description1: 'Access a vast library of music from',
-                  description2: 'artists around the world',
-                ),
-                const SizedBox(width: 90),
-                _FeatureCard(
-                  icon: 'assets/icons/heart_welcome_icon.svg',
-                  title: 'Personalized',
-                  description1: 'Get recommendations based on',
-                  description2: 'your unique musical taste',
-                ),
-                const SizedBox(width: 90),
-                _FeatureCard(
-                  icon: 'assets/icons/anywhere_welcome_icon.svg',
-                  title: 'Anywhere',
-                  description1: 'Listen on any device, online or offline',
-                  description2: 'wherever you go',
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 50),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'By continuing, you agree to Lyra\'s ',
+                '',
                 style: GoogleFonts.inter(
-                  fontSize: 12,
+                  fontSize: 14,
                   color: Colors.white.withOpacity(0.7),
                 ),
               ),
-              MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: () {
-                    // Navigate to Terms of Service
-                  },
-                  child: Text(
-                    'Terms of Service',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: const Color(0xFFDC0404),
-                      fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.underline,
-                      decorationColor: const Color(0xFFDC0404),
-                    ),
+            ),
+            const SizedBox(height: 40),
+            FadeTransition(
+              opacity: _fadeAnimation,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _FeatureCard(
+                    icon: 'assets/icons/music_welcome_icon.svg',
+                    title: 'Millions of Songs',
+                    description1: 'Access a vast library of music from',
+                    description2: 'artists around the world',
                   ),
-                ),
-              ),
-              Text(
-                ' and ',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: Colors.white.withOpacity(0.7),
-                ),
-              ),
-              MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: () {
-                    // Navigate to Privacy Policy
-                  },
-                  child: Text(
-                    'Privacy Policy',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: const Color(0xFFDC0404),
-                      fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.underline,
-                      decorationColor: const Color(0xFFDC0404),
-                    ),
+                  const SizedBox(width: 90),
+                  _FeatureCard(
+                    icon: 'assets/icons/heart_welcome_icon.svg',
+                    title: 'Personalized',
+                    description1: 'Get recommendations based on',
+                    description2: 'your unique musical taste',
                   ),
-                ),
+                  const SizedBox(width: 90),
+                  _FeatureCard(
+                    icon: 'assets/icons/anywhere_welcome_icon.svg',
+                    title: 'Anywhere',
+                    description1: 'Listen on any device, online or offline',
+                    description2: 'wherever you go',
+                  ),
+                ],
               ),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(height: 50),
+          ],
+        ),
       ),
     );
   }

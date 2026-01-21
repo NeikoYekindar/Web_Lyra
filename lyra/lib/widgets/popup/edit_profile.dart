@@ -5,6 +5,8 @@ import 'package:lyra/l10n/app_localizations.dart';
 import 'package:lyra/widgets/common/favorite_card.dart';
 import '../../models/current_user.dart';
 import '../../models/user.dart';
+import '../../core/di/service_locator.dart';
+import '../../services/user_service_v2.dart';
 
 class EditProfilePopup extends StatefulWidget {
   const EditProfilePopup({super.key});
@@ -41,7 +43,15 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
     _initialEmail = user?.email ?? '';
     // Initialize bio from user if present
     _initialBio = user?.bio ?? '';
-    _initialGender = user?.gender ?? AppLocalizations.of(context)!.male;
+    // Map stored gender values to canonical labels for now; localization applied later
+    _initialGender = (() {
+      final raw = user?.gender;
+      if (raw == null) return 'Male';
+      final lower = raw.toString().toLowerCase();
+      if (lower == 'male' || lower == 'm' || lower == 'nam') return 'Male';
+      if (lower == 'female' || lower == 'f' || lower == 'nu') return 'Female';
+      return 'Male';
+    })();
     _initialDob = user?.dateOfBirth ?? DateTime(2004, 5, 7);
     _initialGenres = user?.favoriteGenres != null
         ? List<String>.from(user!.favoriteGenres!)
@@ -60,6 +70,26 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
     displayNameController.addListener(_checkChanges);
     emailController.addListener(_checkChanges);
     bioController.addListener(_checkChanges);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Now safe to read localized strings from AppLocalizations
+    final loc = AppLocalizations.of(context)!;
+    final user = CurrentUser.instance.user;
+    final localizedGender = (() {
+      final raw = user?.gender;
+      if (raw == null) return loc.male;
+      final lower = raw.toString().toLowerCase();
+      if (lower == 'male' || lower == 'm' || lower == 'nam') return loc.male;
+      if (lower == 'female' || lower == 'f' || lower == 'nu') return loc.female;
+      return loc.male;
+    })();
+
+    _initialGender = localizedGender;
+    gender = _initialGender;
+    if (mounted) setState(() {});
   }
 
   Future<void> _changeAvatar() async {
@@ -299,7 +329,8 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                   /// DISPLAY NAME
                   buildInput(
                     AppLocalizations.of(context)!.displayName,
-                    CurrentUser.instance.user?.displayName ?? AppLocalizations.of(context)!.yourName,
+                    CurrentUser.instance.user?.displayName ??
+                        AppLocalizations.of(context)!.yourName,
                     controller: displayNameController,
                   ),
                   const SizedBox(height: 10),
@@ -461,81 +492,76 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                                       _formKey.currentState?.validate() ?? true;
                                   if (formIsValid) {
                                     setState(() => _isLoading = true);
-                                    await Future.delayed(
-                                      const Duration(seconds: 1),
-                                    );
+                                    try {
+                                      // Call API to update user
+                                      final userService =
+                                          serviceLocator.userService;
+                                      final prev = CurrentUser.instance.user;
+                                      final userId = prev?.userId ?? '';
 
-                                    // Build updated user and persist (create if absent)
-                                    var prev = CurrentUser.instance.user;
-                                    if (prev != null) {
+                                      final updatedUser = await userService
+                                          .updateCurrentUser(
+                                            userId: userId,
+                                            displayName: displayNameController
+                                                .text
+                                                .trim(),
+                                            gender: gender,
+                                            dateOfBirth: dob,
+                                            profileImageUrl:
+                                                prev?.profileImageUrl,
+                                            bio: bioController.text.trim(),
+                                            favoriteGenres: List<String>.from(
+                                              selectedGenres,
+                                            ),
+                                          );
+
+                                      // Persist updated user locally
                                       CurrentUser.instance.update(
-                                        (u) => u.copyWith(
-                                          displayName:
-                                              displayNameController.text,
-                                          email: emailController.text,
-                                          dateOfBirth: dob,
-                                          gender: gender,
-                                          bio: bioController.text.trim(),
-                                          favoriteGenres: List<String>.from(
-                                            selectedGenres,
-                                          ),
-                                        ),
+                                        (_) => updatedUser,
                                       );
                                       await CurrentUser.instance.saveToPrefs();
-                                    } else {
-                                      final created = UserModel(
-                                        userId: DateTime.now()
-                                            .millisecondsSinceEpoch
-                                            .toString(),
-                                        displayName: displayNameController.text
-                                            .trim(),
-                                        userType: 'user',
-                                        email: emailController.text.trim(),
-                                        dateOfBirth: dob,
-                                        gender: gender,
-                                        profileImageUrl: null,
-                                        bio: bioController.text.trim(),
-                                        dateCreated: DateTime.now()
-                                            .toIso8601String(),
-                                        favoriteGenres: List<String>.from(
+
+                                      setState(() {
+                                        _isLoading = false;
+                                        // commit changes as the new baseline
+                                        _initialDisplayName =
+                                            displayNameController.text;
+                                        _initialEmail = emailController.text;
+                                        _initialBio = bioController.text;
+                                        _initialGender = gender;
+                                        _initialDob = dob;
+                                        _initialGenres = List.from(
                                           selectedGenres,
-                                        ),
-                                      );
-                                      CurrentUser.instance.login(created);
-                                      await CurrentUser.instance.saveToPrefs();
-                                      prev = created;
-                                    }
+                                        );
+                                        _hasChanges = false;
+                                      });
 
-                                    setState(() {
-                                      _isLoading = false;
-                                      // commit changes as the new baseline
-                                      _initialDisplayName =
-                                          displayNameController.text;
-                                      _initialEmail = emailController.text;
-                                      _initialBio = bioController.text;
-                                      _initialGender = gender;
-                                      _initialDob = dob;
-                                      _initialGenres = List.from(
-                                        selectedGenres,
-                                      );
-                                      _hasChanges = false;
-                                    });
-
-                                    // show confirmation and close
-                                    if (mounted) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            'Profile saved successfully',
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Profile saved successfully',
+                                            ),
+                                            duration: Duration(seconds: 2),
                                           ),
-                                          duration: Duration(seconds: 2),
-                                        ),
-                                      );
-                                      Navigator.of(context).pop();
+                                        );
+                                        Navigator.of(context).pop();
+                                      }
+                                      _playConfetti();
+                                    } catch (e) {
+                                      setState(() => _isLoading = false);
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Failed to save: $e'),
+                                          ),
+                                        );
+                                      }
                                     }
-                                    _playConfetti();
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
@@ -699,21 +725,25 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                 Icons.keyboard_arrow_down,
                 color: Theme.of(context).colorScheme.outline,
               ),
-              items: ["Male", "Female"]
-                  .map(
-                    (g) => DropdownMenuItem(
-                      value: g,
-                      child: Text(
-                        g,
-                        style: GoogleFonts.inter(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16,
+              items:
+                  [
+                        AppLocalizations.of(context)!.male,
+                        AppLocalizations.of(context)!.female,
+                      ]
+                      .map(
+                        (g) => DropdownMenuItem(
+                          value: g,
+                          child: Text(
+                            g,
+                            style: GoogleFonts.inter(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  )
-                  .toList(),
+                      )
+                      .toList(),
               onChanged: (v) => setState(() {
                 gender = v!;
                 _checkChanges();

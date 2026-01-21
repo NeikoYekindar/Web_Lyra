@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 // import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lyra/providers/auth_provider.dart';
-import 'package:lyra/widgets/welcome/welcome_verify_email.dart';
+import 'package:lyra/core/di/service_locator.dart';
+import 'package:lyra/widgets/reset_pass/fp_enter_code.dart';
 
 class EnterEmailScreen extends StatefulWidget {
   @override
@@ -18,28 +18,24 @@ class _EnterEmailScreenState extends State<EnterEmailScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
-  Future<void> _sendResetLink() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
+  Future<void> _sendResetOtp(String email) async {
     try {
-      // await Provider.of<AuthProvider>(context, listen: false)
-      //     .sendPasswordResetEmail(_emailController.text.trim());
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Password reset link sent to your email.')),
-      );
+      setState(() => _isLoading = true);
+      final userService = ServiceLocator().userService;
+      // sendVerifyEmail may return void; don't depend on its return value
+      await userService.sendVerifyEmail(email);
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to send reset link. Please try again.')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send code: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+   
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -159,18 +155,33 @@ class _EnterEmailScreenState extends State<EnterEmailScreen> {
                                 )
                               : PrimaryButton(
                                   onPressed: () async {
-                                    await _sendResetCode();
-                                    // On success (mocked inside _sendResetCode) navigate to verify
-                                    if (mounted) {
+                                    final response = await _sendResetOtp(
+                                      _emailController.text.trim(),
+                                    );
+                                    // Nếu thành công -> chuyển màn hình nhập mã
+                                    if ( mounted) {
                                       final email = _emailController.text
                                           .trim();
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
-                                          builder: (_) => WelcomeVerifyEmail(
-                                            initialEmail: email,
-                                          ),
+                                          builder: (_) =>
+                                              EnterResetCode(email: email),
                                         ),
                                       );
+                                    } else {
+                                      // Hiển thị lỗi nếu cần
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Code sending failed. Please try again.',
+                                            ),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
                                     }
                                   },
 
@@ -197,15 +208,19 @@ class _EnterEmailScreenState extends State<EnterEmailScreen> {
                       color: const Color(0xFFDA0707),
                     ),
                     SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                      child: Text(
-                        'Back to Login',
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFFDA0707),
-                          fontSize: 14,
+                    MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text(
+                          'Back to Login',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFDA0707),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),
@@ -218,29 +233,10 @@ class _EnterEmailScreenState extends State<EnterEmailScreen> {
       ),
     );
   }
+}
 
-  Future<void> _sendResetCode() async {
-    if (!_formKey.currentState!.validate()) return;
+class SendResponse {
+  final String? message;
 
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // await Provider.of<AuthProvider>(context, listen: false)
-      //     .sendEmailVerification(_emailController.text.trim());
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Reset code sent. Please check your inbox.')),
-      );
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to send reset code. Please try again.')),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
+  SendResponse({this.message});
 }

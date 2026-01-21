@@ -3,6 +3,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lyra/l10n/app_localizations.dart';
 import 'package:lyra/theme/app_theme.dart';
 import 'package:lyra/services/left_sidebar_service.dart';
+import 'package:lyra/core/di/service_locator.dart';
+import 'package:provider/provider.dart';
+import '../../providers/music_player_provider.dart';
+import '../../models/track.dart';
+import '../../shell/app_shell_controller.dart';
+import '../common/trackItem.dart';
 
 class LeftSidebar extends StatefulWidget {
   final VoidCallback? onCollapsePressed;
@@ -19,11 +25,47 @@ class _LeftSidebarState extends State<LeftSidebar> {
   int _selectedCategoryIndex = 0;
   bool _isLoadingCategories = true;
   bool _isLoadingPlaylistsUser = true;
+  List<Track> _recentTracks = [];
+  bool _isLoadingTracks = true;
+  List<Track> _queueTracks = []; // Queue lớn hơn cho playback
   @override
   void initState() {
     super.initState();
     _loadLeftSidebarCategories();
-    _loadPlayListUser();
+    _loadRecentTracks();
+  }
+
+  Future<void> _loadRecentTracks() async {
+    try {
+      // Load both recent tracks and top tracks for queue
+      final recentTracks = await serviceLocator.musicService.getRecentTracks();
+
+      if (mounted) {
+        setState(() {
+          _recentTracks = recentTracks;
+          // Combine recent and top tracks for queue, remove duplicates
+          final allTracks = [...recentTracks];
+          final seenIds = <String>{};
+          _queueTracks = allTracks.where((track) {
+            if (seenIds.contains(track.trackId)) {
+              return false;
+            }
+            seenIds.add(track.trackId);
+            return true;
+          }).toList();
+          _isLoadingTracks = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading recent tracks: $e');
+      if (mounted) {
+        setState(() {
+          _recentTracks = [];
+          _queueTracks = [];
+          _isLoadingTracks = false;
+        });
+      }
+    }
   }
 
   Future<void> _loadLeftSidebarCategories() async {
@@ -96,7 +138,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  AppLocalizations.of(context)!.yourLibrary,
+                  AppLocalizations.of(context)?.yourLibrary ?? 'Your Library',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 16,
@@ -124,61 +166,53 @@ class _LeftSidebarState extends State<LeftSidebar> {
           Container(
             width: double.infinity,
             decoration: BoxDecoration(color: Colors.transparent),
-            child: _isLoadingCategories
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: AppTheme.redPrimary,
-                      strokeWidth: 2,
+            child: SizedBox(
+              height: 30,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: categories.length,
+                separatorBuilder: (context, index) => const SizedBox(width: 12),
+                itemBuilder: (context, index) {
+                  final isSelected = index == _selectedCategoryIndex;
+                  return ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _selectedCategoryIndex = index;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isSelected
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.surfaceVariant,
+                      foregroundColor: isSelected
+                          ? Theme.of(context).colorScheme.onPrimary
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
+                      minimumSize: Size(
+                        categories[index].length * 10.0 + 20,
+                        40,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      elevation: 0,
                     ),
-                  )
-                : SizedBox(
-                    height: 30,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: categories.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(width: 12),
-                      itemBuilder: (context, index) {
-                        final isSelected = index == _selectedCategoryIndex;
-                        return ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedCategoryIndex = index;
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isSelected
-                                ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).colorScheme.surfaceVariant,
-                            foregroundColor: isSelected
-                                ? Theme.of(context).colorScheme.onPrimary
-                                : Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
-                            minimumSize: Size(
-                              categories[index].length * 10.0 + 20,
-                              40,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: Text(
-                            categories[index],
-                            style: TextStyle(
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
-                            ),
-                          ),
-                        );
-                      },
+                    child: Text(
+                      categories[index],
+                      style: TextStyle(
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                      ),
                     ),
-                  ),
+                  );
+                },
+              ),
+            ),
           ),
 
           const SizedBox(height: 20),
+
+          // Recent Activity Section
           Container(
             width: double.infinity,
             decoration: BoxDecoration(color: Colors.transparent),
@@ -196,7 +230,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
 
                 const Spacer(),
                 Text(
-                  AppLocalizations.of(context)!.recent,
+                  AppLocalizations.of(context)?.recent ?? 'Recent',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 16,
@@ -216,30 +250,53 @@ class _LeftSidebarState extends State<LeftSidebar> {
           const SizedBox(height: 10),
 
           Expanded(
-            child: Container(
-              width: double.infinity,
-
-              decoration: BoxDecoration(color: Colors.transparent),
-              child: _isLoadingPlaylistsUser
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppTheme.redPrimary,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : ListView.separated(
-                      scrollDirection: Axis.vertical,
-                      itemCount: PlaylistsUser.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 8),
-                      itemBuilder: (context, index) {
-                        final playlists = PlaylistsUser[index];
-                        return PlaylistUserCard(
-                          playlists: playlists,
-                          // onTap: () => _onPlaylistUserTapped(playlists),
-                        );
-                      },
-                    ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (_recentTracks.isNotEmpty) ...[
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _recentTracks.length > 3
+                        ? 3
+                        : _recentTracks.length,
+                    itemBuilder: (context, index) {
+                      final track = _recentTracks[index];
+                      return GestureDetector(
+                        onTap: () => _onTrackTapped(track),
+                        child: TrackItem(
+                          index: index + 1,
+                          title: track.trackName,
+                          artist: track.artist,
+                          albumArtist: track.kind,
+                          duration: _formatDuration(track.durationMs),
+                          image: track.trackImageUrl,
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(color: Colors.transparent),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    scrollDirection: Axis.vertical,
+                    itemCount: PlaylistsUser.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 8),
+                    itemBuilder: (context, index) {
+                      final playlists = PlaylistsUser[index];
+                      return PlaylistUserCard(
+                        playlists: playlists,
+                        // onTap: () => _onPlaylistUserTapped(playlists),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -258,7 +315,9 @@ class _LeftSidebarState extends State<LeftSidebar> {
       width: sizeWidth,
       height: sizeHeight,
       decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF2A2A2A) : Colors.transparent,
+        color: isActive
+            ? Theme.of(context).colorScheme.onSecondaryContainer
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
       child: IconButton(
@@ -275,6 +334,37 @@ class _LeftSidebarState extends State<LeftSidebar> {
         ),
       ),
     );
+  }
+
+  void _onTrackTapped(Track track) async {
+    try {
+      final musicPlayerProvider = Provider.of<MusicPlayerProvider>(
+        context,
+        listen: false,
+      );
+      final shellController = Provider.of<AppShellController>(
+        context,
+        listen: false,
+      );
+
+      // Load track with full queue (at least 10 tracks)
+      await musicPlayerProvider.setTrack(track, queue: _queueTracks);
+      musicPlayerProvider.play();
+
+      // Show player if not shown
+      if (!shellController.isPlayerMaximized) {
+        shellController.toggleMaximizePlayer();
+      }
+    } catch (e) {
+      print('Error playing track: $e');
+    }
+  }
+
+  String _formatDuration(int durationMs) {
+    final seconds = durationMs ~/ 1000;
+    final minutes = seconds ~/ 60;
+    final remainingSeconds = seconds % 60;
+    return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
   Widget _buildCustomIconMenuItemLibraryCreate(
