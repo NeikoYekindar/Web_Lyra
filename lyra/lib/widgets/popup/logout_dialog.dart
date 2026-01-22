@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:lyra/providers/auth_provider_v2.dart';
 import 'package:lyra/screens/welcome_screen.dart';
+import 'package:lyra/l10n/app_localizations.dart';
 
 class LogoutDialog extends StatelessWidget {
   const LogoutDialog({super.key});
@@ -130,7 +131,7 @@ class LogoutDialog extends StatelessWidget {
                           // Show error message
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Logout failed: $e'),
+                              content: Text('${AppLocalizations.of(context)!.logoutFailed}$e'),
                               backgroundColor: Colors.red,
                             ),
                           );

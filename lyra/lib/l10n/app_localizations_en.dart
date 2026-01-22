@@ -262,6 +262,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get continueC => 'Continue';
+
+  @override
   String get noResults => 'No results found';
 
   @override
@@ -299,6 +301,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchSongsAndPodcasts => 'Search for songs and podcasts';
+
+  @override
+  String get changeAvatar => 'Change avatar';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get passwordResetSuccessfully => 'Password reset successfully!';
+
+  @override
+  String failedToResetPassword(Object error) {
+    return 'Failed to reset password: $error';
+  }
+
+  @override
+  String logoutFailed(Object error) {
+    return 'Logout failed: $error';
+  }
+
+  @override
+  String failedToSendCode(Object error) {
+    return 'Failed to send code: $error';
+  }
+
+  @override
+  String get verificationCodeResent => 'Verification code resent. Please check your inbox.';
+
+  @override
+  String failedToResendCode(Object error) {
+    return 'Failed to resend code: $error';
+  }
+
+  @override
+  String get checkingLoginSession => 'Checking login session...';
+
+  @override
+  String failedToSaveChanges(Object error) {
+    return 'Failed to save: $error';
+  }
 
   @override
   String get createPlaylist => 'Create Playlist';

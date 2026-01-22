@@ -99,7 +99,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
     final result = await showDialog<String?>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Change avatar'),
+        title: Text(AppLocalizations.of(ctx)!.changeAvatar),
         content: TextField(
           controller: controller,
           decoration: const InputDecoration(
@@ -109,15 +109,15 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(null),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(ctx)!.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(''),
-            child: const Text('Clear'),
+            child: Text(AppLocalizations.of(ctx)!.clear),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
-            child: const Text('Save'),
+            child: Text(AppLocalizations.of(ctx)!.save),
           ),
         ],
       ),
@@ -557,7 +557,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                                           context,
                                         ).showSnackBar(
                                           SnackBar(
-                                            content: Text('Failed to save: $e'),
+                                            content: Text('${AppLocalizations.of(context)!.failedToSaveChanges}$e'),
                                           ),
                                         );
                                       }
