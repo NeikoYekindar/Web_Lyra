@@ -604,6 +604,7 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue'**
   String get continueC;
+
   /// No description provided for @noResults.
   ///
   /// In en, this message translates to:
@@ -681,6 +682,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search for songs and podcasts'**
   String get searchSongsAndPodcasts;
+
+  /// No description provided for @changeAvatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Change avatar'**
+  String get changeAvatar;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// No description provided for @passwordResetSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset successfully!'**
+  String get passwordResetSuccessfully;
+
+  /// No description provided for @failedToResetPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to reset password: {error}'**
+  String failedToResetPassword(Object error);
+
+  /// No description provided for @logoutFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout failed: {error}'**
+  String logoutFailed(Object error);
+
+  /// No description provided for @failedToSendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send code: {error}'**
+  String failedToSendCode(Object error);
+
+  /// No description provided for @verificationCodeResent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code resent. Please check your inbox.'**
+  String get verificationCodeResent;
+
+  /// No description provided for @failedToResendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to resend code: {error}'**
+  String failedToResendCode(Object error);
+
+  /// No description provided for @checkingLoginSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking login session...'**
+  String get checkingLoginSession;
+
+  /// No description provided for @failedToSaveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save: {error}'**
+  String failedToSaveChanges(Object error);
 
   /// No description provided for @createPlaylist.
   ///

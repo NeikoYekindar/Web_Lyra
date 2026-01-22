@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:confetti/confetti.dart';
 import 'package:lyra/core/di/service_locator.dart';
 import 'package:lyra/widgets/welcome/welcome_login.dart';
+import 'package:lyra/l10n/app_localizations.dart';
 
 class EnterNewPasswordScreen extends StatefulWidget {
   final String email;
@@ -79,8 +80,8 @@ class _EnterNewPasswordScreenState extends State<EnterNewPasswordScreen> {
       _confettiController.play();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password reset successfully!'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.passwordResetSuccessfully),
           backgroundColor: Colors.green,
         ),
       );
@@ -105,7 +106,7 @@ class _EnterNewPasswordScreenState extends State<EnterNewPasswordScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to reset password: $error'),
+          content: Text('${AppLocalizations.of(context)!.failedToResetPassword}$error'),
           backgroundColor: Colors.red,
         ),
       );

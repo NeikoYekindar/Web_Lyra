@@ -234,7 +234,7 @@ class _WelcomeSetupProfileState extends State<WelcomeSetupProfile> {
 
                         // Date of Birth
                         Text(
-                          '${AppLocalizations.of(context)!.dateOfBirth} (${AppLocalizations.of(context)!.optional})',
+                          '${AppLocalizations.of(context)!.dateOfBirth}',
                           style: GoogleFonts.inter(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,

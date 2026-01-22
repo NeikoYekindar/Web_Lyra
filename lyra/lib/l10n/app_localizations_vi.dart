@@ -262,6 +262,8 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get continueC => 'Tiếp tục';
+
+  @override
   String get noResults => 'Không tìm thấy kết quả';
 
   @override
@@ -299,6 +301,46 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get searchSongsAndPodcasts => 'Tìm bài hát và tập podcast';
+
+  @override
+  String get changeAvatar => 'Thay đổi ảnh đại diện';
+
+  @override
+  String get clear => 'Xóa';
+
+  @override
+  String get passwordResetSuccessfully => 'Đã đặt lại mật khẩu thành công!';
+
+  @override
+  String failedToResetPassword(Object error) {
+    return 'Không thể đặt lại mật khẩu: $error';
+  }
+
+  @override
+  String logoutFailed(Object error) {
+    return 'Đăng xuất thất bại: $error';
+  }
+
+  @override
+  String failedToSendCode(Object error) {
+    return 'Không thể gửi mã: $error';
+  }
+
+  @override
+  String get verificationCodeResent => 'Mã xác minh đã được gửi lại. Vui lòng kiểm tra hộp thư đến.';
+
+  @override
+  String failedToResendCode(Object error) {
+    return 'Không thể gửi lại mã: $error';
+  }
+
+  @override
+  String get checkingLoginSession => 'Đang kiểm tra phiên đăng nhập...';
+
+  @override
+  String failedToSaveChanges(Object error) {
+    return 'Không thể lưu: $error';
+  }
 
   @override
   String get createPlaylist => 'Tạo danh sách phát';
