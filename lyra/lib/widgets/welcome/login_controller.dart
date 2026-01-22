@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lyra/providers/auth_provider_v2.dart';
+import 'package:lyra/l10n/app_localizations.dart';
 
 /// LoginController: tách toàn bộ logic ra khỏi file UI.
 class LoginController extends ChangeNotifier {
@@ -31,7 +32,7 @@ class LoginController extends ChangeNotifier {
     final password = passwordController.text;
 
     if (email.isEmpty || password.isEmpty) {
-      _showSnack(context, 'Please enter email and password');
+      _showSnack(context, AppLocalizations.of(context)!.enterEmailPassword);
       return;
     }
 
@@ -40,7 +41,7 @@ class LoginController extends ChangeNotifier {
       // Pop all routes to root and let AuthGate show AppShell
       Navigator.of(context).popUntil((route) => route.isFirst);
     } else if (context.mounted) {
-      final msg = auth.error ?? 'Login failed';
+      final msg = auth.error ?? AppLocalizations.of(context)!.loginFailed;
       _showSnack(context, msg);
     }
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lyra/core/di/service_locator.dart';
+import 'package:lyra/l10n/app_localizations.dart';
 import 'package:lyra/widgets/common/custom_button.dart';
 import 'package:lyra/models/current_user.dart';
 
@@ -111,7 +112,7 @@ class _WelcomeSetupProfileState extends State<WelcomeSetupProfile> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Tell us a bit about yourself',
+                    AppLocalizations.of(context)!.tellUsAbUrSelf,
                     style: GoogleFonts.inter(
                       fontSize: 16,
                       color: Colors.grey[400],
@@ -125,7 +126,7 @@ class _WelcomeSetupProfileState extends State<WelcomeSetupProfile> {
                       children: [
                         // Display Name
                         Text(
-                          'Display Name',
+                          AppLocalizations.of(context)!.displayName,
                           style: GoogleFonts.inter(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -137,7 +138,7 @@ class _WelcomeSetupProfileState extends State<WelcomeSetupProfile> {
                           controller: _displayNameController,
                           style: GoogleFonts.inter(color: Colors.white),
                           decoration: InputDecoration(
-                            hintText: 'Enter your display name',
+                            hintText: AppLocalizations.of(context)!.enterDisplayName,
                             hintStyle: GoogleFonts.inter(
                               color: Colors.grey[600],
                             ),
@@ -174,7 +175,7 @@ class _WelcomeSetupProfileState extends State<WelcomeSetupProfile> {
 
                         // Gender
                         Text(
-                          'Gender',
+                          AppLocalizations.of(context)!.gender,
                           style: GoogleFonts.inter(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -212,15 +213,15 @@ class _WelcomeSetupProfileState extends State<WelcomeSetupProfile> {
                           items: [
                             DropdownMenuItem(
                               value: 'male',
-                              child: Text('Male'),
+                              child: Text(AppLocalizations.of(context)!.male),
                             ),
                             DropdownMenuItem(
                               value: 'female',
-                              child: Text('Female'),
+                              child: Text(AppLocalizations.of(context)!.female),
                             ),
                             DropdownMenuItem(
                               value: 'other',
-                              child: Text('Other'),
+                              child: Text(AppLocalizations.of(context)!.other),
                             ),
                           ],
                           onChanged: (value) {
@@ -233,7 +234,7 @@ class _WelcomeSetupProfileState extends State<WelcomeSetupProfile> {
 
                         // Date of Birth
                         Text(
-                          'Date of Birth (Optional)',
+                          '${AppLocalizations.of(context)!.dateOfBirth} (${AppLocalizations.of(context)!.optional})',
                           style: GoogleFonts.inter(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -261,7 +262,7 @@ class _WelcomeSetupProfileState extends State<WelcomeSetupProfile> {
                                 Text(
                                   _dateOfBirth != null
                                       ? '${_dateOfBirth!.day}/${_dateOfBirth!.month}/${_dateOfBirth!.year}'
-                                      : 'Select your date of birth',
+                                      : AppLocalizations.of(context)!.selectDateOfBirth,
                                   style: GoogleFonts.inter(
                                     color: _dateOfBirth != null
                                         ? Colors.white
@@ -291,7 +292,7 @@ class _WelcomeSetupProfileState extends State<WelcomeSetupProfile> {
                                 child: PrimaryButton(
                                   onPressed: _saveProfile,
                                   child: Text(
-                                    'Continue',
+                                    AppLocalizations.of(context)!.continueC,
                                     style: GoogleFonts.inter(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
@@ -311,7 +312,7 @@ class _WelcomeSetupProfileState extends State<WelcomeSetupProfile> {
                               ).popUntil((route) => route.isFirst);
                             },
                             child: Text(
-                              'Skip for now',
+                              AppLocalizations.of(context)!.skip,
                               style: GoogleFonts.inter(
                                 fontSize: 14,
                                 color: Colors.grey[400],
