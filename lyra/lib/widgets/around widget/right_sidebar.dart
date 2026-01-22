@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lyra/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_player_provider.dart';
-import '../../providers/auth_provider.dart';
-import '../../services/playlist_service.dart';
+import '../../core/di/service_locator.dart';
+import '../../models/track.dart';
 import 'right_playlist_user_card.dart';
 import 'right_sidebar_controller.dart';
 
@@ -14,27 +14,29 @@ class RightSidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<RightSidebarController>(
       create: (_) {
-        final auth = Provider.of<AuthProvider>(context, listen: false);
         final ctrl = RightSidebarController();
-        // Initialize fetching of next playlists via provider-backed service
+        // Fetch user playlists using PlaylistServiceV2
         WidgetsBinding.instance.addPostFrameCallback((_) async {
-          final token = _resolveAuthToken(auth);
-          final baseUrl = (() {
-            try {
-              final dynamic a = auth as dynamic;
-              final dynamic candidate =
-                  a.baseUrl ?? a.apiUrl ?? a.host ?? a.endpoint;
-              if (candidate is String && candidate.isNotEmpty) return candidate;
-            } catch (_) {}
-            return null;
-          })();
-          final service = PlaylistService(
-            baseUrl: baseUrl ?? '',
-            authToken: token ?? '',
-          );
-          await ctrl.fetchUserPlaylists(
-            () => service.fetchUserNextPlaylists2(),
-          );
+          try {
+            final playlists = await serviceLocator.playlistService
+                .getUserPlaylists();
+            final playlistMaps = playlists
+                .map(
+                  (p) => {
+                    'id': p.id,
+                    'name': p.name,
+                    'description': p.description ?? '',
+                    'cover_url': p.coverUrl ?? '',
+                    'owner_name': p.ownerName ?? '',
+                    'track_count': p.trackCount ?? 0,
+                  },
+                )
+                .toList();
+            ctrl.setPlaylists(playlistMaps);
+          } catch (e) {
+            print('Error loading playlists in sidebar: $e');
+            ctrl.setPlaylists([]);
+          }
         });
         return ctrl;
       },
@@ -105,37 +107,24 @@ class RightSidebar extends StatelessWidget {
                           return Row(
                             children: [
                               // Album art (network or asset fallback)
-                              Container(
-                                width: 56,
-                                height: 56,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(4),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: Container(
+                                  width: 56,
+                                  height: 56,
                                   color: Colors.grey.shade800,
-                                  image:
+                                  child:
                                       track != null &&
                                           track.albumArtUrl.isNotEmpty
-                                      ? DecorationImage(
-                                          image:
-                                              track.albumArtUrl.startsWith(
-                                                'http',
-                                              )
-                                              ? NetworkImage(track.albumArtUrl)
-                                              : AssetImage(track.albumArtUrl)
-                                                    as ImageProvider,
-                                          fit: BoxFit.cover,
-                                        )
-                                      : null,
+                                      ? _buildQueueImage(track.albumArtUrl)
+                                      : Icon(
+                                          Icons.music_note,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
+                                          size: 30,
+                                        ),
                                 ),
-                                child:
-                                    track == null || track.albumArtUrl.isEmpty
-                                    ? Icon(
-                                        Icons.music_note,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurface,
-                                        size: 30,
-                                      )
-                                    : null,
                               ),
                               const SizedBox(width: 12),
                               // Song details
@@ -186,6 +175,85 @@ class RightSidebar extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 10),
+
+                  // Next in Queue Section
+                  Consumer<MusicPlayerProvider>(
+                    builder: (context, player, _) {
+                      // Check if there's a current track first
+                      if (player.currentTrack == null || player.queue.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+
+                      final currentIndex = player.queue.indexWhere(
+                        (t) => t.trackId == player.currentTrack!.trackId,
+                      );
+
+                      final upcomingTracks =
+                          currentIndex >= 0 &&
+                              currentIndex < player.queue.length - 1
+                          ? player.queue.sublist(currentIndex + 1)
+                          : <Track>[];
+
+                      if (upcomingTracks.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Next in Queue',
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: player.clearQueue,
+                                child: Text(
+                                  'Clear',
+                                  style: TextStyle(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            height: 200,
+                            child: ListView.builder(
+                              itemCount: upcomingTracks.length,
+                              itemBuilder: (context, index) {
+                                final track = upcomingTracks[index];
+                                return _QueueTrackItem(
+                                  track: track,
+                                  queueIndex: currentIndex + 1 + index,
+                                  onTap: () async {
+                                    await player.setTrack(track);
+                                    player.play();
+                                  },
+                                  onRemove: () => player.removeFromQueue(
+                                    currentIndex + 1 + index,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                        ],
+                      );
+                    },
+                  ),
 
                   Align(
                     alignment: Alignment.centerLeft,
@@ -246,13 +314,155 @@ class RightSidebar extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildQueueImage(String imageUrl) {
+    if (imageUrl.isEmpty) {
+      return const Icon(Icons.music_note, color: Colors.white, size: 30);
+    }
+
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return Image.network(
+        imageUrl,
+        width: 56,
+        height: 56,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Image.asset(
+          'assets/images/HTH.png',
+          width: 56,
+          height: 56,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) =>
+              const Icon(Icons.music_note, color: Colors.white, size: 30),
+        ),
+      );
+    }
+
+    final assetPath = imageUrl.startsWith('assets/')
+        ? imageUrl
+        : 'assets/$imageUrl';
+    return Image.asset(
+      assetPath,
+      width: 56,
+      height: 56,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Image.asset(
+        'assets/images/HTH.png',
+        width: 56,
+        height: 56,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) =>
+            const Icon(Icons.music_note, color: Colors.white, size: 30),
+      ),
+    );
+  }
 }
 
-String? _resolveAuthToken(AuthProvider auth) {
-  try {
-    final dynamic a = auth as dynamic;
-    final token = a.token ?? a.accessToken ?? a.idToken;
-    if (token is String && token.isNotEmpty) return token;
-  } catch (_) {}
-  return null;
+class _QueueTrackItem extends StatefulWidget {
+  final Track track;
+  final int queueIndex;
+  final VoidCallback onTap;
+  final VoidCallback onRemove;
+
+  const _QueueTrackItem({
+    required this.track,
+    required this.queueIndex,
+    required this.onTap,
+    required this.onRemove,
+  });
+
+  @override
+  State<_QueueTrackItem> createState() => _QueueTrackItemState();
+}
+
+class _QueueTrackItemState extends State<_QueueTrackItem> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+          margin: const EdgeInsets.only(bottom: 4),
+          decoration: BoxDecoration(
+            color: _isHovered
+                ? Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Row(
+            children: [
+              // Album art
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  color: Colors.grey.shade800,
+                  child: widget.track.albumArtUrl.isNotEmpty
+                      ? Image.network(
+                          widget.track.albumArtUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Icon(
+                            Icons.music_note,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.music_note,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Track info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.track.title,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      widget.track.artist,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 11,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              // Remove button (shown on hover)
+              if (_isHovered)
+                IconButton(
+                  onPressed: widget.onRemove,
+                  icon: Icon(
+                    Icons.close,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  tooltip: 'Remove from queue',
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

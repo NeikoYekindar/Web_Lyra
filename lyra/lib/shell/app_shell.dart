@@ -32,7 +32,7 @@ class _AppShellState extends State<AppShell> {
     super.initState();
     // Post-frame to ensure provider is available
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MusicPlayerProvider>().loadDemoTrack();
+      context.read<MusicPlayerProvider>().restoreLastTrack();
       // Wire up listeners after first frame when providers should be available
       // Providers are accessed directly where needed; no local fields kept.
 

@@ -33,7 +33,7 @@ class HeaderInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Stack(
-      fit: StackFit.loose,
+      fit: StackFit.expand,
       children: [
         // Background gradient
         Container(

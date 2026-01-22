@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lyra/models/current_user.dart';
+import 'package:provider/provider.dart';
+import 'package:lyra/providers/auth_provider_v2.dart';
 import 'package:lyra/screens/welcome_screen.dart';
 
 class LogoutDialog extends StatelessWidget {
@@ -96,23 +97,45 @@ class LogoutDialog extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
 
                 // Logout button
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () async {
-                      Navigator.pop(context);
+                      try {
+                        // Call logout API (don't close dialog yet)
+                        await Provider.of<AuthProviderV2>(
+                          context,
+                          listen: false,
+                        ).logout();
 
-                      CurrentUser.instance.logout();
-                      await CurrentUser.instance.saveToPrefs();
+                        // Close dialog after successful logout
+                        if (context.mounted) {
+                          Navigator.pop(context);
 
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (_) => const WelcomeScreen(),
-                        ),
-                        (route) => false,
-                      );
+                          // Navigate to welcome screen
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(
+                              builder: (_) => const WelcomeScreen(),
+                            ),
+                            (route) => false,
+                          );
+                        }
+                      } catch (e) {
+                        // Close dialog on error
+                        if (context.mounted) {
+                          Navigator.pop(context);
+
+                          // Show error message
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Logout failed: $e'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,

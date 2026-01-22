@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 // Removed unused imports
 import 'package:confetti/confetti.dart';
 import 'package:lyra/l10n/app_localizations.dart';
+import 'package:lyra/widgets/reset_pass/fp_enter_email.dart';
 
 class ChangePassword extends StatefulWidget {
   const ChangePassword({super.key});
@@ -195,7 +196,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                AppLocalizations .of(context)!.changePassword,
+                                AppLocalizations.of(context)!.changePassword,
                                 style: GoogleFonts.inter(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
@@ -233,7 +234,9 @@ class _ChangePasswordState extends State<ChangePassword> {
                                   color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
-                              labelText: AppLocalizations.of(context)!.oldPassword,
+                              labelText: AppLocalizations.of(
+                                context,
+                              )!.oldPassword,
                               labelStyle: GoogleFonts.inter(
                                 color: colorScheme.onSurface,
                                 fontSize: 16,
@@ -273,7 +276,9 @@ class _ChangePasswordState extends State<ChangePassword> {
                                   color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
-                              labelText: AppLocalizations.of(context)!.newPassword,
+                              labelText: AppLocalizations.of(
+                                context,
+                              )!.newPassword,
                               labelStyle: GoogleFonts.inter(
                                 color: colorScheme.onSurface,
                                 fontSize: 16,
@@ -337,7 +342,9 @@ class _ChangePasswordState extends State<ChangePassword> {
                                   color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
-                              labelText: AppLocalizations.of(context)!.confirmNewPassword,
+                              labelText: AppLocalizations.of(
+                                context,
+                              )!.confirmNewPassword,
                               labelStyle: GoogleFonts.inter(
                                 color: colorScheme.onSurface,
                                 fontSize: 16,
@@ -365,13 +372,26 @@ class _ChangePasswordState extends State<ChangePassword> {
                           const SizedBox(height: 16),
                           Align(
                             alignment: Alignment.centerRight,
-                            child: Text(
-                              AppLocalizations.of(context)!.forgotPassword,
-                              style: GoogleFonts.inter(
-                                color: colorScheme.onSecondaryContainer,
-                                fontSize: 14,
-                                fontStyle: FontStyle.italic,
-                                decoration: TextDecoration.underline,
+                            child: MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(
+                                      builder: (_) => EnterEmailScreen(),
+                                    ),
+                                  );
+                                },
+
+                                child: Text(
+                                  AppLocalizations.of(context)!.forgotPassword,
+                                  style: GoogleFonts.inter(
+                                    color: colorScheme.primary,
+                                    fontSize: 14,
+                                    fontStyle: FontStyle.italic,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
                               ),
                             ),
                           ),

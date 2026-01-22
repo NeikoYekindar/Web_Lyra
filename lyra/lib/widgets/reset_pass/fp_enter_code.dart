@@ -5,11 +5,16 @@ import 'dart:async';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lyra/providers/auth_provider.dart';
+import 'package:lyra/core/di/service_locator.dart';
 import 'package:lyra/widgets/common/circle_icon_container.dart';
 import 'package:lyra/widgets/common/custom_button.dart';
+import 'package:lyra/widgets/reset_pass/fp_enter_new_password.dart';
 
 class EnterResetCode extends StatefulWidget {
+  final String email;
+
+  const EnterResetCode({Key? key, required this.email}) : super(key: key);
+
   @override
   _EnterResetCodeScreenState createState() => _EnterResetCodeScreenState();
 }
@@ -23,6 +28,8 @@ class _EnterResetCodeScreenState extends State<EnterResetCode> {
   List<TextEditingController> _codeControllers = [];
   List<FocusNode> _codeFocusNodes = [];
   bool _suppressOnChanged = false;
+  bool _isCodeComplete = false;
+  List<String> _previousValues = [];
 
   void _clearCodeFields() {
     for (final c in _codeControllers) {
@@ -31,33 +38,47 @@ class _EnterResetCodeScreenState extends State<EnterResetCode> {
     FocusScope.of(context).requestFocus(_codeFocusNodes[0]);
   }
 
-  Future<void> _sendVerificationEmail() async {
-    if (!_formKey.currentState!.validate()) return;
-
+  Future<void> _resendVerificationCode() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // await Provider.of<AuthProvider>(context, listen: false)
-      //     .sendEmailVerification(_emailController.text.trim());
+      final userService = ServiceLocator().userService;
+      await userService.sendVerifyEmail(widget.email);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Verification email sent. Please check your inbox.'),
-        ),
-      );
+      _clearCodeFields();
+      _startResendCountdown(60);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Verification code resent. Please check your inbox.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to send verification email. Please try again.'),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to resend code: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
+  }
+
+  void _updateCodeComplete() {
+    final complete = _codeControllers.every((c) => c.text.trim().isNotEmpty);
+    if (complete != _isCodeComplete) setState(() => _isCodeComplete = complete);
   }
 
   void _startResendCountdown([int seconds = 60]) {
@@ -83,6 +104,17 @@ class _EnterResetCodeScreenState extends State<EnterResetCode> {
     super.initState();
     _codeControllers = List.generate(6, (_) => TextEditingController());
     _codeFocusNodes = List.generate(6, (_) => FocusNode());
+    _previousValues = List.generate(6, (_) => '');
+
+    // Watch code controllers for completeness
+    for (final c in _codeControllers) {
+      c.addListener(_updateCodeComplete);
+    }
+
+    // Start countdown timer since OTP was already sent from previous screen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startResendCountdown(60);
+    });
   }
 
   @override
@@ -163,7 +195,7 @@ class _EnterResetCodeScreenState extends State<EnterResetCode> {
                                   ),
                                 ),
                                 TextSpan(
-                                  text: 'anhnguyenphamtran2019@gmail.com',
+                                  text: widget.email,
                                   style: GoogleFonts.inter(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
@@ -191,100 +223,66 @@ class _EnterResetCodeScreenState extends State<EnterResetCode> {
                               return SizedBox(
                                 width: 60,
                                 height: 60,
-                                child: TextFormField(
-                                  controller: _codeControllers[index],
-                                  focusNode: _codeFocusNodes[index],
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 36,
-                                    height: 1.0,
-                                    color: Colors.white,
-                                  ),
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                  ],
-                                  maxLength: 1,
-                                  decoration: InputDecoration(
-                                    counterText: '',
-                                    enabledBorder: const OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    focusedBorder: const OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: Color(0xFFDA0707),
-                                      ),
-                                    ),
-                                  ),
-                                  onChanged: (value) {
-                                    if (_suppressOnChanged) return;
-
-                                    // Handle paste of multiple characters
-                                    if (value.length > 0) {
-                                      final digits = value.replaceAll(
-                                        RegExp(r'[^0-9]'),
-                                        '',
-                                      );
-                                      _suppressOnChanged = true;
-
-                                      // Fill fields starting from current index
-                                      for (
-                                        int i = 0;
-                                        i < digits.length && (index + i) < 6;
-                                        i++
-                                      ) {
-                                        _codeControllers[index + i].text =
-                                            digits[i];
-                                      }
-
-                                      // Move focus to next empty field or last filled field
-                                      final targetIndex =
-                                          (index + digits.length).clamp(0, 5);
-                                      WidgetsBinding.instance
-                                          .addPostFrameCallback((_) {
-                                            if (targetIndex < 6) {
-                                              _codeFocusNodes[targetIndex]
-                                                  .requestFocus();
-                                            } else {
-                                              FocusScope.of(context).unfocus();
-                                            }
-                                          });
-
-                                      Future.microtask(
-                                        () => _suppressOnChanged = false,
-                                      );
-                                      return;
-                                    }
-
-                                    // Handle single digit input
-                                    if (value.isNotEmpty &&
-                                        RegExp(r'^[0-9]$').hasMatch(value)) {
-                                      // Move to next field
-                                      if (index < 5) {
-                                        WidgetsBinding.instance
-                                            .addPostFrameCallback((_) {
-                                              _codeFocusNodes[index + 1]
-                                                  .requestFocus();
-                                            });
-                                      } else {
-                                        // Last field, unfocus
-                                        WidgetsBinding.instance
-                                            .addPostFrameCallback((_) {
-                                              FocusScope.of(context).unfocus();
-                                            });
-                                      }
-                                    }
-                                    // Handle backspace (empty field)
-                                    else if (value.isEmpty && index > 0) {
-                                      WidgetsBinding.instance
-                                          .addPostFrameCallback((_) {
-                                            _codeFocusNodes[index - 1]
-                                                .requestFocus();
-                                          });
+                                child: RawKeyboardListener(
+                                  focusNode: FocusNode(),
+                                  onKey: (event) {
+                                    if (event is RawKeyDownEvent &&
+                                        event.logicalKey ==
+                                            LogicalKeyboardKey.backspace &&
+                                        _codeControllers[index].text.isEmpty &&
+                                        index > 0) {
+                                      _codeFocusNodes[index - 1].requestFocus();
+                                      _codeControllers[index - 1].clear();
                                     }
                                   },
+                                  child: TextFormField(
+                                    controller: _codeControllers[index],
+                                    focusNode: _codeFocusNodes[index],
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 30,
+                                      color: Colors.white,
+                                    ),
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
+                                    maxLength: 1,
+                                    decoration: InputDecoration(
+                                      counterText: '',
+                                      enabledBorder: const OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      focusedBorder: const OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: Color(0xFFDA0707),
+                                        ),
+                                      ),
+                                    ),
+                                    onChanged: (value) {
+                                      if (value.length > 1) {
+                                        final digits = value
+                                            .replaceAll(RegExp(r'\D'), '')
+                                            .split('');
+                                        for (
+                                          int i = 0;
+                                          i < digits.length && i < 6;
+                                          i++
+                                        ) {
+                                          _codeControllers[i].text = digits[i];
+                                        }
+                                        _codeFocusNodes.last.requestFocus();
+                                        return;
+                                      }
+
+                                      if (value.isNotEmpty && index < 5) {
+                                        _codeFocusNodes[index + 1]
+                                            .requestFocus();
+                                      }
+                                    },
+                                  ),
                                 ),
                               );
                             }),
@@ -299,23 +297,7 @@ class _EnterResetCodeScreenState extends State<EnterResetCode> {
                               OutlineButtonCustom(
                                 onPressed:
                                     _resendSecondsLeft == 0 && !_isLoading
-                                    ? () async {
-                                        // Clear existing code fields when resending
-                                        _clearCodeFields();
-
-                                        // Show resend notification
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              'Verification code has been resent to your email',
-                                            ),
-                                            backgroundColor: Colors.blue,
-                                          ),
-                                        );
-                                        _startResendCountdown(60);
-                                      }
+                                    ? _resendVerificationCode
                                     : null,
                                 child: Text(
                                   _resendSecondsLeft > 0
@@ -334,64 +316,90 @@ class _EnterResetCodeScreenState extends State<EnterResetCode> {
                                       ),
                                     )
                                   : PrimaryButton(
-                                      onPressed: () {
-                                        final code = _codeControllers
-                                            .map((c) => c.text)
-                                            .join();
+                                      onPressed: !_isCodeComplete || _isLoading
+                                          ? null
+                                          : () async {
+                                              // Prevent double-tap
+                                              if (_isLoading) return;
+                                              final code = _codeControllers
+                                                  .map((c) => c.text)
+                                                  .join();
 
-                                        // Check if all fields are filled
-                                        if (code.length < 6) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                'Please enter all 6 digits',
-                                              ),
-                                              backgroundColor: Colors.orange,
-                                            ),
-                                          );
-                                          return;
-                                        }
+                                              // Check if all fields are filled
+                                              if (code.length < 6) {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                      'Please enter all 6 digits',
+                                                    ),
+                                                    backgroundColor:
+                                                        Colors.orange,
+                                                  ),
+                                                );
+                                                return;
+                                              }
 
-                                        // Verify code (mock verification with '123456')
-                                        if (code != '123456') {
-                                          // Clear all fields when code is wrong
-                                          _clearCodeFields();
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                'Invalid verification code. Please try again.',
-                                              ),
-                                              backgroundColor: Colors.red,
-                                            ),
-                                          );
-                                        } else {
-                                          // Code is correct
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                'Verification successful! Redirecting...',
-                                              ),
-                                              backgroundColor: Colors.green,
-                                              duration: Duration(seconds: 2),
-                                            ),
-                                          );
-                                          // Navigate to next screen after a short delay
-                                          Future.delayed(
-                                            const Duration(milliseconds: 500),
-                                            () {
-                                              Navigator.pop(
-                                                context,
-                                              ); // or navigate to password reset screen
+                                              // Verify code with API
+                                              try {
+                                                setState(
+                                                  () => _isLoading = true,
+                                                );
+                                                final userService =
+                                                    ServiceLocator()
+                                                        .userService;
+                                                await userService.verifyOtp(
+                                                  email: widget.email,
+                                                  otp: code,
+                                                );
+
+                                                if (mounted) {
+                                                  ScaffoldMessenger.of(
+                                                    context,
+                                                  ).showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text(
+                                                        'Verification successful!',
+                                                      ),
+                                                      backgroundColor:
+                                                          Colors.green,
+                                                    ),
+                                                  );
+
+                                                  // Navigate to reset password screen
+                                                  Navigator.of(
+                                                    context,
+                                                  ).pushReplacement(
+                                                    MaterialPageRoute(
+                                                      builder: (_) =>
+                                                          EnterNewPasswordScreen(
+                                                            email: widget.email,
+                                                          ),
+                                                    ),
+                                                  );
+                                                }
+                                              } catch (error) {
+                                                setState(
+                                                  () => _isLoading = false,
+                                                );
+                                                // Clear all fields when code is wrong
+                                                _clearCodeFields();
+                                                if (mounted) {
+                                                  ScaffoldMessenger.of(
+                                                    context,
+                                                  ).showSnackBar(
+                                                    SnackBar(
+                                                      content: Text(
+                                                        'Invalid verification code: $error',
+                                                      ),
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                    ),
+                                                  );
+                                                }
+                                              }
                                             },
-                                          );
-                                        }
-                                      },
                                       child: Text(
                                         'SUBMIT',
                                         style: GoogleFonts.inter(
@@ -417,15 +425,19 @@ class _EnterResetCodeScreenState extends State<EnterResetCode> {
                       color: const Color(0xFFDA0707),
                     ),
                     SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                      child: Text(
-                        'Back to Login',
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFFDA0707),
-                          fontSize: 14,
+                    MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text(
+                          'Back to Login',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFDA0707),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),

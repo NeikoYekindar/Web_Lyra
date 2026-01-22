@@ -71,7 +71,9 @@ class _TrackItemState extends State<TrackItem> {
               // Ảnh bài hát
               ClipRRect(
                 borderRadius: BorderRadius.circular(6),
-                child: buildCoverImage(widget.image),
+                child: buildCoverImage(
+                  widget.image.isEmpty ? 'assets/images/HTH.png' : widget.image,
+                ),
               ),
               const SizedBox(width: 12),
 
@@ -141,7 +143,18 @@ class _TrackItemState extends State<TrackItem> {
 
 Widget buildCoverImage(String coverUrl) {
   if (coverUrl.startsWith('http')) {
-    return Image.network(coverUrl, fit: BoxFit.cover, width: 50, height: 50);
+    return Image.network(
+      coverUrl,
+      fit: BoxFit.cover,
+      width: 50,
+      height: 50,
+      errorBuilder: (context, error, stackTrace) => Image.asset(
+        'assets/images/khongbuon.png',
+        fit: BoxFit.cover,
+        width: 50,
+        height: 50,
+      ),
+    );
   } else {
     return Image.asset(coverUrl, fit: BoxFit.cover, width: 50, height: 50);
   }

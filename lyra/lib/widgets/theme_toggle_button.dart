@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
 import 'package:lyra/l10n/app_localizations.dart';
 
-
 class ThemeToggleButton extends StatelessWidget {
   final bool showLabel;
   final double iconSize;
@@ -35,7 +34,11 @@ class ThemeToggleButton extends StatelessWidget {
                   themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
                   size: iconSize,
                 ),
-                tooltip: themeProvider.isDarkMode ? AppLocalizations.of(context)!.switchToLightMode : AppLocalizations.of(context)!.switchToDarkMode,
+                tooltip: themeProvider.isDarkMode
+                    ? (AppLocalizations.of(context)?.switchToLightMode ??
+                          'Switch to Light Mode')
+                    : (AppLocalizations.of(context)?.switchToDarkMode ??
+                          'Switch to Dark Mode'),
               );
       },
     );

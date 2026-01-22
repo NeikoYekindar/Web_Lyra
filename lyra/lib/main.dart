@@ -3,13 +3,28 @@ import 'package:lyra/providers/locale_provider.dart';
 import 'package:provider/provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/music_player_provider.dart';
-import 'providers/auth_provider.dart';
+import 'providers/auth_provider_v2.dart';
 import 'theme/app_theme.dart';
-import 'shell/app_shell.dart';
 import 'shell/app_shell_controller.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'core/di/service_locator.dart';
+import 'models/current_user.dart';
+import 'widgets/auth_gate.dart';
+import 'l10n/app_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize microservices
+  await ServiceLocator().initialize();
+
+  // Load saved tokens before starting the app
+  await ServiceLocator().apiClient.loadTokens();
+
+  // Load saved user data from SharedPreferences
+  await CurrentUser.instance.restoreFromPrefs();
+
   runApp(const MyApp());
 }
 
@@ -24,11 +39,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => MusicPlayerProvider()),
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => AppShellController()),
-        // Backend base URL for login API
-        ChangeNotifierProvider(
-          create: (_) =>
-              AuthProvider(baseUrl: 'https://3dd50a8c5b1c.ngrok-free.app'),
-        ),
+        // New microservice-based auth provider
+        ChangeNotifierProvider(create: (_) => AuthProviderV2()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
@@ -42,16 +54,13 @@ class MyApp extends StatelessWidget {
                 : ThemeMode.light,
             locale: context.watch<LocaleProvider>().locale,
             localizationsDelegates: const [
-              //AppLocalizations.delegate,
+              AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
             ],
-            supportedLocales: const [
-              Locale('en'),
-              Locale('vi'),
-            ],
-            home: const AppShell(),
+            supportedLocales: const [Locale('en'), Locale('vi')],
+            home: const AuthGate(),
           );
         },
       ),

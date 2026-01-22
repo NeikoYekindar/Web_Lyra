@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:lyra/models/current_user.dart';
+import 'package:lyra/models/user.dart';
 import 'package:lyra/navigation/profile_action.dart';
 import 'package:lyra/screens/welcome_screen.dart';
-import 'ava_navigator.dart'; 
+import 'ava_navigator.dart';
 import 'package:lyra/widgets/popup/logout_dialog.dart';
 import 'package:lyra/shell/app_nav.dart';
 import 'package:lyra/shell/app_routes.dart';
@@ -73,15 +75,11 @@ class _AvatarButtonState extends State<AvatarButton> {
   void _handleProfileAction(BuildContext context, ProfileAction action) {
     switch (action) {
       case ProfileAction.dashboard:
-        AppNav.go(AppRoutes.home); 
+        AppNav.go(AppRoutes.home);
         break;
 
       case ProfileAction.profile:
         AppNav.go(AppRoutes.profile);
-        break;
-
-      case ProfileAction.support:
-        AppNav.go(AppRoutes.home);
         break;
 
       case ProfileAction.settings:
@@ -134,7 +132,27 @@ class _AvatarButtonState extends State<AvatarButton> {
             border: Border.all(color: borderColor, width: borderWidth),
           ),
           child: ClipOval(
-            child: Image.asset('assets/images/avatar.png', fit: BoxFit.cover),
+            child: ValueListenableBuilder<UserModel?>(
+              valueListenable: CurrentUser.instance.userNotifier,
+              builder: (ctx, user, _) {
+                final url = user?.profileImageUrl;
+                if (url != null && url.isNotEmpty) {
+                  return Image.network(
+                    url,
+                    fit: BoxFit.cover,
+                    errorBuilder: (c, e, s) => Image.asset(
+                      'assets/images/avatar.png',
+                      fit: BoxFit.cover,
+                    ),
+                  );
+                }
+
+                return Image.asset(
+                  'assets/images/avatar.png',
+                  fit: BoxFit.cover,
+                );
+              },
+            ),
           ),
         ),
       ),

@@ -1,19 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:lyra/providers/locale_provider.dart';
 
-import 'package:lyra/providers/auth_provider.dart';
+import 'package:lyra/providers/auth_provider_v2.dart';
 import 'package:lyra/providers/music_player_provider.dart';
 import 'package:lyra/providers/theme_provider.dart';
 import 'package:lyra/theme/app_theme.dart';
 import 'package:lyra/shell/app_shell.dart';
 import 'package:lyra/shell/app_shell_controller.dart';
 
+// Localization
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:lyra/l10n/app_localizations.dart';
+
 // 🔥 ADD
 import 'package:lyra/models/current_user.dart';
 import 'package:lyra/models/user.dart';
 
+// Microservices
+import 'package:lyra/core/di/service_locator.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ============================================================
+  // 🔥 INITIALIZE MICROSERVICES (BẮT BUỘC)
+  // ============================================================
+  await ServiceLocator().initialize();
 
   // ============================================================
   // 🔥 RESTORE / INIT CURRENT USER (BẮT BUỘC)
@@ -45,11 +58,10 @@ Future<void> main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => AuthProvider(baseUrl: 'https://example.com'),
-        ),
+        ChangeNotifierProvider(create: (_) => AuthProviderV2()),
         ChangeNotifierProvider(create: (_) => MusicPlayerProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => AppShellController()),
       ],
       child: const _DebugApp(),
@@ -67,11 +79,21 @@ class _DebugApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Lyra Debug',
+          locale: context.watch<LocaleProvider>().locale,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeProvider.isDarkMode
               ? ThemeMode.dark
               : ThemeMode.light,
+
+          // Localization: match the main app so AppLocalizations.of(context) works
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
 
           // 🔥 AppShell giữ nguyên
           home: const AppShell(),
