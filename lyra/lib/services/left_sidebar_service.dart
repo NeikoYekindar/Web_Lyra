@@ -5,6 +5,7 @@ class LeftSidebarService {
       await Future.delayed(const Duration(milliseconds: 500));
 
       final List<String> apiResponse = [
+        'Tracks',
         'Playlists',
         'Artists',
         'Albums',

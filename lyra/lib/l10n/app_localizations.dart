@@ -604,6 +604,95 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue'**
   String get continueC;
+  /// No description provided for @noResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get noResults;
+
+  /// No description provided for @searchLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Search in library...'**
+  String get searchLibrary;
+
+  /// No description provided for @sortBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by'**
+  String get sortBy;
+
+  /// No description provided for @recentlyAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently Added'**
+  String get recentlyAdded;
+
+  /// No description provided for @alphabetical.
+  ///
+  /// In en, this message translates to:
+  /// **'Alphabetical'**
+  String get alphabetical;
+
+  /// No description provided for @creator.
+  ///
+  /// In en, this message translates to:
+  /// **'Creator'**
+  String get creator;
+
+  /// No description provided for @viewAs.
+  ///
+  /// In en, this message translates to:
+  /// **'View as'**
+  String get viewAs;
+
+  /// No description provided for @defaultView.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get defaultView;
+
+  /// No description provided for @titleOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Title only'**
+  String get titleOnly;
+
+  /// No description provided for @imageOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Image only'**
+  String get imageOnly;
+
+  /// No description provided for @myPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'My Playlist'**
+  String get myPlaylist;
+
+  /// No description provided for @findSongsForPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s find something for your playlist'**
+  String get findSongsForPlaylist;
+
+  /// No description provided for @searchSongsAndPodcasts.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for songs and podcasts'**
+  String get searchSongsAndPodcasts;
+
+  /// No description provided for @createPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Playlist'**
+  String get createPlaylist;
+
+  /// No description provided for @create.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get create;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

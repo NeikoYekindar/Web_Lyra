@@ -262,4 +262,47 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get continueC => 'Tiếp tục';
+  String get noResults => 'Không tìm thấy kết quả';
+
+  @override
+  String get searchLibrary => 'Tìm kiếm trong thư viện...';
+
+  @override
+  String get sortBy => 'Sắp xếp theo';
+
+  @override
+  String get recentlyAdded => 'Mới thêm gần đây';
+
+  @override
+  String get alphabetical => 'Thứ tự chữ cái';
+
+  @override
+  String get creator => 'Người sáng tạo';
+
+  @override
+  String get viewAs => 'Xem dưới dạng';
+
+  @override
+  String get defaultView => 'Mặc định';
+
+  @override
+  String get titleOnly => 'Chỉ tiêu đề';
+
+  @override
+  String get imageOnly => 'Chỉ hình ảnh';
+
+  @override
+  String get myPlaylist => 'Danh sách phát của tôi';
+
+  @override
+  String get findSongsForPlaylist => 'Hãy cùng tìm nội dung cho danh sách phát của bạn';
+
+  @override
+  String get searchSongsAndPodcasts => 'Tìm bài hát và tập podcast';
+
+  @override
+  String get createPlaylist => 'Tạo danh sách phát';
+
+  @override
+  String get create => 'Tạo';
 }

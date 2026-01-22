@@ -85,4 +85,19 @@
     "dontHaveAccount": "Don't have account?",
     "selectDateOfBirth": "Select Date of Birth",
     "continueC": "Continue"
+    "noResults": "No results found",
+    "searchLibrary": "Search in library...",
+    "sortBy": "Sort by",
+    "recentlyAdded": "Recently Added",
+    "alphabetical": "Alphabetical",
+    "creator": "Creator",
+    "viewAs": "View as",
+    "defaultView": "Default",
+    "titleOnly": "Title only",
+    "imageOnly": "Image only",
+    "myPlaylist": "My Playlist",
+    "findSongsForPlaylist": "Let's find something for your playlist",
+    "searchSongsAndPodcasts": "Search for songs and podcasts",
+    "createPlaylist": "Create Playlist",
+    "create": "Create"
 }

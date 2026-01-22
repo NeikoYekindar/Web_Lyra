@@ -262,4 +262,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get continueC => 'Continue';
+  String get noResults => 'No results found';
+
+  @override
+  String get searchLibrary => 'Search in library...';
+
+  @override
+  String get sortBy => 'Sort by';
+
+  @override
+  String get recentlyAdded => 'Recently Added';
+
+  @override
+  String get alphabetical => 'Alphabetical';
+
+  @override
+  String get creator => 'Creator';
+
+  @override
+  String get viewAs => 'View as';
+
+  @override
+  String get defaultView => 'Default';
+
+  @override
+  String get titleOnly => 'Title only';
+
+  @override
+  String get imageOnly => 'Image only';
+
+  @override
+  String get myPlaylist => 'My Playlist';
+
+  @override
+  String get findSongsForPlaylist => 'Let\'s find something for your playlist';
+
+  @override
+  String get searchSongsAndPodcasts => 'Search for songs and podcasts';
+
+  @override
+  String get createPlaylist => 'Create Playlist';
+
+  @override
+  String get create => 'Create';
 }

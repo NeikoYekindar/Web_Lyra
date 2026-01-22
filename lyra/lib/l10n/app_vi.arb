@@ -85,4 +85,19 @@
     "dontHaveAccount": "Không có tài khoản?",
     "selectDateOfBirth": "Chọn ngày sinh",
     "continueC": "Tiếp tục"
+    "noResults": "Không tìm thấy kết quả",
+    "searchLibrary": "Tìm kiếm trong thư viện...",
+    "sortBy": "Sắp xếp theo",
+    "recentlyAdded": "Mới thêm gần đây",
+    "alphabetical": "Thứ tự chữ cái",
+    "creator": "Người sáng tạo",
+    "viewAs": "Xem dưới dạng",
+    "defaultView": "Mặc định",
+    "titleOnly": "Chỉ tiêu đề",
+    "imageOnly": "Chỉ hình ảnh",
+    "myPlaylist": "Danh sách phát của tôi",
+    "findSongsForPlaylist": "Hãy cùng tìm nội dung cho danh sách phát của bạn",
+    "searchSongsAndPodcasts": "Tìm bài hát và tập podcast",
+    "createPlaylist": "Tạo danh sách phát",
+    "create": "Tạo"
 }
