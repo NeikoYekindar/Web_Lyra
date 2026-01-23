@@ -124,7 +124,7 @@ class _HomeCenterState extends State<HomeCenter> {
       final response = await InteractionService.getRecommendations(
         userId: userId,
         n: 10,
-        filterLiked: true,
+        filterLiked: false,
       );
 
       if (mounted) {
