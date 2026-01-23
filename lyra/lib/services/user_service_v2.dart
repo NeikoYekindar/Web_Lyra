@@ -31,9 +31,11 @@ class UserServiceV2 {
   }
 
   /// Update current user profile
+  /// Sends all profile data + image (if provided) in a single multipart request
   Future<UserModel> updateCurrentUser({
     required String userId,
     String? displayName,
+    String? email,
     String? gender,
     DateTime? dateOfBirth,
     String? profileImageUrl,
@@ -42,42 +44,55 @@ class UserServiceV2 {
     List<int>? profileImageBytes,
     String? profileImageFilename,
   }) async {
-    final endpoint = '${ApiConfig.userUpdateEndpoint}/';
+    // Build fields
+    final Map<String, dynamic> fields = {};
 
-    if (profileImageBytes != null && profileImageBytes.isNotEmpty) {
-      // Send multipart/form-data with image as a separate part and other fields as form fields
-      final multipartFile = http.MultipartFile.fromBytes(
-        'image',
-        profileImageBytes,
-        filename: profileImageFilename ?? 'avatar.png',
-        contentType: MediaType('image', 'png'),
-      );
+    if (displayName != null) fields['display_name'] = displayName;
+    if (email != null) fields['email'] = email;
+    if (gender != null) fields['gender'] = gender;
+    if (dateOfBirth != null) {
+      fields['dateOfBirth'] = dateOfBirth.toIso8601String().split('T').first;
+    }
+    if (bio != null) fields['bio'] = bio;
 
-      final response = await _apiClient.postMultipart<UserModel>(
-        ApiConfig.userServiceUrl,
-        endpoint,
-        files: [multipartFile],
-        fields: {
-          'user_id': userId,
-          if (displayName != null) 'display_name': displayName,
-          if (gender != null) 'gender': gender,
-          if (dateOfBirth != null)
-            'dateOfBirth': dateOfBirth.toIso8601String().split('T').first,
-          if (profileImageUrl != null) 'profile_image_url': profileImageUrl,
-          if (bio != null) 'bio': bio,
-          if (favoriteGenres != null) 'favorite_genre': favoriteGenres,
-        },
-        fromJson: (json) => UserModel.fromJson(json as Map<String, dynamic>),
-      );
-
-      if (response.success && response.data != null) {
-        return response.data!;
+    // Handle favorite genres
+    if (favoriteGenres != null && favoriteGenres.isNotEmpty) {
+      if (favoriteGenres.length == 1) {
+        fields['favorite_genre'] = favoriteGenres.first;
+      } else {
+        fields['favorite_genre'] = favoriteGenres;
       }
-
-      throw Exception(response.message ?? 'Failed to update user profile');
     }
 
-    throw Exception('Profile image is required for update');
+    // Build files list
+    final files = <http.MultipartFile>[];
+    if (profileImageBytes != null && profileImageBytes.isNotEmpty) {
+      files.add(
+        http.MultipartFile.fromBytes(
+          'image',
+          profileImageBytes,
+          filename: profileImageFilename ?? 'avatar.png',
+          contentType: MediaType('image', 'png'),
+        ),
+      );
+      print('📤 Image added to request: ${profileImageFilename ?? "avatar.png"}, size: ${profileImageBytes.length} bytes');
+    }
+
+    // Send single multipart request with all fields + image using PUT
+    final response = await _apiClient.putMultipart<UserModel>(
+      ApiConfig.userServiceUrl,
+      '${ApiConfig.userUpdateEndpoint}/$userId',
+      files: files,
+      fields: fields,
+      fromJson: (json) => UserModel.fromJson(json as Map<String, dynamic>),
+    );
+
+    if (response.success && response.data != null) {
+      print('✅ Profile updated successfully');
+      return response.data!;
+    }
+
+    throw Exception(response.message ?? 'Failed to update user profile');
   }
 
   /// Request password reset
@@ -141,6 +156,21 @@ class UserServiceV2 {
     }
   }
 
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConfig.userServiceUrl,
+      ApiConfig.changePasswordEndpoint,
+      body: {'current_password': oldPassword, 'new_password': newPassword},
+    );
+
+    if (!response.success) {
+      throw Exception(response.message ?? 'Password change failed');
+    }
+  }
+
   /// Upload profile image (avatar) and return the uploaded image URL
   Future<String> uploadProfileImage(
     List<int> bytes,
@@ -176,6 +206,9 @@ class UserServiceV2 {
 
     throw Exception(response.message ?? 'Failed to upload image');
   }
+
+    /// Upload profile image (avatar) and return the uploaded image URL
+  
 
   /// Set up profile during initial creation using multipart/form-data.
   /// Fields: user_id, display_name, dateOfBirth, gender, bio, favorite_genre

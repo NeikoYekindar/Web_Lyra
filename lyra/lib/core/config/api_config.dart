@@ -10,11 +10,11 @@ class ApiConfig {
   // Microservice Base URLs - Configure for your FastAPI services
   static const Map<String, Map<String, String>> _serviceUrls = {
     'dev': {
-      'auth': 'http://54.147.43.30:3000',
-      'music': 'http://54.147.43.30:3000',
-      'user': 'http://54.147.43.30:3000',
-      'playlist': 'http://54.147.43.30:3000',
-      'search': 'http://54.147.43.30:3000',
+      'auth': 'http://52.73.105.174:3000',
+      'music': 'http://52.73.105.174:3000',
+      'user': 'http://52.73.105.174:3000',
+      'playlist': 'http://52.73.105.174:3000',
+      'search': 'http://52.73.105.174:3000',
     },
     'staging': {
       'auth': 'https://staging-auth.lyra.app',
@@ -88,6 +88,10 @@ class ApiConfig {
   static String get searchServiceUrl => getServiceUrl('search');
   static const String searchEndpoint = '/api/v1/search';
   static const String suggestionsEndpoint = '/api/v1/search/suggestions';
+
+  // API Endpoints for Change Password
+  static String get changePasswordServiceUrl => getServiceUrl('user');
+  static const String changePasswordEndpoint = '/users/change-pass';
 
   // Request Configuration
   static const Duration connectionTimeout = Duration(seconds: 30);

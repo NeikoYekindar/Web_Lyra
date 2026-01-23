@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:confetti/confetti.dart';
 import 'package:lyra/l10n/app_localizations.dart';
 import 'package:lyra/widgets/reset_pass/fp_enter_email.dart';
+import 'package:lyra/core/di/service_locator.dart';
 
 class ChangePassword extends StatefulWidget {
   const ChangePassword({super.key});
@@ -149,7 +150,40 @@ class _ChangePasswordState extends State<ChangePassword> {
                             style: GoogleFonts.inter(color: Colors.white70),
                           ),
                           const SizedBox(height: 20),
+                          ElevatedButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: const Color(0xFF22C55E),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
+                            child: Text(
+                              'Close',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
                         ],
+                      ),
+                      Positioned(
+                        top: 12,
+                        right: 12,
+                        child: IconButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
                       ),
                       kIsWeb
                           ? const SizedBox.shrink()
@@ -432,18 +466,70 @@ class _ChangePasswordState extends State<ChangePassword> {
                                   onPressed: (!_isFormValid || _isLoading)
                                       ? null
                                       : () async {
-                                          // final validation has already been tracked, but run Form validate
+                                          // Validate password matching
+                                          if (_newPasswordController.text !=
+                                              _confirmPasswordController
+                                                  .text) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: const Text(
+                                                  'Passwords do not match',
+                                                ),
+                                                backgroundColor:
+                                                    Theme.of(context)
+                                                        .colorScheme
+                                                        .error,
+                                              ),
+                                            );
+                                            return;
+                                          }
+
                                           if (_formKey.currentState!
                                               .validate()) {
-                                            setState(() => _isLoading = true);
-                                            await Future.delayed(
-                                              const Duration(seconds: 2),
-                                            );
-                                            setState(() {
-                                              _isLoading = false;
-                                              _isSuccess = true;
-                                            });
-                                            _confettiController.play();
+                                            setState(
+                                                () => _isLoading = true);
+
+                                            try {
+                                              final userService =
+                                                  serviceLocator.userService;
+                                              await userService.changePassword(
+                                                oldPassword:
+                                                    _oldPasswordController
+                                                        .text,
+                                                newPassword:
+                                                    _newPasswordController
+                                                        .text,
+                                              );
+
+                                              setState(() {
+                                                _isLoading = false;
+                                                _isSuccess = true;
+                                              });
+                                              _confettiController.play();
+                                            } catch (e) {
+                                              setState(
+                                                  () => _isLoading = false);
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    e.toString().contains(
+                                                            'Exception: ')
+                                                        ? e
+                                                            .toString()
+                                                            .replaceFirst(
+                                                                'Exception: ',
+                                                                '')
+                                                        : 'Failed to change password',
+                                                  ),
+                                                  backgroundColor:
+                                                      Theme.of(context)
+                                                          .colorScheme
+                                                          .error,
+                                                ),
+                                              );
+                                            }
                                           }
                                         },
                                   style: ElevatedButton.styleFrom(
