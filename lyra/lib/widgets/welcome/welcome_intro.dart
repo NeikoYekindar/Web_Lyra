@@ -96,7 +96,7 @@ class _WelcomeIntroState extends State<WelcomeIntro>
               child: Column(
                 children: [
                   Text(
-                    'Stream millions of songs with Lyra. Discover new artists, create',
+                    AppLocalizations.of(context)!.loginDescribe1,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: 16,
@@ -105,7 +105,7 @@ class _WelcomeIntroState extends State<WelcomeIntro>
                     ),
                   ),
                   Text(
-                    'playlists, and enjoy your favorite music anywhere.',
+                    AppLocalizations.of(context)!.loginDescribe2,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: 16,
@@ -128,7 +128,7 @@ class _WelcomeIntroState extends State<WelcomeIntro>
                       vertical: 12,
                     ),
                     child: Text(
-                      'Sign up',
+                      AppLocalizations.of(context)!.signUp,
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 16,
@@ -146,7 +146,7 @@ class _WelcomeIntroState extends State<WelcomeIntro>
                       vertical: 12,
                     ),
                     child: Text(
-                      'Sign in',
+                      AppLocalizations.of(context)!.signIn,
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 16,
@@ -179,23 +179,23 @@ class _WelcomeIntroState extends State<WelcomeIntro>
                 children: [
                   _FeatureCard(
                     icon: 'assets/icons/music_welcome_icon.svg',
-                    title: 'Millions of Songs',
-                    description1: 'Access a vast library of music from',
-                    description2: 'artists around the world',
+                    title: AppLocalizations.of(context)!.millionsOfSongs,
+                    description1: AppLocalizations.of(context)!.accessAVastLibrary,
+                    description2: AppLocalizations.of(context)!.artistsAroundTheWorld,
                   ),
                   const SizedBox(width: 90),
                   _FeatureCard(
                     icon: 'assets/icons/heart_welcome_icon.svg',
-                    title: 'Personalized',
-                    description1: 'Get recommendations based on',
-                    description2: 'your unique musical taste',
+                    title: AppLocalizations.of(context)!.personalized,
+                    description1: AppLocalizations.of(context)!.getRecommendationsBasedOn,
+                    description2: AppLocalizations.of(context)!.yourUniqueMusicalTaste,
                   ),
                   const SizedBox(width: 90),
                   _FeatureCard(
                     icon: 'assets/icons/anywhere_welcome_icon.svg',
-                    title: 'Anywhere',
-                    description1: 'Listen on any device, online or offline',
-                    description2: 'wherever you go',
+                    title: AppLocalizations.of(context)!.anywhere,
+                    description1: AppLocalizations.of(context)!.listenOnAnyDevice,
+                    description2: AppLocalizations.of(context)!.whereverYouGo,
                   ),
                 ],
               ),

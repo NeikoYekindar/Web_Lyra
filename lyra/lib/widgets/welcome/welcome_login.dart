@@ -7,6 +7,7 @@ import 'package:lyra/widgets/welcome/welcome_signup.dart';
 import 'package:lyra/providers/auth_provider_v2.dart';
 import 'package:lyra/shell/app_shell.dart';
 import 'package:lyra/widgets/reset_pass/fp_enter_email.dart';
+import 'package:lyra/l10n/app_localizations.dart';
 
 class WelcomeLogin extends StatefulWidget {
   final VoidCallback? onBackPressed;
@@ -82,7 +83,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Stream millions of songs on Lyra',
+                    AppLocalizations.of(context)!.loginDescribe1,
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 20,
@@ -129,7 +130,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                           ),
                         ),
                         Text(
-                          'Welcome back',
+                          AppLocalizations.of(context)!.welcomeBack,
                           style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 28,
@@ -143,7 +144,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: Text(
-                        'Log in to continue listening',
+                        AppLocalizations.of(context)!.loginContLis,
                         textAlign: TextAlign.right,
                         style: GoogleFonts.inter(
                           color: Colors.white,
@@ -209,7 +210,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      'Password',
+                      AppLocalizations.of(context)!.password,
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 18,
@@ -230,7 +231,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                         //   color: Colors.grey[400],
                         //   fontSize: 14,
                         // ),
-                        hintText: 'Enter password',
+                        hintText: AppLocalizations.of(context)!.enterPass,
                         hintStyle: GoogleFonts.inter(
                           color: Colors.grey[600],
                           fontSize: 14,
@@ -314,7 +315,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Remember me',
+                              AppLocalizations.of(context)!.rememberMe,
                               style: GoogleFonts.inter(
                                 color: Colors.white,
                                 fontSize: 14,
@@ -334,7 +335,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                               );
                             },
                             child: Text(
-                              'Forgot password?',
+                              AppLocalizations.of(context)!.forgotPassword + '?',
                               style: GoogleFonts.inter(
                                 color: const Color(0xFFDC0404),
                                 fontSize: 14,
@@ -359,7 +360,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
-                                        'Please enter email and password',
+                                        "Please enter email and password",
                                       ),
                                     ),
                                   );
@@ -374,7 +375,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
-                                        'Please enter a valid email address',
+                                        "Please enter a valid email address",
                                       ),
                                     ),
                                   );
@@ -402,7 +403,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                                 } else if (mounted) {
                                   final msg =
                                       context.read<AuthProviderV2>().error ??
-                                      'Login failed';
+                                      AppLocalizations.of(context)!.loginFailed;
                                   ScaffoldMessenger.of(
                                     context,
                                   ).showSnackBar(SnackBar(content: Text(msg)));
@@ -425,7 +426,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                                 ),
                               )
                             : Text(
-                                'Log In',
+                                AppLocalizations.of(context)!.logIn,
                                 style: GoogleFonts.inter(
                                   color: Colors.white,
                                   fontSize: 18,
@@ -443,7 +444,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Text(
-                            'Or continue with',
+                            AppLocalizations.of(context)!.continueWith,
                             style: GoogleFonts.inter(
                               color: Colors.grey[400],
                               fontSize: 18,
@@ -484,7 +485,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "Don't have an account? ",
+                          AppLocalizations.of(context)!.dontHaveAccount,
                           style: GoogleFonts.inter(
                             color: Colors.grey[400],
                             fontSize: 18,
@@ -506,7 +507,7 @@ class _WelcomeLoginState extends State<WelcomeLogin> {
                               }
                             },
                             child: Text(
-                              'Sign Up',
+                              AppLocalizations.of(context)!.signUp,
                               style: GoogleFonts.inter(
                                 color: const Color(0xFFDC0404),
                                 fontSize: 18,

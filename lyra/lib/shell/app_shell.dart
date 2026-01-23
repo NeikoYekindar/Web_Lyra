@@ -153,6 +153,13 @@ class _AppShellState extends State<AppShell> {
                                 ),
                               );
                             }
+
+                            if (centerContent != null) {
+                              return Positioned.fill(
+                                child: centerContent,
+                              );
+                            }
+
                             return showBrowse
                                 ? const Positioned.fill(
                                     child: BrowseAllCenter(),

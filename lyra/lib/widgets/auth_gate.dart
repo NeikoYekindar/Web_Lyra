@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:lyra/l10n/app_localizations.dart';
 import '../providers/auth_provider_v2.dart';
 import '../shell/app_shell.dart';
 import '../screens/welcome_screen.dart';
@@ -53,14 +54,14 @@ class _AuthGateState extends State<AuthGate> {
   Widget build(BuildContext context) {
     // Show loading while checking auth
     if (_isCheckingAuth) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text('Đang kiểm tra phiên đăng nhập...'),
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(AppLocalizations.of(context)!.checkingLoginSession),
             ],
           ),
         ),

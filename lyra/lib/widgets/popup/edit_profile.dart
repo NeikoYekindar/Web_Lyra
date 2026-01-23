@@ -598,7 +598,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                                           context,
                                         ).showSnackBar(
                                           SnackBar(
-                                            content: Text('Failed to save: $e'),
+                                            content: Text('${AppLocalizations.of(context)!.failedToSaveChanges}$e'),
                                           ),
                                         );
                                       }

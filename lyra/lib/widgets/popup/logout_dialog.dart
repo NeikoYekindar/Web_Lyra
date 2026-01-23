@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:lyra/providers/auth_provider_v2.dart';
 import 'package:lyra/providers/music_player_provider.dart';
 import 'package:lyra/screens/welcome_screen.dart';
+import 'package:lyra/l10n/app_localizations.dart';
 
 class LogoutDialog extends StatelessWidget {
   const LogoutDialog({super.key});

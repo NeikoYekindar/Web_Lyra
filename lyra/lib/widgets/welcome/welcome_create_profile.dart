@@ -64,7 +64,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to pick image: $e')));
+        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.failedToPickImage)));
       }
     }
   }
@@ -98,7 +98,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          'Skip',
+                          AppLocalizations.of(context)!.skip,
                           style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 14,
@@ -122,7 +122,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                 ),
                 const SizedBox(height: 30),
                 Text(
-                  'Create Your Profile',
+                  AppLocalizations.of(context)!.createYourProfile,
                   style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 30,
@@ -131,7 +131,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Help us personalize your music experience',
+                  AppLocalizations.of(context)!.musicExperience,
                   style: GoogleFonts.poppins(
                     color: Colors.white70,
                     fontSize: 18,
@@ -165,7 +165,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                         children: [
                           const SizedBox(height: 10),
                           Text(
-                            'Profile Picture',
+                            AppLocalizations.of(context)!.profilePicture,
                             style: GoogleFonts.inter(
                               color: Colors.white,
                               fontSize: 14,
@@ -234,7 +234,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                                         ),
                                         const SizedBox(width: 10),
                                         Text(
-                                          'Upload Photo',
+                                          AppLocalizations.of(context)!.uploadPhoto,
                                           style: GoogleFonts.inter(
                                             color: Colors.white,
                                             fontSize: 14,
@@ -246,7 +246,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                                   ),
                                   const SizedBox(height: 5),
                                   Text(
-                                    'Max 5MB • JPG, PNG, GIF',
+                                    AppLocalizations.of(context)!.max + ' 5MB • JPG, PNG, GIF',
                                     style: GoogleFonts.inter(
                                       color: Colors.white54,
                                       fontSize: 12,
@@ -259,7 +259,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                           ),
                           const SizedBox(height: 14),
                           Text(
-                            'Display name',
+                            AppLocalizations.of(context)!.displayName,
                             style: GoogleFonts.inter(
                               color: Colors.white,
                               fontSize: 14,
@@ -280,7 +280,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                               //   color: Colors.grey[400],
                               //   fontSize: 14,
                               // ),
-                              hintText: 'How should we call you?',
+                              hintText: AppLocalizations.of(context)!.howShouldWeCallYou,
                               hintStyle: GoogleFonts.inter(
                                 color: Colors.grey[600],
                                 fontSize: 14,
@@ -324,7 +324,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                               SizedBox(
                                 width: 50,
                                 child: Text(
-                                  'Gender',
+                                  AppLocalizations.of(context)!.gender,
                                   style: GoogleFonts.inter(
                                     color: Colors.white,
                                     fontSize: 14,
@@ -349,7 +349,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                                       horizontal: 10,
                                       vertical: 20,
                                     ),
-                                    hintText: 'Select',
+                                    hintText: AppLocalizations.of(context)!.select,
                                     hintStyle: GoogleFonts.inter(
                                       color: Colors.grey[600],
                                       fontSize: 14,
@@ -371,7 +371,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                                       ),
                                     ),
                                   ),
-                                  items: ['Male', 'Female', 'Other']
+                                  items: [AppLocalizations.of(context)!.male, AppLocalizations.of(context)!.female, AppLocalizations.of(context)!.other]
                                       .map(
                                         (gender) => DropdownMenuItem(
                                           value: gender,
@@ -390,7 +390,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                               SizedBox(
                                 width: 75,
                                 child: Text(
-                                  'Date of Birth',
+                                  AppLocalizations.of(context)!.dateOfBirth,
                                   style: GoogleFonts.inter(
                                     color: Colors.white,
                                     fontSize: 14,
@@ -516,7 +516,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                                 horizontal: 16,
                                 vertical: 12,
                               ),
-                              hintText: 'Tell us about yourself...',
+                              hintText: AppLocalizations.of(context)!.tellUsAbUrSelf,
                               hintStyle: GoogleFonts.inter(
                                 color: Colors.grey[600],
                                 fontSize: 14,
@@ -556,7 +556,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Favorite genres',
+                                AppLocalizations.of(context)!.favoriteGenres,
                                 style: GoogleFonts.inter(
                                   color: Colors.white,
                                   fontSize: 14,
@@ -622,7 +622,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Select at least one genre',
+                            AppLocalizations.of(context)!.selectAtLeastOneGenre,
                             style: GoogleFonts.inter(
                               color: Colors.grey[600],
                               fontSize: 14,
@@ -660,7 +660,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                               children: [
                                 const SizedBox(height: 10),
                                 Text(
-                                  'Profile Picture',
+                                  AppLocalizations.of(context)!.profilePicture,
                                   style: GoogleFonts.inter(
                                     color: Colors.white,
                                     fontSize: 14,
@@ -712,7 +712,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                                       children: [
                                         Text(
                                           _displayName.isEmpty
-                                              ? 'Your name'
+                                              ? AppLocalizations.of(context)!.yourName
                                               : _displayName,
                                           style: GoogleFonts.inter(
                                             color: Colors.white,
@@ -739,7 +739,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                                 Divider(color: Colors.grey[700], thickness: 1),
                                 SizedBox(height: 14),
                                 Text(
-                                  'Your personalized playlists will appear here',
+                                  AppLocalizations.of(context)!.yourPersonalized,
                                   style: GoogleFonts.inter(
                                     color: Colors.white,
                                     fontSize: 14,
@@ -764,7 +764,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                                     //   color: Colors.grey[400],
                                     //   fontSize: 14,
                                     // ),
-                                    hintText: 'Gender',
+                                    hintText: AppLocalizations.of(context)!.gender,
                                     hintStyle: GoogleFonts.inter(
                                       color: Colors.grey[600],
                                       fontSize: 14,
@@ -815,7 +815,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                                     //   color: Colors.grey[400],
                                     //   fontSize: 14,
                                     // ),
-                                    hintText: 'Date of Birth',
+                                    hintText: AppLocalizations.of(context)!.dateOfBirth,
                                     hintStyle: GoogleFonts.inter(
                                       color: Colors.grey[600],
                                       fontSize: 14,
@@ -901,7 +901,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                                 const SizedBox(height: 10),
                                 if (_selectedGenres.isNotEmpty) ...[
                                   Text(
-                                    'Favorite Genres',
+                                    AppLocalizations.of(context)!.favoriteGenres,
                                     style: GoogleFonts.inter(
                                       color: Colors.white,
                                       fontSize: 14,
@@ -956,7 +956,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                                           ).showSnackBar(
                                             SnackBar(
                                               content: Text(
-                                                'Please enter a display name',
+                                                AppLocalizations.of(context)!.enterDisplayName,
                                               ),
                                               backgroundColor: Colors.orange,
                                             ),
@@ -970,7 +970,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                                           ).showSnackBar(
                                             SnackBar(
                                               content: Text(
-                                                'Please select at least one genre',
+                                                AppLocalizations.of(context)!.selectAtLeastOneGenre,
                                               ),
                                               backgroundColor: Colors.orange,
                                             ),
@@ -1051,12 +1051,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                                             ScaffoldMessenger.of(
                                               context,
                                             ).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  'Failed to save profile: $error',
-                                                ),
-                                                backgroundColor: Colors.red,
-                                              ),
+                                              SnackBar(content: Text('Failed to pick image: $error')),
                                             );
                                           }
                                         } finally {
@@ -1080,7 +1075,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                                         ),
                                       ),
                                       child: Text(
-                                        'Finish',
+                                        AppLocalizations.of(context)!.finish,
                                         style: GoogleFonts.inter(
                                           color: Colors.white,
                                           fontSize: 16,
@@ -1140,7 +1135,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                                   ),
                                 ),
                                 child: Text(
-                                  'Skip for now',
+                                  AppLocalizations.of(context)!.skip,
                                   style: GoogleFonts.inter(
                                     color: Colors.white,
                                     fontSize: 16,

@@ -41,6 +41,8 @@ class _TrackItemState extends State<TrackItem> {
 
   @override
   Widget build(BuildContext context) {
+    final isInteractive = widget.onTap != null;
+
     return MouseRegion(
       onEnter: (_) => setState(() => _hovering = true),
       onExit: (_) => setState(() {
@@ -147,7 +149,18 @@ class _TrackItemState extends State<TrackItem> {
 
 Widget buildCoverImage(String coverUrl) {
   if (coverUrl.startsWith('http')) {
-    return Image.network(coverUrl, fit: BoxFit.cover, width: 50, height: 50);
+    return Image.network(
+      coverUrl,
+      fit: BoxFit.cover,
+      width: 50,
+      height: 50,
+      errorBuilder: (context, error, stackTrace) => Image.asset(
+        'assets/images/khongbuon.png',
+        fit: BoxFit.cover,
+        width: 50,
+        height: 50,
+      ),
+    );
   } else {
     return Image.asset(coverUrl, fit: BoxFit.cover, width: 50, height: 50);
   }
