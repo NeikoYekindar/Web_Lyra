@@ -117,6 +117,7 @@ class _AppShellState extends State<AppShell> {
                                 shell?.isBrowseAllExpanded ?? false;
                             final showMaximized =
                                 shell?.showMaximizedPlayer ?? false;
+                            final centerContent = shell?.centerContentWidget;
 
                             // Priority: Maximized Player > Lyrics > BrowseAll
                             if (showMaximized && track != null) {

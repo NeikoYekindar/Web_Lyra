@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lyra/core/di/service_locator.dart';
+import 'package:lyra/l10n/app_localizations.dart';
 import 'package:lyra/models/current_user.dart';
 import '../../screens/welcome_screen.dart';
 

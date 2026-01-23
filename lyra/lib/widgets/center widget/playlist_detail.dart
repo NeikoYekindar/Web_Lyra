@@ -210,7 +210,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                         context,
                         listen: false,
                       );
-                      shellController.clearCenterContent();
+                      shellController.closeCenterContent();
                     },
                     icon: Icon(
                       Icons.arrow_back,
