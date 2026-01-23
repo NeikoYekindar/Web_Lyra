@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../core/config/api_config.dart';
 import '../core/network/api_client.dart';
 import '../core/models/api_response.dart';
@@ -31,19 +33,55 @@ class Playlist {
   });
 
   factory Playlist.fromJson(Map<String, dynamic> json) {
+    bool parseBool(dynamic value) {
+      if (value is bool) return value;
+      if (value is num) return value != 0;
+      if (value is String) {
+        final v = value.trim().toLowerCase();
+        if (v == 'true' || v == '1' || v == 'yes') return true;
+        if (v == 'false' || v == '0' || v == 'no') return false;
+      }
+      return false;
+    }
+
+    int parseInt(dynamic value) {
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      if (value is String) return int.tryParse(value.trim()) ?? 0;
+      return 0;
+    }
+
+    List<String>? parsedTrackIds;
+    final rawTrackIds = json['track_ids'] ?? json['id_tracks'] ?? json['tracks'];
+    if (rawTrackIds is List) {
+      parsedTrackIds = List<String>.from(rawTrackIds.map((e) => e.toString()));
+    } else if (rawTrackIds is String && rawTrackIds.trim().isNotEmpty) {
+      try {
+        final decoded = jsonDecode(rawTrackIds);
+        if (decoded is List) {
+          parsedTrackIds = List<String>.from(decoded.map((e) => e.toString()));
+        }
+      } catch (_) {
+        // ignore
+      }
+    }
+
     return Playlist(
-      id: json['id']?.toString() ?? '',
-      name: json['name']?.toString() ?? json['title']?.toString() ?? '',
+      id: (json['playlist_id'] ?? json['id'])?.toString() ?? '',
+      name:
+          (json['playlist_name'] ?? json['name'] ?? json['title'])?.toString() ??
+          '',
       description: json['description']?.toString(),
-      coverUrl: json['cover_url']?.toString() ?? json['image']?.toString(),
-      ownerId: json['owner_id']?.toString() ?? '',
+      coverUrl:
+          (json['image_url'] ?? json['cover_url'] ?? json['image'])?.toString(),
+      ownerId: (json['user_id'] ?? json['owner_id'])?.toString() ?? '',
       ownerName: json['owner_name']?.toString() ?? '',
-      isPublic: json['is_public'] ?? json['public'] ?? false,
-      trackCount: json['track_count'] ?? json['tracks_count'] ?? 0,
-      trackIds: json['track_ids'] != null
-          ? List<String>.from(json['track_ids'])
-          : null,
-      createdAt: json['created_at']?.toString(),
+      isPublic: parseBool(json['is_public'] ?? json['public']),
+      trackCount: parseInt(
+        json['total_tracks'] ?? json['track_count'] ?? json['tracks_count'],
+      ),
+      trackIds: parsedTrackIds,
+      createdAt: (json['created_at'] ?? json['release_date'])?.toString(),
       updatedAt: json['updated_at']?.toString(),
     );
   }
@@ -120,6 +158,47 @@ class PlaylistServiceV2 {
     throw Exception(response.message ?? 'Failed to fetch user playlists');
   }
 
+  /// Get playlists for a specific user (legacy/compat endpoint)
+  /// Swagger: GET /playlists/your-playlists?user_id=...
+  Future<List<Playlist>> getYourPlaylists({required String userId}) async {
+    final response = await _apiClient.get<List<Playlist>>(
+      ApiConfig.playlistServiceUrl,
+      ApiConfig.yourPlaylistsEndpoint,
+      // Some backends apply a very small default page size.
+      // Ask for a larger page size so the UI can show all playlists.
+      queryParameters: {
+        'user_id': userId,
+        'page': '1',
+        'page_size': ApiConfig.maxPageSize.toString(),
+      },
+      fromJson: (json) {
+        dynamic raw = json;
+
+        if (raw is Map<String, dynamic>) {
+          raw = raw['data'] ?? raw['playlists'] ?? raw['items'] ?? raw['result'];
+        }
+
+        if (raw is List) {
+          final playlists = <Playlist>[];
+          for (final item in raw) {
+            if (item is Map<String, dynamic>) {
+              playlists.add(Playlist.fromJson(item));
+            }
+          }
+          return playlists;
+        }
+
+        return <Playlist>[];
+      },
+    );
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+
+    throw Exception(response.message ?? 'Failed to fetch your playlists');
+  }
+
   /// Get playlist by ID
   Future<Playlist> getPlaylistById(String playlistId) async {
     final endpoint = ApiConfig.playlistDetailEndpoint.replaceAll(
@@ -156,6 +235,72 @@ class PlaylistServiceV2 {
         'is_public': isPublic,
         if (coverUrl != null) 'cover_url': coverUrl,
       },
+      fromJson: (json) => Playlist.fromJson(json as Map<String, dynamic>),
+    );
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+
+    throw Exception(response.message ?? 'Failed to create playlist');
+  }
+
+  /// Create playlist via catalog endpoint (multipart)
+  ///
+  /// Docs: POST /playlists/create (multipart/form-data)
+  /// Required: playlist_name, user_id
+  /// Optional: is_public, duration, total_tracks, id_tracks (JSON string array)
+  Future<Playlist> createPlaylistCatalog({
+    required String playlistName,
+    required String userId,
+    bool isPublic = false,
+    List<String>? trackIds,
+    int? duration,
+    int? totalTracks,
+  }) async {
+    /// Backend test toggle:
+    /// - `true`  => send JSON array string: ["t01","t02"] (recommended)
+    /// - `false` => send quoted CSV string: "t01","t02" (NO brackets)
+    const bool useJsonArrayForIdTracks = false;
+
+    final normalizedTrackIds = (trackIds ?? const <String>[])
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList(growable: false);
+    final normalizedDuration = duration ?? 0;
+    final normalizedTotalTracks = totalTracks ?? normalizedTrackIds.length;
+
+    final idTracksValue = useJsonArrayForIdTracks
+        ? jsonEncode(normalizedTrackIds)
+        : normalizedTrackIds.map((id) => '$id').join(',');
+
+    final fields = <String, dynamic>{
+      'playlist_name': playlistName,
+      'user_id': userId,
+      'is_public': isPublic.toString(),
+      // Backend validation may reject missing duration/total_tracks.
+      'duration': normalizedDuration.toString(),
+      'total_tracks': normalizedTotalTracks.toString(),
+      // Some backends expect this field to exist even when empty.
+      'id_tracks': idTracksValue,
+    };
+
+    assert(() {
+      print('🧩 createPlaylistCatalog() payload');
+      print('  playlist_name: $playlistName');
+      print('  user_id: $userId');
+      print('  is_public: ${isPublic.toString()}');
+      print('  duration: ${normalizedDuration.toString()}');
+      print('  total_tracks: ${normalizedTotalTracks.toString()}');
+      print('  id_tracks: $idTracksValue');
+      return true;
+    }());
+
+    final response = await _apiClient.postMultipart<Playlist>(
+      ApiConfig.playlistServiceUrl,
+      ApiConfig.playlistsCreateEndpoint,
+      files: const [],
+      fields: fields,
       fromJson: (json) => Playlist.fromJson(json as Map<String, dynamic>),
     );
 
