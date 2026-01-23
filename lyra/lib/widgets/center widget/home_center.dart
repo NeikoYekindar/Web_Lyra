@@ -16,6 +16,7 @@ import '../../shell/app_shell_controller.dart';
 import '../../shell/app_nav.dart';
 import '../../shell/app_routes.dart';
 import 'album_detail.dart';
+import 'playlist_detail.dart';
 // import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
 // Removed flutter_svg import (unused after cleanup)
 
@@ -355,9 +356,19 @@ class _HomeCenterState extends State<HomeCenter> {
         });
         break;
       case 'playlist':
+        // Navigate to playlist detail
+        shellController.showCenterContent(
+          PlaylistDetailScreen(
+            key: ValueKey('playlist_${item['id']}'),
+            playlistId: item['id'],
+            playlistName: item['title'],
+            playlistImage: item['image'],
+          ),
+        );
+        break;
       case 'radio':
-        // TODO: Implement playlist/radio navigation
-        print('Playlist/Radio navigation not implemented yet');
+        // TODO: Implement radio navigation
+        print('Radio navigation not implemented yet');
         break;
       default:
         break;

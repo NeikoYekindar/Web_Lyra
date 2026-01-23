@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/config/api_config.dart';
 import '../../core/di/service_locator.dart';
 import '../../models/track.dart';
 import '../../providers/music_player_provider.dart';
@@ -98,7 +99,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
       // Use ApiClient directly to get full response with tracks
       final apiClient = ServiceLocator().apiClient;
       final response = await apiClient.get<Map<String, dynamic>>(
-        'http://54.209.94.184:3000',
+        ApiConfig.musicServiceUrl,
         '/albums/${widget.albumId}',
         fromJson: (json) => json as Map<String, dynamic>,
       );
