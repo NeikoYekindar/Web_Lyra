@@ -4,10 +4,11 @@ import '../../core/config/api_config.dart';
 import '../../core/di/service_locator.dart';
 import '../../models/track.dart';
 import '../../providers/music_player_provider.dart';
-import '../../services/music_service_v2.dart';
+import '../../services/music_service_v2.dart' hide Artist;
 import '../../shell/app_shell_controller.dart';
 import '../common/trackItem.dart';
 import 'package:lyra/theme/app_theme.dart';
+import 'package:lyra/models/artist.dart';
 
 /// Album detail model (includes track list)
 class AlbumDetail {
@@ -43,7 +44,8 @@ class AlbumDetail {
       imageUrl: json['album_image_url']?.toString(),
       releaseDate: json['release_date']?.toString(),
       streams: json['streams'] as int? ?? 0,
-      tracks: (json['tracks'] as List?)
+      tracks:
+          (json['tracks'] as List?)
               ?.map((t) => Track.fromApi(t as Map<String, dynamic>))
               .toList() ??
           [],
@@ -96,7 +98,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
       });
 
       print('🎵 [AlbumDetail] Loading album: ${widget.albumId}');
-      
+
       // Use ApiClient directly to get full response with tracks
       final apiClient = ServiceLocator().apiClient;
       final response = await apiClient.get<Map<String, dynamic>>(
@@ -104,17 +106,19 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
         '/albums/${widget.albumId}',
         fromJson: (json) => json as Map<String, dynamic>,
       );
-      
+
       if (response.success && response.data != null) {
         print('🎵 [AlbumDetail] Raw response: ${response.data}');
-        
+
         final albumDetail = AlbumDetail.fromJson(response.data!);
-        
+
         // Load artist name from artist profile API
         String? artistName;
         if (albumDetail.artistId.isNotEmpty) {
           try {
-            print('🎵 [AlbumDetail] Loading artist profile: ${albumDetail.artistId}');
+            print(
+              '🎵 [AlbumDetail] Loading artist profile: ${albumDetail.artistId}',
+            );
             final artistResponse = await apiClient.get<Map<String, dynamic>>(
               ApiConfig.musicServiceUrl,
               '/artists/info/profile/${albumDetail.artistId}',
@@ -129,51 +133,87 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
           }
         }
 
-        // Fetch artist names for tracks that don't have artist_name
-        final Map<String, String> artistNameCache = {};
-        // Pre-cache the album artist if available
-        if (artistName != null && albumDetail.artistId.isNotEmpty) {
-          artistNameCache[albumDetail.artistId] = artistName;
+        // Fetch artist objects for tracks (attach full Artist into track.artistObj)
+        final Map<String, Artist> artistCache = {};
+
+        // If we loaded album artist, try to fetch and cache full artist object
+        if (albumDetail.artistId.isNotEmpty) {
+          try {
+            final albumArtistResp = await apiClient.get<Map<String, dynamic>>(
+              ApiConfig.musicServiceUrl,
+              '/artists/info/profile/${albumDetail.artistId}',
+              fromJson: (json) => json as Map<String, dynamic>,
+            );
+            if (albumArtistResp.success && albumArtistResp.data != null) {
+              final albumArtistData =
+                  albumArtistResp.data! as Map<String, dynamic>?;
+              if (albumArtistData != null) {
+                final albumArtist = Artist.fromJson(albumArtistData);
+                artistCache[albumDetail.artistId] = albumArtist;
+                // prefer displaying nickname from full object if not already set
+                artistName = albumArtist.nickname;
+              }
+            }
+          } catch (e) {
+            print(
+              '⚠️ [AlbumDetail] Failed to prefetch album artist object: $e',
+            );
+          }
         }
-        
+
         final List<Track> updatedTracks = [];
-        
+
         for (final track in albumDetail.tracks) {
-          // If track already has artistName or artistObj, use as-is
-          if (track.artistName.isNotEmpty || track.artistObj != null) {
+          // If track already has artistObj, keep as-is
+          if (track.artistObj != null) {
             updatedTracks.add(track);
             continue;
           }
-          
-          // Otherwise fetch artist name
+
           final trackArtistId = track.artistId;
           if (trackArtistId.isEmpty) {
             updatedTracks.add(track);
             continue;
           }
-          
-          // Check cache first
-          if (artistNameCache.containsKey(trackArtistId)) {
-            updatedTracks.add(track.copyWith(artistName: artistNameCache[trackArtistId]));
+
+          // If cached, attach Artist
+          if (artistCache.containsKey(trackArtistId)) {
+            updatedTracks.add(
+              track.copyWith(artistObj: artistCache[trackArtistId]),
+            );
             continue;
           }
-          
-          // Fetch from API
+
+          // Fetch artist profile and attach
           try {
-            final trackArtistResponse = await apiClient.get<Map<String, dynamic>>(
-              ApiConfig.musicServiceUrl,
-              '/artists/info/profile/$trackArtistId',
-              fromJson: (json) => json as Map<String, dynamic>,
-            );
-            if (trackArtistResponse.success && trackArtistResponse.data != null) {
-              final nickname = trackArtistResponse.data!['nickname']?.toString() ?? '';
-              artistNameCache[trackArtistId] = nickname;
-              updatedTracks.add(track.copyWith(artistName: nickname));
+            final trackArtistResponse = await apiClient
+                .get<Map<String, dynamic>>(
+                  ApiConfig.musicServiceUrl,
+                  '/artists/info/profile/$trackArtistId',
+                  fromJson: (json) => json as Map<String, dynamic>,
+                );
+
+            if (trackArtistResponse.success &&
+                trackArtistResponse.data != null) {
+              final artistData =
+                  trackArtistResponse.data! as Map<String, dynamic>?;
+              if (artistData != null) {
+                final artistObj = Artist.fromJson(artistData);
+                artistCache[trackArtistId] = artistObj;
+                updatedTracks.add(track.copyWith(artistObj: artistObj));
+              } else {
+                // fallback to nickname if 'fr' missing
+                final nickname =
+                    trackArtistResponse.data!['nickname']?.toString() ?? '';
+                updatedTracks.add(track.copyWith(artistName: nickname));
+              }
             } else {
               updatedTracks.add(track);
             }
           } catch (e) {
-            print('⚠️ [AlbumDetail] Failed to load artist name for $trackArtistId: $e');
+            print(
+              '⚠️ [AlbumDetail] Failed to load artist object for $trackArtistId: $e',
+            );
             updatedTracks.add(track);
           }
         }
@@ -190,15 +230,17 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
           streams: albumDetail.streams,
           tracks: updatedTracks,
         );
-        
+
         if (mounted) {
           setState(() {
             _albumDetail = updatedAlbumDetail;
             _artistName = artistName;
             _isLoading = false;
           });
-          
-          print('✅ [AlbumDetail] Loaded: ${_albumDetail!.albumName} with ${_albumDetail!.tracks.length} tracks');
+
+          print(
+            '✅ [AlbumDetail] Loaded: ${_albumDetail!.albumName} with ${_albumDetail!.tracks.length} tracks',
+          );
         }
       } else {
         throw Exception(response.message ?? 'Failed to load album');
@@ -264,10 +306,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
       listen: false,
     );
 
-    await musicPlayerProvider.setTrack(
-      track,
-      queue: _albumDetail!.tracks,
-    );
+    await musicPlayerProvider.setTrack(track, queue: _albumDetail!.tracks);
     musicPlayerProvider.play();
 
     if (!shellController.isPlayerMaximized) {
@@ -287,35 +326,35 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
       child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Error loading album',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _error!,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadAlbumDetail,
-                        child: const Text('Retry'),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Error loading album',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                )
-              : _buildContent(),
+                  const SizedBox(height: 8),
+                  Text(
+                    _error!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _loadAlbumDetail,
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            )
+          : _buildContent(),
     );
   }
 
@@ -357,14 +396,10 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                       );
                       shellController.closeCenterContent();
                     },
-                    icon: Icon(
-                      Icons.arrow_back,
-                      color: Colors.white,
-                      size: 28,
-                    ),
+                    icon: Icon(Icons.arrow_back, color: Colors.white, size: 28),
                   ),
                 ),
-                
+
                 // Album info section
                 Padding(
                   padding: const EdgeInsets.all(32.0),
@@ -426,7 +461,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                                   Text(
                                     _artistName!,
                                     style: TextStyle(
-                                      color: Theme.of(context).colorScheme.onSurface,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -434,7 +471,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                                   Text(
                                     ' • ',
                                     style: TextStyle(
-                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
                                       fontSize: 14,
                                     ),
                                   ),
@@ -442,8 +481,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                                 Text(
                                   '${detail.totalTracks} tracks${detail.duration > 0 ? ', ${_formatDuration(detail.duration)}' : ''}',
                                   style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.onSurfaceVariant,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
                                     fontSize: 14,
                                   ),
                                 ),
@@ -532,7 +572,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.1),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant.withOpacity(0.1),
                   width: 1,
                 ),
               ),
@@ -582,28 +624,23 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final track = detail.tracks[index];
-                return TrackItem(
-                  index: index + 1,
-                  title: track.trackName,
-                  artist: track.artist,
-                  albumArtist: track.kind,
-                  duration: _formatTrackDuration(track.duration),
-                  image: track.trackImageUrl,
-                  onTap: () => _playTrack(track),
-                );
-              },
-              childCount: detail.tracks.length,
-            ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final track = detail.tracks[index];
+              return TrackItem(
+                index: index + 1,
+                title: track.trackName,
+                artist: track.artist,
+                albumArtist: track.kind,
+                duration: _formatTrackDuration(track.duration),
+                image: track.trackImageUrl,
+                onTap: () => _playTrack(track),
+              );
+            }, childCount: detail.tracks.length),
           ),
         ),
 
         // Bottom padding
-        const SliverToBoxAdapter(
-          child: SizedBox(height: 100),
-        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 100)),
       ],
     );
   }
