@@ -17,6 +17,39 @@ class AppShellController extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Maximize player overlay
+  bool _showMaximizedPlayer = false;
+  bool get showMaximizedPlayer => _showMaximizedPlayer;
+  void toggleMaximizedPlayer() {
+    _showMaximizedPlayer = !_showMaximizedPlayer;
+    notifyListeners();
+  }
+
+  void closeMaximizedPlayer() {
+    _showMaximizedPlayer = false;
+    notifyListeners();
+  }
+
+  // Queue overlay
+  bool _showQueue = false;
+  bool get showQueue => _showQueue;
+  void toggleQueue() {
+    _showQueue = !_showQueue;
+    notifyListeners();
+  }
+
+  void openQueue() {
+    if (!_showQueue) {
+      _showQueue = true;
+      notifyListeners();
+    }
+  }
+
+  void closeQueue() {
+    _showQueue = false;
+    notifyListeners();
+  }
+
   // --- Dashboard state moved here ---
   bool _isLeftSidebarExpanded = false;
   bool _isRightSidebarDetail = false;
@@ -28,6 +61,9 @@ class AppShellController extends ChangeNotifier {
 
   bool _isBrowseAllExpanded = false;
   bool get isBrowseAllExpanded => _isBrowseAllExpanded;
+
+  bool _isSearchActive = false;
+  bool get isSearchActive => _isSearchActive;
 
   String searchText = '';
 
@@ -65,13 +101,13 @@ class AppShellController extends ChangeNotifier {
   }
 
   void toggleMaximizePlayer() {
-    _isPlayerMaximized = !_isPlayerMaximized;
+    _showMaximizedPlayer = !_showMaximizedPlayer;
     notifyListeners();
   }
 
   void minimizePlayer() {
-    if (_isPlayerMaximized) {
-      _isPlayerMaximized = false;
+    if (_showMaximizedPlayer) {
+      _showMaximizedPlayer = false;
       notifyListeners();
     }
   }
@@ -96,6 +132,23 @@ class AppShellController extends ChangeNotifier {
   }
 
   bool get isSearchingText => searchText.isNotEmpty;
+
+  void openSearch(String query) {
+    print('=== AppShellController.openSearch ===');
+    print('Received query: "$query"');
+    searchText = query;
+    _isSearchActive = true;
+    print('searchText set to: "$searchText"');
+    print('isSearchActive: $_isSearchActive');
+    print('====================================');
+    notifyListeners();
+  }
+
+  void closeSearch() {
+    _isSearchActive = false;
+    searchText = '';
+    notifyListeners();
+  }
 
   /// Called after first frame to load initial data.
   void init(BuildContext context) {

@@ -19,6 +19,7 @@ class MusicPlayerProvider extends ChangeNotifier {
   // Queue management
   final List<Track> _queue = [];
   int _currentIndex = -1;
+  int _tracksPlayedSinceRefresh = 0;
 
   Track? get currentTrack => _currentTrack;
   bool get isPlaying => _isPlaying;
@@ -141,6 +142,11 @@ class MusicPlayerProvider extends ChangeNotifier {
     _positionMs = 0;
     _hasTrackedStream = false; // Reset tracking flag for new track
 
+    // Reset counter when setting track with new queue
+    if (queue != null) {
+      _tracksPlayedSinceRefresh = 0;
+    }
+
     // Update queue if provided
     if (queue != null) {
       _queue.clear();
@@ -218,7 +224,36 @@ class MusicPlayerProvider extends ChangeNotifier {
     } else {
       _currentIndex = -1;
     }
+    _tracksPlayedSinceRefresh = 0;
     notifyListeners();
+  }
+
+  // =========================
+  // AUTO REFRESH QUEUE
+  // =========================
+  Future<void> _refreshQueue() async {
+    try {
+      debugPrint('🔄 Adding new tracks to queue');
+
+      final musicService = ServiceLocator().musicService;
+      final topTracks = await musicService.getUserTopTracks(limit: 20);
+
+      // Filter out tracks already in queue
+      final existingIds = _queue.map((t) => t.trackId).toSet();
+      final newTracks = topTracks
+          .where((t) => !existingIds.contains(t.trackId))
+          .take(5)
+          .toList();
+
+      _queue.addAll(newTracks);
+      debugPrint(
+        '✅ Added ${newTracks.length} new tracks to queue (total: ${_queue.length})',
+      );
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('❌ Error adding tracks to queue: $e');
+    }
   }
 
   // =========================
@@ -226,6 +261,14 @@ class MusicPlayerProvider extends ChangeNotifier {
   // =========================
   Future<void> playNext() async {
     if (hasNext) {
+      _tracksPlayedSinceRefresh++;
+
+      // Remove played tracks and refresh queue after 5 tracks
+      if (_tracksPlayedSinceRefresh >= 5) {
+        await _refreshQueue();
+        _tracksPlayedSinceRefresh = 0;
+      }
+
       final nextTrack = _queue[_currentIndex + 1];
       await setTrack(nextTrack);
       play();

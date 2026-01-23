@@ -8,7 +8,7 @@ import 'dart:typed_data';
 import 'package:image_picker/image_picker.dart';
 import 'package:lyra/core/di/service_locator.dart';
 import 'package:lyra/models/current_user.dart';
-import '../../shell/app_shell.dart';
+import '../../screens/welcome_screen.dart';
 
 class WelcomeCreateProfile extends StatefulWidget {
   final VoidCallback onBackPressed;
@@ -1018,13 +1018,33 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                                               .saveToPrefs();
 
                                           if (mounted) {
-                                            // Replace navigation stack with AppShell (dashboard)
+                                            // Show success message
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Profile created successfully! Please log in to continue.',
+                                                ),
+                                                backgroundColor: Colors.green,
+                                                duration: Duration(seconds: 3),
+                                              ),
+                                            );
+
+                                            // Logout and redirect to login screen
+                                            await ServiceLocator().apiClient
+                                                .clearTokens();
+                                            CurrentUser.instance.logout();
+                                            await CurrentUser.instance
+                                                .clearPrefs();
+
+                                            // Navigate back to welcome/login screen
                                             Navigator.of(
                                               context,
                                             ).pushAndRemoveUntil(
                                               MaterialPageRoute(
                                                 builder: (_) =>
-                                                    const AppShell(),
+                                                    const WelcomeScreen(),
                                               ),
                                               (route) => false,
                                             );
@@ -1075,16 +1095,39 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                               ElevatedButton(
                                 onPressed: _isLoading
                                     ? null
-                                    : () {
-                                        // Skip and go directly to AppShell
-                                        Navigator.of(
-                                          context,
-                                        ).pushAndRemoveUntil(
-                                          MaterialPageRoute(
-                                            builder: (_) => const AppShell(),
-                                          ),
-                                          (route) => false,
-                                        );
+                                    : () async {
+                                        // Skip profile setup and go to login
+                                        if (mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Profile setup skipped. Please log in to continue.',
+                                              ),
+                                              backgroundColor: Colors.orange,
+                                              duration: Duration(seconds: 2),
+                                            ),
+                                          );
+
+                                          // Logout and clear session
+                                          await ServiceLocator().apiClient
+                                              .clearTokens();
+                                          CurrentUser.instance.logout();
+                                          await CurrentUser.instance
+                                              .clearPrefs();
+
+                                          // Navigate to welcome/login screen
+                                          Navigator.of(
+                                            context,
+                                          ).pushAndRemoveUntil(
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  const WelcomeScreen(),
+                                            ),
+                                            (route) => false,
+                                          );
+                                        }
                                       },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF0B0B0B),

@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:lyra/widgets/common/trackItem.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lyra/theme/app_theme.dart';
+import '../../providers/music_player_provider.dart';
+import '../../providers/auth_provider_v2.dart';
+import '../../providers/artist_follow_provider.dart';
+import '../../core/di/service_locator.dart';
+import '../../shell/app_shell_controller.dart';
+import '../../models/current_user.dart';
+import 'package:lyra/models/track.dart';
+import 'package:lyra/models/artist.dart';
 
 class MaximiseMusicPlaying extends StatefulWidget {
-  final VoidCallback onClose;
-  const MaximiseMusicPlaying({super.key, required this.onClose});
+  const MaximiseMusicPlaying({super.key});
 
   @override
   State<MaximiseMusicPlaying> createState() => _MaximiseMusicPlayingState();
@@ -14,13 +22,16 @@ class MaximiseMusicPlaying extends StatefulWidget {
 class _MaximiseMusicPlayingState extends State<MaximiseMusicPlaying>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  // rotation period in seconds (smaller = faster)
+  // default: 0.25x speed => 4.0 seconds per rotation
+  double _rotationSeconds = 4.0;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: Duration(milliseconds: (_rotationSeconds * 1000).toInt()),
     )..repeat();
   }
 
@@ -36,415 +47,411 @@ class _MaximiseMusicPlayingState extends State<MaximiseMusicPlaying>
     const double albumSize = 300.0;
     const double vinylSize = 380.0;
     const double vinylOffset = 90.0;
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              // AppTheme.redPrimaryDark,
-              Color(0xFF737272),
-              Color(0xFF3C3434),
-            ],
-            stops: const [0.0, 1],
-          ),
-          borderRadius: BorderRadius.circular(12),
+
+    // Lấy thông tin track hiện tại từ MusicPlayerProvider
+    final player = context.watch<MusicPlayerProvider>();
+    final track = player.currentTrack;
+
+    return Container(
+      height: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            // AppTheme.redPrimaryDark,
+            Color(0xFF737272),
+            Color(0xFF3C3434),
+          ],
+          stops: const [0.0, 1],
         ),
-        margin: const EdgeInsets.only(bottom: 10, left: 8, right: 8),
-        child: ScrollConfiguration(
-          behavior: ScrollConfiguration.of(
-            context,
-          ).copyWith(scrollbars: false),
-          child: ScrollConfiguration(
-            behavior: _NoScrollbarBehavior(),
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 40),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 24,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text(
-                                "Chúng Ta Của Tương Lai",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      margin: const EdgeInsets.only(bottom: 5),
+      child: ScrollConfiguration(
+        behavior: _NoScrollbarBehavior(),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 40),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 24,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              track?.title ?? "Chưa chọn bài hát",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
                               ),
-                              Text(
-                                "Sơn Tùng M-TP",
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                          IconButton(
-                            onPressed: widget.onClose,
-                            // Thay thế Icon bằng SvgPicture.asset
-                            icon: SvgPicture.asset(
-                              'assets/icons/closeExpanded.svg', // Đường dẫn đến file svg của bạn
-                              width: 25, // Kích thước tương đương size: 30 cũ
-                              height: 25,
-                              // Để đổi màu SVG sang trắng giống như icon cũ (color: Colors.white)
-                              colorFilter: const ColorFilter.mode(
-                                Colors.white,
-                                BlendMode.srcIn,
-                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 40),
-                    SizedBox(
-                      width: albumSize + vinylOffset + 100,
-                      height: 500,
-                      child: Stack(
-                        alignment: Alignment.centerLeft,
-                        children: [
-                          // Đĩa than nằm dưới
-                          Positioned(
-                            left: vinylOffset,
-                            child: RotationTransition(
-                              turns: _controller,
-                              child: Container(
-                                width: vinylSize,
-                                height: vinylSize,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.transparent, // Màu nền đĩa
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(
-                                    0.0,
-                                  ), // Viền đĩa
-                                  child: Image.asset(
-                                    'assets/images/vinyl_record.png',
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
+                            Text(
+                              track?.artist ?? "Nghệ sĩ chưa rõ",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 14,
                               ),
+                              overflow: TextOverflow.ellipsis,
                             ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          // Đóng maximize player bằng controller
+                          final shellCtrl = Provider.of<AppShellController?>(
+                            context,
+                            listen: false,
+                          );
+                          if (shellCtrl != null) {
+                            shellCtrl.closeMaximizedPlayer();
+                          }
+                        },
+                        // Thay thế Icon bằng SvgPicture.asset
+                        icon: SvgPicture.asset(
+                          'assets/icons/closeExpanded.svg', // Đường dẫn đến file svg của bạn
+                          width: 25, // Kích thước tương đương size: 30 cũ
+                          height: 25,
+                          // Để đổi màu SVG sang trắng giống như icon cũ (color: Colors.white)
+                          colorFilter: const ColorFilter.mode(
+                            Colors.white,
+                            BlendMode.srcIn,
                           ),
-                          // Album Art nằm trên
-                          Container(
-                            width: 300,
-                            height: 300,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 40),
+                SizedBox(
+                  width: albumSize + vinylOffset + 100,
+                  height: 500,
+                  child: Stack(
+                    alignment: Alignment.centerLeft,
+                    children: [
+                      // Đĩa than nằm dưới
+                      Positioned(
+                        left: vinylOffset,
+                        child: RotationTransition(
+                          turns: _controller,
+                          child: Container(
+                            width: vinylSize,
+                            height: vinylSize,
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.4),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
-                              image: const DecorationImage(
-                                image: AssetImage(
-                                  'assets/images/sontung_chungtacuahientai.png',
-                                ),
+                              shape: BoxShape.circle,
+                              color: Colors.transparent, // Màu nền đĩa
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(0.0), // Viền đĩa
+                              child: Image.asset(
+                                'assets/images/vinyl_record.png',
                                 fit: BoxFit.cover,
                               ),
                             ),
                           ),
-                        ],
+                        ),
+                      ),
+                      // Album Art nằm trên
+                      Container(
+                        width: 300,
+                        height: 300,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.4),
+                              blurRadius: 15,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: _buildAlbumArt(
+                            track?.albumArtUrl ?? 'assets/images/HTH.png',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 40),
+
+                // Sử dụng LayoutBuilder để responsive
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    // Tính toán width dựa trên space available
+                    final availableWidth = constraints.maxWidth - 40;
+                    final bool isWide = availableWidth > 1000;
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: isWide
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                // Artist Info Card
+                                if (track != null)
+                                  Flexible(
+                                    flex: 5,
+                                    child: _ArtistInfoCardMaximized(
+                                      artist: track.artistObj,
+                                    ),
+                                  ),
+                                const SizedBox(width: 20),
+                                // Next in queue
+                                Flexible(flex: 4, child: _NextQueueSection()),
+                              ],
+                            )
+                          : Column(
+                              children: [
+                                // Artist Info Card
+                                if (track != null)
+                                  _ArtistInfoCardMaximized(
+                                    artist: track.artistObj,
+                                  ),
+                                const SizedBox(height: 20),
+                                // Next in queue
+                                const _NextQueueSection(),
+                              ],
+                            ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAlbumArt(String imageUrl) {
+    if (imageUrl.isEmpty) {
+      return const Icon(Icons.music_note, color: Colors.white, size: 60);
+    }
+
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return Image.network(
+        imageUrl,
+        width: 300,
+        height: 300,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Image.asset(
+          'assets/images/HTH.png',
+          width: 300,
+          height: 300,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) =>
+              const Icon(Icons.music_note, color: Colors.white, size: 60),
+        ),
+      );
+    }
+
+    final assetPath = imageUrl.startsWith('assets/')
+        ? imageUrl
+        : 'assets/$imageUrl';
+    return Image.asset(
+      assetPath,
+      width: 300,
+      height: 300,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Image.asset(
+        'assets/images/HTH.png',
+        width: 300,
+        height: 300,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) =>
+            const Icon(Icons.music_note, color: Colors.white, size: 60),
+      ),
+    );
+  }
+}
+
+// Widget hiển thị thông tin artist với nút follow
+class _ArtistInfoCardMaximized extends StatefulWidget {
+  final Artist? artist;
+  const _ArtistInfoCardMaximized({required this.artist});
+
+  @override
+  State<_ArtistInfoCardMaximized> createState() =>
+      _ArtistInfoCardMaximizedState();
+}
+
+class _ArtistInfoCardMaximizedState extends State<_ArtistInfoCardMaximized> {
+  @override
+  void initState() {
+    super.initState();
+    // Check follow status using provider
+    if (widget.artist != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Provider.of<ArtistFollowProvider>(
+          context,
+          listen: false,
+        ).checkFollowStatus(widget.artist!.artistId);
+      });
+    }
+  }
+
+  Future<void> _toggleFollow() async {
+    if (widget.artist == null) return;
+    final followProvider = Provider.of<ArtistFollowProvider>(
+      context,
+      listen: false,
+    );
+    await followProvider.toggleFollow(widget.artist!.artistId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.artist == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Consumer<ArtistFollowProvider>(
+      builder: (context, followProvider, child) {
+        final isFollowing = followProvider.isFollowing(widget.artist!.artistId);
+        final isLoading = followProvider.isLoading(widget.artist!.artistId);
+
+        return Container(
+          height: 400,
+          width: 550,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: const Color(0xFF2C2C2C),
+          ),
+          child: Stack(
+            children: [
+              // Ảnh nền
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.asset(
+                    'assets/images/image 18.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) =>
+                        Container(color: Colors.grey.shade800),
+                  ),
+                ),
+              ),
+
+              // Gradient
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.0),
+                        Colors.black.withOpacity(0.9),
+                      ],
+                      stops: const [0.5, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+
+              // Tiêu đề
+              const Positioned(
+                top: 20,
+                left: 20,
+                child: Text(
+                  "About the artist",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+
+              // Thông tin chi tiết
+              Positioned(
+                bottom: 20,
+                left: 20,
+                right: 20,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.artist?.nickname ?? 'Unknown artist',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 40),
-
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Expanded(
-                          //         flex: 5,
-                          Container(
-                            height: 422,
-                            width: 550, // Chiều cao cố định cho card
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: const Color(
-                                0xFF2C2C2C,
-                              ), // Màu nền dự phòng
-                            ),
-                            // Dùng Stack để xếp chồng Ảnh (dưới) và Chữ (trên)
-                            child: Stack(
-                              children: [
-                                // LỚP 1: ẢNH NỀN ZOOM (Nằm dưới cùng)
-                                Positioned.fill(
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Transform.scale(
-                                      scale: 1, // Zoom ảnh to lên 1.2 lần
-                                      child: Image.asset(
-                                        'assets/images/image 18.png',
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                // LỚP 2: GRADIENT ĐEN MỜ (Để chữ dễ đọc)
-                                Positioned.fill(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                        colors: [
-                                          Colors.black.withOpacity(
-                                            0.0,
-                                          ), // Trong suốt ở trên
-                                          Colors.black.withOpacity(
-                                            0.9,
-                                          ), // Đen đậm ở dưới
-                                        ],
-                                        stops: const [0.5, 1.0],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                // LỚP 3: TIÊU ĐỀ "About the artists" (Góc trái trên)
-                                const Positioned(
-                                  top: 20,
-                                  left: 20,
-                                  child: Text(
-                                    "About the artists",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-
-                                // LỚP 4: THÔNG TIN CHI TIẾT (Ở dưới cùng)
-                                Padding(
-                                  padding: const EdgeInsets.all(20.0),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        "Sơn Tùng M-TP",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      const Text(
-                                        "2,044,507 monthly listener",
-                                        style: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      const Text(
-                                        "Nguyễn Thanh Tùng, born in 1994, known professionally as Sơn Tùng M-TP...",
-                                        maxLines: 3,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color: Colors.white70,
-                                          fontSize: 13,
-                                          height: 1.5,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 20),
-                                      OutlinedButton(
-                                        onPressed: () {},
-                                        style: OutlinedButton.styleFrom(
-                                          side: const BorderSide(
-                                            color: Colors.white,
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              30,
-                                            ),
-                                          ),
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 30,
-                                            vertical: 12,
-                                          ),
-                                        ),
-                                        child: const Text(
-                                          "Follow",
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // ),
-                          // ),
-                          const SizedBox(width: 20),
-                          //  Expanded(
-                          //     flex: 4,
-                          Container(
-                            width: 400,
-
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Header của Queue
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text(
-                                      "Next in queue",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {},
-                                      child: const Text(
-                                        "Open queue",
-                                        style: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-
-                                // Container chứa danh sách bài hát (Dùng FutureBuilder)
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.surface,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: FutureBuilder<List<Map<String, dynamic>>>(
-                                    future:
-                                        LeftSidebarService.getPlaylistsUser(),
-                                    builder: (context, snapshot) {
-                                      // 1. Trạng thái Loading
-                                      if (snapshot.connectionState ==
-                                          ConnectionState.waiting) {
-                                        return const SizedBox(
-                                          height: 100,
-                                          child: Center(
-                                            child: CircularProgressIndicator(
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        );
-                                      }
-
-                                      // 2. Trạng thái Error
-                                      if (snapshot.hasError) {
-                                        return const SizedBox(
-                                          height: 50,
-                                          child: Center(
-                                            child: Text(
-                                              "Unable to load queue",
-                                              style: TextStyle(
-                                                color: Colors.red,
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      }
-
-                                      // 3. Trạng thái Có dữ liệu
-                                      final data = snapshot.data ?? [];
-                                      if (data.isEmpty) {
-                                        return const Padding(
-                                          padding: EdgeInsets.all(20.0),
-                                          child: Center(
-                                            child: Text(
-                                              "Queue is empty",
-                                              style: TextStyle(
-                                                color: Colors.white54,
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      }
-
-                                      // Lấy 5 bài đầu tiên để hiển thị
-                                      final displayList = data.take(5).toList();
-
-                                      return Column(
-                                        children: displayList.map((item) {
-                                          return Padding(
-                                            padding: const EdgeInsets.only(
-                                              bottom: 8.0,
-                                            ),
-                                            child: QueueItem(
-                                              // Map dữ liệu từ API vào Widget
-                                              title:
-                                                  item['name'] ??
-                                                  'Unknown Song',
-                                              subtitle:
-                                                  item['owner'] ??
-                                                  'Unknown Artist',
-                                              coverUrl: item['image'] ?? '',
-                                              onTap: () {
-                                                print(
-                                                  "Playing: ${item['name']}",
-                                                );
-                                              },
-                                            ),
-                                          );
-                                        }).toList(),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          //  ),
-                        ],
+                    const SizedBox(height: 4),
+                    Text(
+                      "${widget.artist?.totalStreams ?? 0} listeners",
+                      style: const TextStyle(color: Colors.grey, fontSize: 14),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      widget.artist?.bio ?? '',
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 13,
+                        height: 1.5,
                       ),
+                    ),
+                    const SizedBox(height: 20),
+                    OutlinedButton(
+                      onPressed: isLoading ? null : _toggleFollow,
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: isFollowing ? Colors.grey : Colors.white,
+                        ),
+                        backgroundColor: isFollowing
+                            ? Colors.white.withOpacity(0.1)
+                            : Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 30,
+                          vertical: 12,
+                        ),
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              isFollowing ? "Following" : "Follow",
+                              style: const TextStyle(color: Colors.white),
+                            ),
                     ),
                   ],
                 ),
               ),
-            ),
+            ],
           ),
-        ),
-      
-  
-      ),
+        );
+      },
     );
   }
 }
@@ -469,180 +476,106 @@ class _NoScrollbarBehavior extends ScrollBehavior {
   }
 }
 
-class LeftSidebarService {
-  static Future<List<Map<String, dynamic>>> getPlaylistsUser() async {
-    try {
-      await Future.delayed(const Duration(milliseconds: 800));
-      // Dữ liệu giả lập bạn cung cấp
-      final List<Map<String, dynamic>> apiResponse = [
-        {
-          'id': '1',
-          'name': 'KhongBuon_PL',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/khongbuon.png',
-        },
-        {
-          'id': '2',
-          'name': 'EM XIN "SAY HI" 2025',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/emxinsayhi_2025.png',
-        },
-        {
-          'id': '3',
-          'name': 'Playlist Sơn Tùng M-TP',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/playlist_mtp.png',
-        },
-        {
-          'id': '4',
-          'name': 'KhongBuon_PL',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/khongbuon.png',
-        },
-        {
-          'id': '5',
-          'name': 'EM XIN "SAY HI" 2025',
-          'type': 'Playlist',
-          'owner': 'TrumUIT',
-          'image': 'assets/images/emxinsayhi_2025.png',
-        },
-      ];
-      return apiResponse;
-    } catch (e) {
-      print('Error loading playlists user: $e');
-      return [];
-    }
-  }
-}
-
-class QueueItem extends StatefulWidget {
-  final String title;
-  final String subtitle;
-  final String coverUrl;
-  final VoidCallback onTap;
-
-  const QueueItem({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.coverUrl,
-    required this.onTap,
-  });
-
-  @override
-  State<QueueItem> createState() => _QueueItemState();
-}
-
-class _QueueItemState extends State<QueueItem> {
-  bool isHovered = false;
+// Widget hiển thị Next in Queue
+class _NextQueueSection extends StatelessWidget {
+  const _NextQueueSection();
 
   @override
   Widget build(BuildContext context) {
-    final textColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    final player = context.watch<MusicPlayerProvider>();
+    final queue = player.queue;
+    final currentTrack = player.currentTrack;
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => isHovered = true),
-      onExit: (_) => setState(() => isHovered = false),
-      child: InkWell(
-        onTap: widget.onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          decoration: BoxDecoration(
-            // Hiệu ứng đổi màu nền khi hover
-            color: isHovered
-                ? Colors.white.withOpacity(0.1) // Màu sáng nhẹ khi hover
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            children: [
-              _AlbumArt(coverUrl: widget.coverUrl),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        // Chữ sáng hơn khi hover
-                        color: isHovered
-                            ? Theme.of(context).colorScheme.onSurface
-                            : Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withOpacity(0.8),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (widget.subtitle.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        widget.subtitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: isHovered
-                              ? textColor
-                              : textColor.withOpacity(0.6),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+    // Lấy các track tiếp theo (không bao gồm track hiện tại)
+    // Tìm vị trí của track hiện tại trong queue
+    final currentIndex = currentTrack != null
+        ? queue.indexWhere((track) => track.id == currentTrack.id)
+        : -1;
+
+    final upcomingTracks = currentIndex >= 0 && currentIndex < queue.length - 1
+        ? queue.sublist(currentIndex + 1)
+        : <Track>[];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              "Next in queue",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
-              // Thêm icon drag handle để giống list nhạc
-              if (isHovered)
-                const Icon(Icons.drag_handle, color: Colors.white54, size: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AlbumArt extends StatelessWidget {
-  final String coverUrl;
-  const _AlbumArt({required this.coverUrl});
-
-  @override
-  Widget build(BuildContext context) {
-    final hasImage = coverUrl.isNotEmpty;
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(6),
-        color: Theme.of(context).colorScheme.surface,
-        image: hasImage
-            ? (coverUrl.startsWith('http')
-                  ? DecorationImage(
-                      image: NetworkImage(coverUrl),
-                      fit: BoxFit.cover,
-                    )
-                  : DecorationImage(
-                      image: AssetImage(coverUrl),
-                      fit: BoxFit.cover,
-                    ))
-            : null,
-      ),
-      child: hasImage
-          ? null
-          : const Icon(
-              Icons
-                  .music_note, // Dùng icon music note cho đúng ngữ cảnh bài hát
-              color: Colors.white54,
-              size: 24,
             ),
+            TextButton(
+              onPressed: () {
+                final shellCtrl = Provider.of<AppShellController?>(
+                  context,
+                  listen: false,
+                );
+                shellCtrl?.openQueue();
+              },
+              child: const Text(
+                "Open queue",
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          constraints: const BoxConstraints(maxHeight: 440),
+          height: 400,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: upcomingTracks.isEmpty
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: Text(
+                      "Queue is empty",
+                      style: TextStyle(color: Colors.white54, fontSize: 14),
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  shrinkWrap: true,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: upcomingTracks.length > 15
+                      ? 15
+                      : upcomingTracks.length,
+                  itemBuilder: (context, index) {
+                    final track = upcomingTracks[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: TrackItem(
+                        title: track.title,
+                        artist: track.artist,
+                        image: track.albumArtUrl,
+                        onTap: () async {
+                          // Play track từ queue
+                          await player.setTrack(track);
+                          player.play();
+                          // Đóng maximize player
+                          final shellCtrl = Provider.of<AppShellController?>(
+                            context,
+                            listen: false,
+                          );
+                          shellCtrl?.closeMaximizedPlayer();
+                        },
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 }

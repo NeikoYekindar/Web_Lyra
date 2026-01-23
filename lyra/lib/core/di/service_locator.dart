@@ -5,6 +5,8 @@ import '../../services/user_service_v2.dart';
 import '../../services/music_service_v2.dart';
 import '../../services/playlist_service_v2.dart';
 import '../../services/search_service_v2.dart';
+import '../../services/artist_service_v2.dart';
+import '../../services/track_service.dart';
 
 /// Service locator for dependency injection
 /// Centralized access to all services and API client
@@ -22,6 +24,8 @@ class ServiceLocator {
   late final MusicServiceV2 _musicService;
   late final PlaylistServiceV2 _playlistService;
   late final SearchServiceV2 _searchService;
+  late final ArtistServiceV2 _artistService;
+  late final TrackService _trackService;
 
   bool _isInitialized = false;
 
@@ -43,6 +47,8 @@ class ServiceLocator {
     _musicService = MusicServiceV2(_apiClient);
     _playlistService = PlaylistServiceV2(_apiClient);
     _searchService = SearchServiceV2(_apiClient);
+    _artistService = ArtistServiceV2(_apiClient);
+    _trackService = TrackService(_apiClient);
 
     _isInitialized = true;
   }
@@ -83,6 +89,18 @@ class ServiceLocator {
     return _searchService;
   }
 
+  /// Get artist service
+  ArtistServiceV2 get artistService {
+    _ensureInitialized();
+    return _artistService;
+  }
+
+  /// Get track service
+  TrackService get trackService {
+    _ensureInitialized();
+    return _trackService;
+  }
+
   void _ensureInitialized() {
     if (!_isInitialized) {
       throw StateError(
@@ -114,3 +132,4 @@ UserServiceV2 get userService => serviceLocator.userService;
 MusicServiceV2 get musicService => serviceLocator.musicService;
 PlaylistServiceV2 get playlistService => serviceLocator.playlistService;
 SearchServiceV2 get searchService => serviceLocator.searchService;
+TrackService get trackService => serviceLocator.trackService;

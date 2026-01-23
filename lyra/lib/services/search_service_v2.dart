@@ -2,6 +2,7 @@ import '../core/config/api_config.dart';
 import '../core/network/api_client.dart';
 import '../core/models/api_response.dart';
 import '../models/track.dart';
+import '../models/search_response.dart';
 import 'music_service_v2.dart';
 import 'playlist_service_v2.dart';
 
@@ -172,5 +173,41 @@ class SearchServiceV2 {
     }
 
     throw Exception(response.message ?? 'Failed to get suggestions');
+  }
+
+  /// Search tracks using /tracks/search/tracks endpoint
+  /// Returns SearchTracksResponse with query, hits, and total
+  Future<SearchTracksResponse> searchTracksV2({required String query}) async {
+    final response = await _apiClient.get<SearchTracksResponse>(
+      ApiConfig.musicServiceUrl,
+      '/tracks/search/tracks',
+      queryParameters: {'q': query},
+      fromJson: (json) =>
+          SearchTracksResponse.fromJson(json as Map<String, dynamic>),
+    );
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+
+    throw Exception(response.message ?? 'Track search failed');
+  }
+
+  /// Search artists (placeholder - not implemented yet)
+  Future<List<dynamic>> searchArtistsV2({required String query}) async {
+    // TODO: Implement when endpoint is ready
+    throw UnimplementedError('Artist search endpoint not yet available');
+  }
+
+  /// Search playlists (placeholder - not implemented yet)
+  Future<List<dynamic>> searchPlaylistsV2({required String query}) async {
+    // TODO: Implement when endpoint is ready
+    throw UnimplementedError('Playlist search endpoint not yet available');
+  }
+
+  /// Search albums (placeholder - not implemented yet)
+  Future<List<dynamic>> searchAlbumsV2({required String query}) async {
+    // TODO: Implement when endpoint is ready
+    throw UnimplementedError('Album search endpoint not yet available');
   }
 }

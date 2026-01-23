@@ -2,21 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class TrackItem extends StatefulWidget {
-  final int index;
+  final int? index;
   final String title;
   final String artist;
-  final String albumArtist;
-  final String duration;
+  final String? albumArtist;
+  final String? duration;
   final String image;
+  final VoidCallback? onTap;
 
   const TrackItem({
     super.key,
-    required this.index,
+    this.index,
     required this.title,
     required this.artist,
-    required this.albumArtist,
-    required this.duration,
+    this.albumArtist,
+    this.duration,
     required this.image,
+    this.onTap,
   });
 
   @override
@@ -49,6 +51,7 @@ class _TrackItemState extends State<TrackItem> {
         onTapDown: (_) => setState(() => _pressed = true),
         onTapUp: (_) => setState(() => _pressed = false),
         onTapCancel: () => setState(() => _pressed = false),
+        onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOut,
@@ -57,16 +60,17 @@ class _TrackItemState extends State<TrackItem> {
           child: Row(
             children: [
               // Số thứ tự
-              SizedBox(
-                width: 28,
-                child: Text(
-                  widget.index.toString(),
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+              if (widget.index != null)
+                SizedBox(
+                  width: 28,
+                  child: Text(
+                    widget.index.toString(),
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
-              ),
 
               // Ảnh bài hát
               ClipRRect(
@@ -110,7 +114,7 @@ class _TrackItemState extends State<TrackItem> {
               Expanded(
                 flex: 2,
                 child: Text(
-                  widget.albumArtist,
+                  widget.albumArtist ?? '',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.left,
@@ -125,7 +129,7 @@ class _TrackItemState extends State<TrackItem> {
               SizedBox(
                 width: 50,
                 child: Text(
-                  widget.duration,
+                  widget.duration ?? '',
                   textAlign: TextAlign.right,
                   style: GoogleFonts.inter(
                     fontSize: 14,

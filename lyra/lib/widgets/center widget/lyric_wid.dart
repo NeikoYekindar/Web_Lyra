@@ -154,13 +154,26 @@ class _LyricWidgetState extends State<LyricWidget> {
   List<LyricLine> _parse(String raw) {
     final out = <LyricLine>[];
     final lines = raw.split('\n');
-    final reg = RegExp(r'\[(\d{2}):(\d{2}\.\d+)\]');
+
+    // Regex for timestamp [mm:ss.xx]
+    final timeReg = RegExp(r'\[(\d{2}):(\d{2}\.\d+)\]');
+    // Regex for metadata tags [ti:], [ar:], [al:], [by:], etc.
+    final metaReg = RegExp(
+      r'^\[(?:ti|ar|al|by|offset|re|ve|length):',
+      caseSensitive: false,
+    );
 
     for (final line in lines) {
-      final matches = reg.allMatches(line);
+      // Skip metadata lines
+      if (metaReg.hasMatch(line)) continue;
+
+      final matches = timeReg.allMatches(line);
       if (matches.isEmpty) continue;
 
       final text = line.substring(matches.last.end).trim();
+
+      // Skip empty lyric lines
+      if (text.isEmpty) continue;
 
       for (final m in matches) {
         final min = int.parse(m.group(1)!);
@@ -286,6 +299,20 @@ class _LyricViewState extends State<LyricView> {
     }
   }
 
+  void _seekToLine(int index) {
+    if (index < 0 || index >= widget.lyrics.length) return;
+
+    final timestamp = widget.lyrics[index].timestamp;
+    final player = context.read<MusicPlayerProvider>();
+
+    // Seek to the timestamp of the clicked lyric line
+    player.seekTo(timestamp.inMilliseconds);
+
+    // Update current index and scroll
+    setState(() => _current = index);
+    scrollTo(index, animate: true);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -315,27 +342,41 @@ class _LyricViewState extends State<LyricView> {
                 onEnter: (_) => setState(() => _hover = index),
                 onExit: (_) => setState(() => _hover = -1),
                 cursor: SystemMouseCursors.click,
-                child: AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 160),
-                  curve: Curves.easeOut,
-                  style: GoogleFonts.inter(
-                    fontSize: isCurrent ? 36 : 34,
-                    fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
-                    color: (isHover && !isCurrent ? hoverColor : baseColor)
-                        .withOpacity(opacity),
-                    decoration: isHover && !isCurrent
-                        ? TextDecoration.underline
-                        : TextDecoration.none,
-                    decorationThickness: 1.6,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  decoration: BoxDecoration(
+                    color: isHover && !isCurrent
+                        ? Theme.of(
+                            context,
+                          ).colorScheme.surfaceVariant.withOpacity(0.3)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 12,
+                  child: AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 160),
+                    curve: Curves.easeOut,
+                    style: GoogleFonts.inter(
+                      fontSize: isCurrent ? 36 : 34,
+                      fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
+                      color: (isHover && !isCurrent ? hoverColor : baseColor)
+                          .withOpacity(opacity),
+                      decoration: isHover && !isCurrent
+                          ? TextDecoration.underline
+                          : TextDecoration.none,
+                      decorationThickness: 1.6,
                     ),
-                    child: Text(
-                      widget.lyrics[index].text,
-                      textAlign: TextAlign.start,
+                    child: GestureDetector(
+                      onTap: () => _seekToLine(index),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 12,
+                        ),
+                        child: Text(
+                          widget.lyrics[index].text,
+                          textAlign: TextAlign.start,
+                        ),
+                      ),
                     ),
                   ),
                 ),

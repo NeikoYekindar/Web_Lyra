@@ -5,20 +5,46 @@ import 'package:provider/provider.dart';
 import 'dart:math';
 
 import '/providers/music_player_provider.dart';
+import '/providers/track_like_provider.dart';
 import '/models/track.dart';
 import 'package:lyra/shell/app_shell_controller.dart';
 import 'package:lyra/widgets/around%20widget/music_player_controller.dart';
 import 'package:lyra/shell/app_nav.dart';
 import 'package:lyra/shell/app_routes.dart';
 
-class MusicPlayer extends StatelessWidget {
+class MusicPlayer extends StatefulWidget {
   const MusicPlayer({super.key});
+
+  @override
+  State<MusicPlayer> createState() => _MusicPlayerState();
+}
+
+class _MusicPlayerState extends State<MusicPlayer> {
+  @override
+  void initState() {
+    super.initState();
+    // Check like status when widget loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final player = Provider.of<MusicPlayerProvider>(context, listen: false);
+      final likeProvider = Provider.of<TrackLikeProvider>(
+        context,
+        listen: false,
+      );
+      if (player.currentTrack != null) {
+        likeProvider.checkLikeStatus(player.currentTrack!.trackId);
+      }
+    });
+  }
+
+  Future<void> _toggleLike(String trackId) async {
+    final likeProvider = Provider.of<TrackLikeProvider>(context, listen: false);
+    await likeProvider.toggleLike(trackId);
+  }
 
   @override
   Widget build(BuildContext context) {
     final shell = context.watch<AppShellController>();
     final ctrl = MusicPlayerController();
-
     // Hide player completely when no track is loaded
     return Consumer<MusicPlayerProvider>(
       builder: (context, player, _) {
@@ -97,7 +123,8 @@ class MusicPlayer extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      track?.artist ?? "Nghệ sĩ chưa rõ",
+                                      track?.artistObj?.nickname ??
+                                          "Nghệ sĩ chưa rõ",
                                       style: TextStyle(
                                         color: Theme.of(
                                           context,
@@ -261,6 +288,46 @@ class MusicPlayer extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
+                          Consumer<TrackLikeProvider>(
+                            builder: (context, likeProvider, child) {
+                              final track = player.currentTrack;
+                              if (track == null) return const SizedBox.shrink();
+
+                              final isLiked = likeProvider.isLiked(
+                                track.trackId,
+                              );
+                              final isLoading = likeProvider.isLoading(
+                                track.trackId,
+                              );
+
+                              return IconButton(
+                                icon: isLoading
+                                    ? SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                        ),
+                                      )
+                                    : Icon(
+                                        isLiked
+                                            ? Icons.favorite
+                                            : Icons.favorite_border,
+                                      ),
+                                color: isLiked
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                onPressed: isLoading
+                                    ? null
+                                    : () => _toggleLike(track.trackId),
+                              );
+                            },
+                          ),
                           // Now-playing detail toggle (colors when active)
                           NowPlayingToggle(ctrl: ctrl),
                           const SizedBox(width: 10),
@@ -392,29 +459,30 @@ class MusicPlayer extends StatelessWidget {
                           ),
 
                           const SizedBox(width: 10),
-                          // Maximize player button — use AppShellController (dashboard logic moved)
-                          IconButton(
-                            onPressed: () {
-                              final shellCtrl =
-                                  Provider.of<AppShellController?>(
-                                    context,
-                                    listen: false,
-                                  );
-                              if (shellCtrl != null) {
-                                shellCtrl.toggleMaximizePlayer();
-                              }
+                          // Maximize player button — use AppShellController
+                          Builder(
+                            builder: (ctx) {
+                              return IconButton(
+                                onPressed: () {
+                                  ctx
+                                      .read<AppShellController>()
+                                      .toggleMaximizePlayer();
+                                },
+                                icon: SvgPicture.asset(
+                                  'assets/icons/maximise-02.svg',
+                                  width: 20,
+                                  height: 20,
+                                  colorFilter: ColorFilter.mode(
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                                    BlendMode.srcIn,
+                                  ),
+                                ),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              );
                             },
-                            icon: SvgPicture.asset(
-                              'assets/icons/maximise-02.svg',
-                              width: 20,
-                              height: 20,
-                              colorFilter: ColorFilter.mode(
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
                           ),
                         ],
                       ),

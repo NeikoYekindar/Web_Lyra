@@ -10,11 +10,11 @@ class ApiConfig {
   // Microservice Base URLs - Configure for your FastAPI services
   static const Map<String, Map<String, String>> _serviceUrls = {
     'dev': {
-      'auth': 'http://localhost:3000',
-      'music': 'http://localhost:3000',
-      'user': 'http://localhost:3000',
-      'playlist': 'http://localhost:3000',
-      'search': 'http://localhost:3000',
+      'auth': 'http://23.20.250.253:3000',
+      'music': 'http://23.20.250.253:3000',
+      'user': 'http://23.20.250.253:3000',
+      'playlist': 'http://23.20.250.253:3000',
+      'search': 'http://23.20.250.253:3000',
     },
     'staging': {
       'auth': 'https://staging-auth.lyra.app',
@@ -52,7 +52,7 @@ class ApiConfig {
   // API Endpoints for Music Service
   static String get musicServiceUrl => getServiceUrl('music');
   static const String topTracks = '/tracks/top-tracks';
-  static const String trackDetailEndpoint = '/api/v1/tracks/{id}';
+  static const String trackDetailEndpoint = '/tracks/{track_id}';
   static const String albumsEndpoint = '/api/v1/albums';
   static const String artistsEndpoint = '/api/v1/artists';
   static const String topArtistsEndpoint = '/artists/top-artists';

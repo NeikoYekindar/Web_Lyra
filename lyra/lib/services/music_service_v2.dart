@@ -131,7 +131,10 @@ class MusicServiceV2 {
 
   /// Get track by ID
   Future<Track> getTrackById(String trackId) async {
-    final endpoint = ApiConfig.trackDetailEndpoint.replaceAll('{id}', trackId);
+    final endpoint = ApiConfig.trackDetailEndpoint.replaceAll(
+      '{track_id}',
+      trackId,
+    );
 
     final response = await _apiClient.get<Track>(
       ApiConfig.musicServiceUrl,

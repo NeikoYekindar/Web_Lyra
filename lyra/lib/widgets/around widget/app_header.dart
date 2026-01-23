@@ -10,12 +10,52 @@ import 'package:lyra/shell/app_nav.dart';
 import 'package:lyra/shell/app_routes.dart';
 import 'package:lyra/shell/app_shell_controller.dart';
 import 'package:lyra/l10n/app_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-class AppHeader extends StatelessWidget {
+class AppHeader extends StatefulWidget {
   final VoidCallback? onBrowseAllPressed;
   final Function(String)? onSearchChanged;
 
   const AppHeader({super.key, this.onBrowseAllPressed, this.onSearchChanged});
+
+  @override
+  State<AppHeader> createState() => _AppHeaderState();
+}
+
+class _AppHeaderState extends State<AppHeader> {
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _performSearch() {
+    final query = _searchController.text.trim();
+    print('=== HEADER SEARCH ===');
+    print('Search button pressed');
+    print('Query from controller: "$query"');
+    print('Query isEmpty: ${query.isEmpty}');
+    print('====================');
+
+    if (query.isEmpty) {
+      print('Query empty, not performing search');
+      return;
+    }
+
+    try {
+      final shell = context.read<AppShellController>();
+      print('Calling shell.openSearch with: $query');
+      shell.openSearch(query);
+      print('Navigating to search route with query: $query');
+      // Pass query as argument to ensure it's available immediately
+      AppNav.key.currentState?.pushNamed(AppRoutes.search, arguments: query);
+    } catch (e) {
+      print('Error during search: $e');
+      // ignore if controller not provided
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +111,7 @@ class AppHeader extends StatelessWidget {
                   children: [
                     const SizedBox(width: 8),
                     IconButton(
-                      onPressed: () {},
+                      onPressed: _performSearch,
                       icon: SvgPicture.asset(
                         'assets/icons/SearchLeftSideBar.svg',
                         width: 20,
@@ -87,11 +127,13 @@ class AppHeader extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: TextField(
-                        onChanged: onSearchChanged,
+                        controller: _searchController,
+                        onChanged: widget.onSearchChanged,
+                        onSubmitted: (_) => _performSearch(),
                         decoration: InputDecoration(
                           hintText:
                               AppLocalizations.of(context)?.search ?? 'Search',
-                          hintStyle: TextStyle(
+                          hintStyle: GoogleFonts.inter(
                             color: Theme.of(
                               context,
                             ).colorScheme.onSurfaceVariant.withOpacity(0.6),
@@ -99,7 +141,7 @@ class AppHeader extends StatelessWidget {
                           ),
                           border: InputBorder.none,
                         ),
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           color: Theme.of(
                             context,
                           ).colorScheme.onSurfaceVariant.withOpacity(0.6),

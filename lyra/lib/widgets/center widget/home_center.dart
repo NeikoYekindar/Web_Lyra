@@ -5,6 +5,7 @@ import 'package:http/http.dart';
 import 'package:lyra/core/di/service_locator.dart';
 import 'package:lyra/theme/app_theme.dart';
 import 'package:lyra/l10n/app_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../services/music_service_v2.dart' hide Artist;
 import '../../models/track.dart';
 import '../../models/artist.dart';
@@ -260,11 +261,6 @@ class _HomeCenterState extends State<HomeCenter> {
       // Always play the new track
       musicPlayerProvider.play();
 
-      // Show player maximized view if not already shown
-      if (!shellController.isPlayerMaximized) {
-        shellController.toggleMaximizePlayer();
-      }
-
       print('Playing: ${song.trackName} by ${song.artist}');
       print('Queue size: ${_trendingSongs.length}');
     } catch (e) {
@@ -273,8 +269,6 @@ class _HomeCenterState extends State<HomeCenter> {
   }
 
   void _onPopularArtistTapped(Artist artist) {
-    print('Tapped popular artist: ${artist.nickname}');
-
     // Use SchedulerBinding to navigate after current frame to avoid GlobalKey conflicts
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -380,7 +374,7 @@ class _HomeCenterState extends State<HomeCenter> {
                                   SizedBox(height: isNarrow ? 8 : 20),
                                   Text(
                                     'Ai Cũng Phải Bắt Đầu Từ Đâu Đó',
-                                    style: TextStyle(
+                                    style: GoogleFonts.inter(
                                       color: const Color(0xFFFFFFFF),
                                       fontSize: isNarrow
                                           ? 16

@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:collection/collection.dart';
 import 'package:lyra/l10n/app_localizations.dart';
 import 'package:lyra/widgets/common/favorite_card.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../models/current_user.dart';
 import '../../models/user.dart';
 import '../../core/di/service_locator.dart';
@@ -93,47 +95,92 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
   }
 
   Future<void> _changeAvatar() async {
-    final controller = TextEditingController(
-      text: CurrentUser.instance.user?.profileImageUrl ?? '',
-    );
-    final result = await showDialog<String?>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Change avatar'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            hintText: 'Image URL or leave empty',
+    try {
+      // Show dialog to choose between gallery or delete
+      final choice = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(
+            'Chọn ảnh đại diện',
+            style: GoogleFonts.inter(fontWeight: FontWeight.bold),
           ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Chọn từ thư viện'),
+                onTap: () => Navigator.of(ctx).pop('gallery'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text(
+                  'Xóa ảnh',
+                  style: TextStyle(color: Colors.red),
+                ),
+                onTap: () => Navigator.of(ctx).pop('clear'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(null),
+              child: const Text('Hủy'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(null),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(''),
-            child: const Text('Clear'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-
-    if (result == null) return; // cancelled
-
-    final prev = CurrentUser.instance.user;
-    if (prev != null) {
-      final updated = prev.copyWith(
-        profileImageUrl: result.isEmpty ? null : result,
       );
-      CurrentUser.instance.update((_) => updated);
-      await CurrentUser.instance.saveToPrefs();
+
+      if (choice == null) return;
+
+      if (choice == 'gallery') {
+        final picker = ImagePicker();
+        final XFile? image = await picker.pickImage(
+          source: ImageSource.gallery,
+          maxWidth: 1024,
+          maxHeight: 1024,
+          imageQuality: 85,
+        );
+
+        if (image == null) return;
+
+        // TODO: Upload image to server and get URL
+        // For now, show a message that upload feature needs backend
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Đang phát triển tính năng upload ảnh lên server. Vui lòng sử dụng URL tạm thời.',
+              ),
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+        return;
+      } else if (choice == 'clear') {
+        // Delete avatar by setting profileImageUrl to empty string
+        final prev = CurrentUser.instance.user;
+        if (prev != null) {
+          // Create a new user with empty profileImageUrl
+          final updated = prev.copyWith(profileImageUrl: '');
+          CurrentUser.instance.update((_) => updated);
+          await CurrentUser.instance.saveToPrefs();
+          if (mounted) {
+            setState(() {});
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Đã xóa ảnh đại diện'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
       if (mounted) {
-        setState(() {});
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
       }
     }
   }
