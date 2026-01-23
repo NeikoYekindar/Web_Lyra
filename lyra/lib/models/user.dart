@@ -3,6 +3,7 @@ class UserModel {
   final String displayName;
   final String userType;
   final String email;
+  final bool isEmailVerified;
   final DateTime? dateOfBirth;
   final String? gender;
   final String? profileImageUrl;
@@ -16,6 +17,7 @@ class UserModel {
     required this.displayName,
     required this.userType,
     required this.email,
+    this.isEmailVerified = false,
     this.dateOfBirth,
     this.gender,
     this.profileImageUrl,
@@ -38,6 +40,10 @@ class UserModel {
       displayName: json['display_name']?.toString() ?? '',
       userType: json['user_type']?.toString() ?? '',
       email: json['email']?.toString() ?? '',
+      isEmailVerified:
+          json['is_email_verified'] == true ||
+          json['email_verified'] == true ||
+          json['isEmailVerified'] == true,
       dateOfBirth: json['dateOfBirth'] != null
           ? DateTime.tryParse(json['dateOfBirth'].toString())
           : null,
@@ -68,8 +74,9 @@ class UserModel {
         if (json['favorite_genre'] != null) {
           final val = json['favorite_genre'];
           if (val is String) return [val];
-          if (val is List)
+          if (val is List) {
             return List<String>.from(val.map((e) => e.toString()));
+          }
         }
         return null;
       }(),
@@ -81,6 +88,7 @@ class UserModel {
     'display_name': displayName,
     'user_type': userType,
     'email': email,
+    'is_email_verified': isEmailVerified,
     'dateOfBirth': dateOfBirth?.toIso8601String(),
     'gender': gender,
     'profile_image_url': profileImageUrl,
@@ -99,6 +107,7 @@ class UserModel {
     String? displayName,
     String? userType,
     String? email,
+    bool? isEmailVerified,
     DateTime? dateOfBirth,
     String? gender,
     String? profileImageUrl,
@@ -113,6 +122,7 @@ class UserModel {
       displayName: displayName ?? this.displayName,
       userType: userType ?? this.userType,
       email: email ?? this.email,
+      isEmailVerified: isEmailVerified ?? this.isEmailVerified,
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
       gender: gender ?? this.gender,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,

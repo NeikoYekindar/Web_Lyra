@@ -13,6 +13,8 @@ import 'package:lyra/screens/settings_screen.dart';
 import 'package:lyra/widgets/around%20widget/browse_all.dart';
 import 'package:lyra/widgets/center%20widget/lyric_wid.dart';
 import 'package:lyra/screens/artist_screen.dart';
+import 'package:lyra/widgets/around%20widget/search_result_center.dart';
+import 'package:lyra/widgets/around%20widget/maximise_music_playing.dart';
 
 class AppNav {
   /// Navigator key cho CENTER (nested navigator)
@@ -59,6 +61,16 @@ class AppNav {
       case AppRoutes.artist:
         final artist = settings.arguments as Artist;
         return _page(ArtistScreen(artist: artist));
+      case AppRoutes.maximizePlayer:
+        // No arguments expected
+        return _page(const MaximiseMusicPlaying());
+      // =========================
+      // SEARCH RESULTS
+      // =========================
+      case AppRoutes.search:
+        final query = settings.arguments as String?;
+        return _page(SearchResultCenter(initialQuery: query));
+
       // =========================
       // FALLBACK
       // =========================

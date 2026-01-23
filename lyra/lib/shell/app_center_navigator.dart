@@ -31,6 +31,15 @@ class _CenterRouteObserver extends NavigatorObserver {
     final navCtx = navigator?.context;
     if (navCtx == null) return;
 
+    // Always close maximize player when navigating to any route
+    // This ensures navigation works even when maximize player is open
+    try {
+      final shell = Provider.of<AppShellController>(navCtx, listen: false);
+      if (shell.showMaximizedPlayer) {
+        shell.minimizePlayer();
+      }
+    } catch (_) {}
+
     try {
       final shell = Provider.of<AppShellController>(navCtx, listen: false);
       if (name == AppRoutes.lyrics) {
@@ -46,6 +55,15 @@ class _CenterRouteObserver extends NavigatorObserver {
         if (!shell.isBrowseAllExpanded) shell.BrowseAllExpand();
       } else {
         if (shell.isBrowseAllExpanded) shell.BrowseAllCollapse();
+      }
+    } catch (_) {}
+
+    try {
+      final shell = Provider.of<AppShellController>(navCtx, listen: false);
+      if (name == AppRoutes.search) {
+        if (!shell.isSearchActive) shell.openSearch(shell.searchText);
+      } else {
+        if (shell.isSearchActive) shell.closeSearch();
       }
     } catch (_) {}
   }

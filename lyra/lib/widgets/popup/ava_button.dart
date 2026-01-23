@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:lyra/models/current_user.dart';
 import 'package:lyra/models/user.dart';
 import 'package:lyra/navigation/profile_action.dart';
-import 'package:lyra/screens/welcome_screen.dart';
 import 'ava_navigator.dart';
 import 'package:lyra/widgets/popup/logout_dialog.dart';
 import 'package:lyra/shell/app_nav.dart';

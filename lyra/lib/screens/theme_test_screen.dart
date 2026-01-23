@@ -40,7 +40,7 @@ class ThemeTestScreen extends StatelessWidget {
             _buildColorCard(
               context,
               'Background',
-              Theme.of(context).colorScheme.background,
+              Theme.of(context).colorScheme.surface,
             ),
             _buildColorCard(
               context,

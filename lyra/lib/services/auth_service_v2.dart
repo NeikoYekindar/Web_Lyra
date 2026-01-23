@@ -1,6 +1,5 @@
 import '../core/config/api_config.dart';
 import '../core/network/api_client.dart';
-import '../core/models/api_response.dart';
 import '../models/auth_response.dart';
 import '../models/signup_response.dart';
 import '../models/user.dart';
@@ -75,18 +74,22 @@ class AuthServiceV2 {
       String? accessToken;
       String? refreshToken;
 
-      if (json['access_token'] != null)
+      if (json['access_token'] != null) {
         accessToken = json['access_token']?.toString();
-      if (json['refresh_token'] != null)
+      }
+      if (json['refresh_token'] != null) {
         refreshToken = json['refresh_token']?.toString();
+      }
 
       if ((accessToken == null || refreshToken == null) &&
           json['data'] is Map<String, dynamic>) {
         final inner = json['data'] as Map<String, dynamic>;
-        if (inner['access_token'] != null)
+        if (inner['access_token'] != null) {
           accessToken = inner['access_token']?.toString();
-        if (inner['refresh_token'] != null)
+        }
+        if (inner['refresh_token'] != null) {
           refreshToken = inner['refresh_token']?.toString();
+        }
       }
 
       if (accessToken != null && refreshToken != null) {

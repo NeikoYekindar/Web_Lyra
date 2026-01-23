@@ -286,7 +286,9 @@ class ApiClient {
         });
       }
 
-      for (final f in files) request.files.add(f);
+      for (final f in files) {
+        request.files.add(f);
+      }
 
       final streamed = await request.send().timeout(
         ApiConfig.connectionTimeout,

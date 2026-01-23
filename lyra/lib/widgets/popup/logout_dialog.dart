@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:lyra/providers/auth_provider_v2.dart';
+import 'package:lyra/providers/music_player_provider.dart';
 import 'package:lyra/screens/welcome_screen.dart';
 import 'package:lyra/l10n/app_localizations.dart';
 
@@ -105,7 +106,26 @@ class LogoutDialog extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () async {
                       try {
-                        // Call logout API (don't close dialog yet)
+                        // Stop music player first
+                        final musicPlayer = Provider.of<MusicPlayerProvider>(
+                          context,
+                          listen: false,
+                        );
+                        // Use dynamic invocation so code compiles even if the
+                        // provider doesn't expose a `stop` method. Errors are
+                        // ignored and handled by the surrounding try/catch.
+                        try {
+                          await (musicPlayer as dynamic).stop();
+                        } catch (_) {
+                          // ignore if stop isn't defined or fails
+                        }
+                        try {
+                          (musicPlayer as dynamic).clearQueue();
+                        } catch (_) {
+                          // ignore if clearQueue isn't defined
+                        }
+
+                        // Call logout API
                         await Provider.of<AuthProviderV2>(
                           context,
                           listen: false,
@@ -127,14 +147,6 @@ class LogoutDialog extends StatelessWidget {
                         // Close dialog on error
                         if (context.mounted) {
                           Navigator.pop(context);
-
-                          // Show error message
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${AppLocalizations.of(context)!.logoutFailed}$e'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
                         }
                       }
                     },

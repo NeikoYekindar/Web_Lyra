@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_player_provider.dart';
-import '../../services/left_sidebar_service.dart';
-import 'right_sidebar_detail_song.dart';
 import '../../shell/app_shell_controller.dart';
 
 class MusicPlayerController {

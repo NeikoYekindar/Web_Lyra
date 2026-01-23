@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:http/http.dart';
 import 'package:lyra/core/di/service_locator.dart';
 import 'package:lyra/theme/app_theme.dart';
 import 'package:lyra/l10n/app_localizations.dart';
-import '../../services/music_service_v2.dart' hide Artist;
+import 'package:google_fonts/google_fonts.dart';
 import '../../models/track.dart';
 import '../../models/artist.dart';
 import 'package:provider/provider.dart';
@@ -260,11 +259,6 @@ class _HomeCenterState extends State<HomeCenter> {
       // Always play the new track
       musicPlayerProvider.play();
 
-      // Show player maximized view if not already shown
-      if (!shellController.isPlayerMaximized) {
-        shellController.toggleMaximizePlayer();
-      }
-
       print('Playing: ${song.trackName} by ${song.artist}');
       print('Queue size: ${_trendingSongs.length}');
     } catch (e) {
@@ -273,8 +267,6 @@ class _HomeCenterState extends State<HomeCenter> {
   }
 
   void _onPopularArtistTapped(Artist artist) {
-    print('Tapped popular artist: ${artist.nickname}');
-
     // Use SchedulerBinding to navigate after current frame to avoid GlobalKey conflicts
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -369,7 +361,7 @@ class _HomeCenterState extends State<HomeCenter> {
                                   SizedBox(height: isNarrow ? 10 : 30),
                                   Text(
                                     'Album',
-                                    style: TextStyle(
+                                    style: GoogleFonts.inter(
                                       color: const Color(0xFFFFFFFF),
                                       fontSize: isNarrow
                                           ? 14
@@ -380,7 +372,7 @@ class _HomeCenterState extends State<HomeCenter> {
                                   SizedBox(height: isNarrow ? 8 : 20),
                                   Text(
                                     'Ai Cũng Phải Bắt Đầu Từ Đâu Đó',
-                                    style: TextStyle(
+                                    style: GoogleFonts.inter(
                                       color: const Color(0xFFFFFFFF),
                                       fontSize: isNarrow
                                           ? 16
@@ -427,7 +419,7 @@ class _HomeCenterState extends State<HomeCenter> {
                                                 : (isMedium
                                                       ? 'HIEUTHUHAI • 2023 • 13 songs'
                                                       : 'HIEUTHUHAI • 2023 • 13 songs, 39 min 44 sec '),
-                                            style: TextStyle(
+                                            style: GoogleFonts.inter(
                                               color: const Color(0xFFB0B0B0),
                                               fontSize: isNarrow
                                                   ? 11
@@ -471,7 +463,7 @@ class _HomeCenterState extends State<HomeCenter> {
                                                         context,
                                                       )?.play ??
                                                       'Play'),
-                                            style: TextStyle(
+                                            style: GoogleFonts.inter(
                                               fontSize: isNarrow ? 12 : 16,
                                               fontWeight: FontWeight.bold,
                                             ),
@@ -534,7 +526,7 @@ class _HomeCenterState extends State<HomeCenter> {
                                   ? Theme.of(context).colorScheme.primary
                                   : Theme.of(
                                       context,
-                                    ).colorScheme.surfaceVariant,
+                                    ).colorScheme.surfaceContainerHighest,
 
                               foregroundColor: isSelected
                                   ? Theme.of(context).colorScheme.onPrimary
@@ -553,7 +545,7 @@ class _HomeCenterState extends State<HomeCenter> {
                             ),
                             child: Text(
                               _categories[index],
-                              style: TextStyle(
+                              style: GoogleFonts.inter(
                                 fontWeight: isSelected
                                     ? FontWeight.w600
                                     : FontWeight.w400,
@@ -614,7 +606,7 @@ class _HomeCenterState extends State<HomeCenter> {
 
             Text(
               AppLocalizations.of(context)?.trendingSongs ?? 'Trending Songs',
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -660,7 +652,7 @@ class _HomeCenterState extends State<HomeCenter> {
 
             Text(
               'Popular artists',
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -736,8 +728,8 @@ class _FavoriteItemCardState extends State<_FavoriteItemCard> {
           duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
             color: _isHovered
-                ? Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.7)
-                : Theme.of(context).colorScheme.surfaceVariant,
+                ? Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.7)
+                : Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
@@ -803,7 +795,7 @@ class _FavoriteItemCardState extends State<_FavoriteItemCard> {
                     children: [
                       Text(
                         widget.item['title'] ?? '',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           color: _isHovered
                               ? Theme.of(context).colorScheme.onSurface
                               : Theme.of(
@@ -818,7 +810,7 @@ class _FavoriteItemCardState extends State<_FavoriteItemCard> {
                       const SizedBox(height: 2),
                       Text(
                         widget.item['subtitle'] ?? '',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 10,
                         ),
@@ -967,7 +959,7 @@ class _PopularArtistCardState extends State<_PopularArtistCard> {
                 const SizedBox(height: 8),
                 Text(
                   widget.artist.nickname,
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     color: _isHovered
                         ? Theme.of(context).colorScheme.onSurface
                         : Theme.of(
@@ -982,7 +974,7 @@ class _PopularArtistCardState extends State<_PopularArtistCard> {
                 const SizedBox(height: 4),
                 Text(
                   'Artist',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 12,
                   ),
@@ -1068,7 +1060,7 @@ class _TrendingSongCardState extends State<_TrendingSongCard> {
               const SizedBox(height: 8),
               Text(
                 widget.song.trackName,
-                style: TextStyle(
+                style: GoogleFonts.inter(
                   color: _isHovered
                       ? Theme.of(context).colorScheme.onSurface
                       : Theme.of(
@@ -1085,7 +1077,7 @@ class _TrendingSongCardState extends State<_TrendingSongCard> {
                 widget
                     .song
                     .artist, // Uses artist getter (nickname if available, else artistId)
-                style: TextStyle(
+                style: GoogleFonts.inter(
                   color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 12,
                 ),
@@ -1095,7 +1087,7 @@ class _TrendingSongCardState extends State<_TrendingSongCard> {
               const SizedBox(height: 6),
               Text(
                 _formatDuration(widget.song.duration),
-                style: TextStyle(
+                style: GoogleFonts.inter(
                   color: Theme.of(
                     context,
                   ).colorScheme.onSurface.withOpacity(0.7),

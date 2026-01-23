@@ -38,7 +38,7 @@ class PlaylistUserCard extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: ctrl.isHovered
-                ? Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.4)
+                ? Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),

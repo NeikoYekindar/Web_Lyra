@@ -5,10 +5,11 @@ import 'package:lyra/widgets/around widget/left_sidebar_mini.dart';
 import '../widgets/around widget/left_sidebar.dart';
 import '../widgets/around widget/app_header.dart';
 import '../widgets/around widget/music_player.dart';
+import '../widgets/around widget/maximise_music_playing.dart';
 // dashboard controller logic moved into AppShellController
-import '../widgets/around widget/right_sidebar.dart' as dashboard_right;
 import '../widgets/around widget/right_sidebar_detail_song.dart'
     as dashboard_right_detail;
+import '../widgets/around widget/queue.dart' as queue_widget;
 // Removed unused imports user_profile.dart, right_sidebar.dart, welcome_intro.dart
 import '../providers/music_player_provider.dart';
 import 'package:lyra/theme/app_theme.dart';
@@ -107,15 +108,34 @@ class _AppShellState extends State<AppShell> {
                         // Always keep the nested navigator active so navigation works
                         const AppCenterNavigator(),
 
-                        // Overlays on top of the navigator: Playlist Detail, Lyrics, and BrowseAll.
+                        // Overlays on top of the navigator: Lyrics, MaximizedPlayer, and BrowseAll.
+                        // They don't replace the navigator; they just visually overlay it.
                         Builder(
                           builder: (ctx) {
                             final shell = ctx.watch<AppShellController?>();
                             final showBrowse =
                                 shell?.isBrowseAllExpanded ?? false;
-                            final centerContent = shell?.centerContentWidget;
+                            final showMaximized =
+                                shell?.showMaximizedPlayer ?? false;
 
-                            // Priority: Lyrics > Center Content > Browse All > Navigator
+                            // Priority: Maximized Player > Lyrics > BrowseAll
+                            if (showMaximized && track != null) {
+                              return Positioned.fill(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(6),
+                                    color: Theme.of(ctx).colorScheme.surface,
+                                  ),
+                                  child: const ClipRRect(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(6),
+                                    ),
+                                    child: MaximiseMusicPlaying(),
+                                  ),
+                                ),
+                              );
+                            }
+
                             if (showLyrics && track != null) {
                               return Positioned.fill(
                                 child: Container(
@@ -165,10 +185,13 @@ class _AppShellState extends State<AppShell> {
 
                     final bool showDetail =
                         shell?.isRightSidebarDetail ?? false;
+                    final bool showQueue = shell?.showQueue ?? false;
 
                     // Animate the sidebar width explicitly to avoid complex layer
                     // transitions that can trigger rendering assertions.
-                    final double targetWidth = showDetail ? 360.0 : 0.0;
+                    final double targetWidth = (showDetail || showQueue)
+                        ? 360.0
+                        : 0.0;
                     return ClipRect(
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 220),
@@ -181,8 +204,9 @@ class _AppShellState extends State<AppShell> {
                                   borderRadius: BorderRadius.circular(6),
                                   color: Theme.of(context).colorScheme.surface,
                                 ),
-                                child:
-                                    dashboard_right_detail.RightSidebarDetailSong(),
+                                child: showQueue
+                                    ? const queue_widget.QueueWid()
+                                    : dashboard_right_detail.RightSidebarDetailSong(),
                               )
                             : const SizedBox.shrink(),
                       ),

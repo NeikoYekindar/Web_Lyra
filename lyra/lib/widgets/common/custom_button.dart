@@ -13,7 +13,7 @@ class PrimaryButton extends StatefulWidget {
   final BorderRadius? borderRadius;
 
   const PrimaryButton({
-    Key? key,
+    super.key,
     required this.child,
     this.onPressed,
     this.isLoading = false,
@@ -23,7 +23,7 @@ class PrimaryButton extends StatefulWidget {
     this.padding,
     this.backgroundColor,
     this.borderRadius,
-  }) : super(key: key);
+  });
 
   @override
   State<PrimaryButton> createState() => _PrimaryButtonState();
@@ -131,7 +131,7 @@ class OutlineButtonCustom extends StatefulWidget {
   final BorderRadius? borderRadius;
 
   const OutlineButtonCustom({
-    Key? key,
+    super.key,
     required this.child,
     this.onPressed,
     this.isLoading = false,
@@ -142,7 +142,7 @@ class OutlineButtonCustom extends StatefulWidget {
     this.textColor,
     this.borderColor,
     this.borderRadius,
-  }) : super(key: key);
+  });
 
   @override
   State<OutlineButtonCustom> createState() => _OutlineButtonCustomState();
