@@ -259,7 +259,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
                 const SizedBox(width: 8),
                 Text(
                   AppLocalizations.of(context)?.yourLibrary ?? 'Your Library',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -305,7 +305,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isSelected
                           ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.surfaceVariant,
+                          : Theme.of(context).colorScheme.surfaceContainerHighest,
                       foregroundColor: isSelected
                           ? Theme.of(context).colorScheme.onPrimary
                           : Theme.of(context).colorScheme.onSurfaceVariant,
@@ -320,7 +320,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
                     ),
                     child: Text(
                       categories[index],
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         fontWeight: isSelected
                             ? FontWeight.w600
                             : FontWeight.w400,
@@ -909,11 +909,6 @@ class _LeftSidebarState extends State<LeftSidebar> {
       // Load track with full queue (at least 10 tracks)
       await musicPlayerProvider.setTrack(track, queue: _queueTracks);
       musicPlayerProvider.play();
-
-      // Show player if not shown
-      if (!shellController.isPlayerMaximized) {
-        shellController.toggleMaximizePlayer();
-      }
     } catch (e) {
       print('Error playing track: $e');
     }

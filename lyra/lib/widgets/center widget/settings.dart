@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lyra/theme/app_theme.dart';
 import 'package:lyra/widgets/common/setting_item.dart';
 import 'package:lyra/widgets/common/favorite_card.dart';
 import 'package:lyra/widgets/common/language_selector.dart';
@@ -348,7 +347,7 @@ class _SettingsWidState extends State<SettingsWid> {
                       'Language Preference',
                   value: ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: 250, minWidth: 200),
-                    child: Container(width: 250, child: LanguageDropdown()),
+                    child: SizedBox(width: 250, child: LanguageDropdown()),
                   ),
                 ),
                 SizedBox(height: 20),
@@ -407,7 +406,7 @@ class _SettingsWidState extends State<SettingsWid> {
 
 class ChangePasswordButton extends StatefulWidget {
   final VoidCallback? onTap;
-  const ChangePasswordButton({Key? key, this.onTap}) : super(key: key);
+  const ChangePasswordButton({super.key, this.onTap});
 
   @override
   State<ChangePasswordButton> createState() => _ChangePasswordButtonState();
@@ -477,7 +476,7 @@ class _ChangePasswordButtonState extends State<ChangePasswordButton> {
 
 class LogoutButton extends StatefulWidget {
   final VoidCallback? onTap;
-  const LogoutButton({Key? key, this.onTap}) : super(key: key);
+  const LogoutButton({super.key, this.onTap});
 
   @override
   State<LogoutButton> createState() => _LogoutButtonState();

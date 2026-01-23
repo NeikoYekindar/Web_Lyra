@@ -30,8 +30,7 @@ class PlaylistCard extends StatefulWidget {
   final PlaylistItem item;
   final VoidCallback? onTap;
 
-  const PlaylistCard({Key? key, required this.item, this.onTap})
-    : super(key: key);
+  const PlaylistCard({super.key, required this.item, this.onTap});
 
   @override
   State<PlaylistCard> createState() => _PlaylistCardState();
@@ -91,7 +90,7 @@ class _PlaylistCardState extends State<PlaylistCard> {
                       ? null
                       : (widget.item.imageBorderRadius ??
                             BorderRadius.circular(5)),
-                  color: Theme.of(context).colorScheme.surfaceVariant,
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   image: widget.item.coverUrl != null
                       ? DecorationImage(
                           image: NetworkImage(widget.item.coverUrl!),

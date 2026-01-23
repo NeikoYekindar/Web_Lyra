@@ -16,20 +16,6 @@ class ApiConfig {
       'playlist': 'http://52.73.105.174:3000',
       'search': 'http://52.73.105.174:3000',
     },
-    'staging': {
-      'auth': 'https://staging-auth.lyra.app',
-      'music': 'https://staging-music.lyra.app',
-      'user': 'https://staging-user.lyra.app',
-      'playlist': 'https://staging-playlist.lyra.app',
-      'search': 'https://staging-search.lyra.app',
-    },
-    'prod': {
-      'auth': 'https://auth.lyra.app',
-      'music': 'https://music.lyra.app',
-      'user': 'https://user.lyra.app',
-      'playlist': 'https://playlist.lyra.app',
-      'search': 'https://search.lyra.app',
-    },
   };
 
   // Get service URL by name
@@ -52,7 +38,7 @@ class ApiConfig {
   // API Endpoints for Music Service
   static String get musicServiceUrl => getServiceUrl('music');
   static const String topTracks = '/tracks/top-tracks';
-  static const String trackDetailEndpoint = '/api/v1/tracks/{id}';
+  static const String trackDetailEndpoint = '/tracks/{track_id}';
   static const String albumsEndpoint = '/api/v1/albums';
   static const String topAlbumsEndpoint = '/albums/top-albums';
   static const String artistsEndpoint = '/api/v1/artists';

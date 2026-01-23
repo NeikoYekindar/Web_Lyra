@@ -360,11 +360,6 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
       // Load track with full queue (at least 10 tracks)
       await musicPlayerProvider.setTrack(track, queue: _queueTracks);
       musicPlayerProvider.play();
-
-      // Show player if not shown
-      if (!shellController.isPlayerMaximized) {
-        shellController.toggleMaximizePlayer();
-      }
     } catch (e) {
       print('Error playing track: $e');
     }
