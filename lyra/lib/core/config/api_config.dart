@@ -10,11 +10,11 @@ class ApiConfig {
   // Microservice Base URLs - Configure for your FastAPI services
   static const Map<String, Map<String, String>> _serviceUrls = {
     'dev': {
-      'auth': 'http://54.209.94.184:3000',
-      'music': 'http://54.209.94.184:3000',
-      'user': 'http://54.209.94.184:3000',
-      'playlist': 'http://54.209.94.184:3000',
-      'search': 'http://54.209.94.184:3000',
+      'auth': 'http://52.73.105.174:3000',
+      'music': 'http://52.73.105.174:3000',
+      'user': 'http://52.73.105.174:3000',
+      'playlist': 'http://52.73.105.174:3000',
+      'search': 'http://52.73.105.174:3000',
     },
     'staging': {
       'auth': 'https://staging-auth.lyra.app',
@@ -54,7 +54,9 @@ class ApiConfig {
   static const String topTracks = '/tracks/top-tracks';
   static const String trackDetailEndpoint = '/api/v1/tracks/{id}';
   static const String albumsEndpoint = '/api/v1/albums';
+  static const String topAlbumsEndpoint = '/albums/top-albums';
   static const String artistsEndpoint = '/api/v1/artists';
+  static const String artistProfileEndpoint = '/artists/info/profile/{artist_id}';
   static const String topArtistsEndpoint = '/artists/top-artists';
   static const String trackStreamsEndpoint = '/tracks/{id}/streams';
   static const String recentTracksEndpoint = '/tracks/recent-tracks';
@@ -88,6 +90,7 @@ class ApiConfig {
   static const String createPlaylistEndpoint = '/api/v1/playlists';
   static const String playlistsCreateEndpoint = '/playlists/create';
   static const String yourPlaylistsEndpoint = '/playlists/your-playlists';
+  static const String topPlaylistsEndpoint = '/playlists/top-playlists';
 
   // API Endpoints for Search Service
   static String get searchServiceUrl => getServiceUrl('search');

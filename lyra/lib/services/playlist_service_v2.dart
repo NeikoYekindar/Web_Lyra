@@ -16,6 +16,7 @@ class Playlist {
   final bool isPublic;
   final int trackCount;
   final int duration; // in seconds
+  final int totalStreams; // total streams for sorting
   final List<String>? trackIds;
   final String? createdAt;
   final String? updatedAt;
@@ -30,6 +31,7 @@ class Playlist {
     this.isPublic = false,
     this.trackCount = 0,
     this.duration = 0,
+    this.totalStreams = 0,
     this.trackIds,
     this.createdAt,
     this.updatedAt,
@@ -84,6 +86,7 @@ class Playlist {
         json['total_tracks'] ?? json['track_count'] ?? json['tracks_count'],
       ),
       duration: parseInt(json['duration']),
+      totalStreams: parseInt(json['total_streams']),
       trackIds: parsedTrackIds,
       createdAt: (json['created_at'] ?? json['release_date'])?.toString(),
       updatedAt: json['updated_at']?.toString(),
@@ -186,6 +189,38 @@ class PlaylistServiceV2 {
   final ApiClient _apiClient;
 
   PlaylistServiceV2(this._apiClient);
+
+  /// Get top playlists
+  /// Swagger: GET /playlists/top-playlists?limit=10&month=&year=
+  Future<List<Playlist>> getTopPlaylists({
+    int limit = 10,
+    int? month,
+    int? year,
+  }) async {
+    final response = await _apiClient.get<List<Playlist>>(
+      ApiConfig.playlistServiceUrl,
+      ApiConfig.topPlaylistsEndpoint,
+      queryParameters: {
+        'limit': limit.toString(),
+        if (month != null) 'month': month.toString(),
+        if (year != null) 'year': year.toString(),
+      },
+      fromJson: (json) {
+        if (json is List) {
+          return json
+              .map((e) => Playlist.fromJson(e as Map<String, dynamic>))
+              .toList();
+        }
+        return [];
+      },
+    );
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+
+    throw Exception(response.message ?? 'Failed to fetch top playlists');
+  }
 
   /// Get all playlists with pagination
   Future<PaginatedResponse<Playlist>> getPlaylists({
