@@ -4,6 +4,8 @@ import '../core/config/api_config.dart';
 import '../core/network/api_client.dart';
 import '../core/models/api_response.dart';
 import '../models/track.dart';
+import '../models/current_user.dart';
+import 'interaction_service.dart';
 
 /// Playlist model
 class Playlist {
@@ -507,6 +509,15 @@ class PlaylistServiceV2 {
 
     if (!response.success) {
       throw Exception(response.message ?? 'Failed to add track to playlist');
+    }
+
+    // Record add_to_playlist interaction
+    final userId = CurrentUser.instance.user?.userId;
+    if (userId != null) {
+      InteractionService.recordAddToPlaylist(
+        trackId: trackId,
+        userId: userId,
+      );
     }
   }
 

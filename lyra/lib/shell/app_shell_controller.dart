@@ -161,6 +161,47 @@ class AppShellController extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Saved artists and albums lists (for left sidebar)
+  final List<Map<String, dynamic>> _savedArtists = [];
+  final List<Map<String, dynamic>> _savedAlbums = [];
+  
+  List<Map<String, dynamic>> get savedArtists => List.unmodifiable(_savedArtists);
+  List<Map<String, dynamic>> get savedAlbums => List.unmodifiable(_savedAlbums);
+
+  void addArtist(Map<String, dynamic> artist) {
+    // Check if already exists
+    final artistId = artist['artist_id'] ?? artist['id'] ?? '';
+    final exists = _savedArtists.any((a) => 
+        (a['artist_id'] ?? a['id']) == artistId);
+    if (!exists && artistId.isNotEmpty) {
+      _savedArtists.add(artist);
+      notifyListeners();
+    }
+  }
+
+  void removeArtist(String artistId) {
+    _savedArtists.removeWhere((a) => 
+        (a['artist_id'] ?? a['id']) == artistId);
+    notifyListeners();
+  }
+
+  void addAlbum(Map<String, dynamic> album) {
+    // Check if already exists
+    final albumId = album['album_id'] ?? album['id'] ?? '';
+    final exists = _savedAlbums.any((a) => 
+        (a['album_id'] ?? a['id']) == albumId);
+    if (!exists && albumId.isNotEmpty) {
+      _savedAlbums.add(album);
+      notifyListeners();
+    }
+  }
+
+  void removeAlbum(String albumId) {
+    _savedAlbums.removeWhere((a) => 
+        (a['album_id'] ?? a['id']) == albumId);
+    notifyListeners();
+  }
+
   /// Called after first frame to load initial data.
   void init(BuildContext context) {
     // No longer loading demo track - will restore last played track instead
