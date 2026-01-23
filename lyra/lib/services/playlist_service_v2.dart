@@ -3,6 +3,7 @@ import 'dart:convert';
 import '../core/config/api_config.dart';
 import '../core/network/api_client.dart';
 import '../core/models/api_response.dart';
+import '../models/track.dart';
 
 /// Playlist model
 class Playlist {
@@ -14,6 +15,7 @@ class Playlist {
   final String ownerName;
   final bool isPublic;
   final int trackCount;
+  final int duration; // in seconds
   final List<String>? trackIds;
   final String? createdAt;
   final String? updatedAt;
@@ -27,6 +29,7 @@ class Playlist {
     required this.ownerName,
     this.isPublic = false,
     this.trackCount = 0,
+    this.duration = 0,
     this.trackIds,
     this.createdAt,
     this.updatedAt,
@@ -80,6 +83,7 @@ class Playlist {
       trackCount: parseInt(
         json['total_tracks'] ?? json['track_count'] ?? json['tracks_count'],
       ),
+      duration: parseInt(json['duration']),
       trackIds: parsedTrackIds,
       createdAt: (json['created_at'] ?? json['release_date'])?.toString(),
       updatedAt: json['updated_at']?.toString(),
@@ -95,10 +99,86 @@ class Playlist {
     'owner_name': ownerName,
     'is_public': isPublic,
     'track_count': trackCount,
+    'duration': duration,
     'track_ids': trackIds,
     'created_at': createdAt,
     'updated_at': updatedAt,
   };
+}
+
+/// Playlist details model (includes track list)
+class PlaylistDetail {
+  final String playlistId;
+  final String playlistName;
+  final String userId;
+  final bool isPublic;
+  final String? imageUrl;
+  final String? releaseDate;
+  final int totalTracks;
+  final int duration;
+  final int totalStreams;
+  final List<Track> tracks;
+
+  const PlaylistDetail({
+    required this.playlistId,
+    required this.playlistName,
+    required this.userId,
+    required this.isPublic,
+    this.imageUrl,
+    this.releaseDate,
+    required this.totalTracks,
+    required this.duration,
+    required this.totalStreams,
+    required this.tracks,
+  });
+
+  factory PlaylistDetail.fromJson(Map<String, dynamic> json) {
+    bool parseBool(dynamic value) {
+      if (value is bool) return value;
+      if (value is num) return value != 0;
+      if (value is String) {
+        final v = value.trim().toLowerCase();
+        if (v == 'true' || v == '1' || v == 'yes') return true;
+        if (v == 'false' || v == '0' || v == 'no') return false;
+      }
+      return false;
+    }
+
+    int parseInt(dynamic value) {
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      if (value is String) return int.tryParse(value.trim()) ?? 0;
+      return 0;
+    }
+
+    final rawTracks = json['tracks'];
+    final parsedTracks = <Track>[];
+    if (rawTracks is List) {
+      for (final item in rawTracks) {
+        if (item is Map<String, dynamic>) {
+          parsedTracks.add(Track.fromApi(item));
+        }
+      }
+    }
+
+    return PlaylistDetail(
+      playlistId: (json['playlist_id'] ?? json['id'])?.toString() ?? '',
+      playlistName:
+          (json['playlist_name'] ?? json['name'] ?? json['title'])?.toString() ??
+          '',
+      userId: (json['user_id'] ?? json['owner_id'])?.toString() ?? '',
+      totalTracks: parseInt(
+        json['total_tracks'] ?? json['track_count'] ?? json['tracks_count'],
+      ),
+      duration: parseInt(json['duration']),
+      isPublic: parseBool(json['is_public'] ?? json['public']),
+      imageUrl:
+          (json['image_url'] ?? json['cover_url'] ?? json['image'])?.toString(),
+      releaseDate: (json['release_date'] ?? json['created_at'])?.toString(),
+      totalStreams: parseInt(json['total_streams']),
+      tracks: parsedTracks,
+    );
+  }
 }
 
 /// Playlist service for FastAPI microservice
@@ -217,6 +297,28 @@ class PlaylistServiceV2 {
     }
 
     throw Exception(response.message ?? 'Failed to fetch playlist');
+  }
+
+  /// Get playlist details by ID (includes track objects)
+  /// Swagger: GET /playlists/{playlist_id}
+  Future<PlaylistDetail> getPlaylistDetail(String playlistId) async {
+    final endpoint = ApiConfig.playlistDetailEndpoint.replaceAll(
+      '{id}',
+      playlistId,
+    );
+
+    final response = await _apiClient.get<PlaylistDetail>(
+      ApiConfig.playlistServiceUrl,
+      endpoint,
+      fromJson: (json) =>
+          PlaylistDetail.fromJson(json as Map<String, dynamic>),
+    );
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+
+    throw Exception(response.message ?? 'Failed to fetch playlist detail');
   }
 
   /// Create new playlist

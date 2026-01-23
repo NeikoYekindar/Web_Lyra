@@ -107,13 +107,15 @@ class _AppShellState extends State<AppShell> {
                         // Always keep the nested navigator active so navigation works
                         const AppCenterNavigator(),
 
-                        // Overlays on top of the navigator: Lyrics and BrowseAll.
-                        // They don't replace the navigator; they just visually overlay it.
+                        // Overlays on top of the navigator: Playlist Detail, Lyrics, and BrowseAll.
                         Builder(
                           builder: (ctx) {
                             final shell = ctx.watch<AppShellController?>();
                             final showBrowse =
                                 shell?.isBrowseAllExpanded ?? false;
+                            final centerContent = shell?.centerContentWidget;
+
+                            // Priority: Lyrics > Center Content > Browse All > Navigator
                             if (showLyrics && track != null) {
                               return Positioned.fill(
                                 child: Container(
@@ -131,6 +133,13 @@ class _AppShellState extends State<AppShell> {
                                 ),
                               );
                             }
+
+                            if (centerContent != null) {
+                              return Positioned.fill(
+                                child: centerContent,
+                              );
+                            }
+
                             return showBrowse
                                 ? const Positioned.fill(
                                     child: BrowseAllCenter(),

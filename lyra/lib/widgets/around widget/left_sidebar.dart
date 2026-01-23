@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lyra/l10n/app_localizations.dart';
 import 'package:lyra/services/left_sidebar_service.dart';
@@ -11,6 +10,7 @@ import '../../models/current_user.dart';
 import '../../shell/app_shell_controller.dart';
 import '../common/trackItem.dart';
 import '../../services/playlist_service_v2.dart';
+import '../center widget/playlist_detail.dart';
 
 // Enum for sort options
 enum SortOption { recent, recentlyAdded, alphabetical, creator }
@@ -206,6 +206,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
               'image': (p.coverUrl != null && p.coverUrl!.isNotEmpty)
                   ? p.coverUrl!
                   : 'assets/images/khongbuon.png',
+              'duration': p.duration,
               // Preserve track ids so tapping playlist can play them.
               'track_ids': p.trackIds ?? <String>[],
             },
@@ -566,6 +567,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
                           itemBuilder: (context, index) {
                             final playlists = _filteredPlaylistsUser[index];
                             return PlaylistUserCard(
+                              index: index + 1,
                               playlists: playlists,
                               onTap: () => _onPlaylistUserTapped(playlists),
                             );
@@ -583,77 +585,36 @@ class _LeftSidebarState extends State<LeftSidebar> {
 
   Future<void> _onPlaylistUserTapped(Map<String, dynamic> playlist) async {
     try {
-      List<String> trackIds = <String>[];
-      final raw =
-          playlist['track_ids'] ??
-          playlist['id_tracks'] ??
-          playlist['trackIds'];
-
-      if (raw is List) {
-        trackIds = raw.map((e) => e.toString()).toList();
-      } else if (raw is String && raw.trim().isNotEmpty) {
-        // Try JSON array string
-        try {
-          final decoded = jsonDecode(raw);
-          if (decoded is List) {
-            trackIds = decoded.map((e) => e.toString()).toList();
-          }
-        } catch (_) {
-          // ignore
-        }
-      }
-
-      trackIds = trackIds
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
-      if (trackIds.isEmpty) {
+      final playlistId =
+          (playlist['playlist_id'] ?? playlist['id'] ?? '').toString();
+      if (playlistId.trim().isEmpty) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Playlist has no tracks.')),
-        );
-        return;
-      }
-
-      final tracks = <Track>[];
-      for (final id in trackIds) {
-        try {
-          final t = await serviceLocator.musicService.getTrackById(id);
-          tracks.add(t);
-        } catch (_) {
-          // Skip missing/failed tracks, keep going.
-        }
-      }
-
-      if (tracks.isEmpty) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not load playlist tracks.')),
+          const SnackBar(content: Text('Invalid playlist id.')),
         );
         return;
       }
 
       if (!mounted) return;
-      final musicPlayerProvider = Provider.of<MusicPlayerProvider>(
-        context,
-        listen: false,
-      );
       final shellController = Provider.of<AppShellController>(
         context,
         listen: false,
       );
 
-      await musicPlayerProvider.setTrack(tracks.first, queue: tracks);
-      musicPlayerProvider.play();
-
-      if (!shellController.isPlayerMaximized) {
-        shellController.toggleMaximizePlayer();
-      }
+      // Show playlist detail screen in center
+      shellController.showCenterContent(
+        PlaylistDetailScreen(
+          key: ValueKey('playlist_$playlistId'),
+          playlistId: playlistId,
+          playlistName: playlist['name'] ?? 'Playlist',
+          playlistImage: playlist['image'],
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Play playlist failed: $e')));
+      ).showSnackBar(SnackBar(content: Text('Open playlist failed: $e')));
     }
   }
 
@@ -1065,137 +1026,137 @@ class _LeftSidebarState extends State<LeftSidebar> {
 }
 
 class PlaylistUserCard extends StatefulWidget {
+  final int index;
   final Map<String, dynamic> playlists;
   final VoidCallback? onTap;
 
-  const PlaylistUserCard({super.key, required this.playlists, this.onTap});
+  const PlaylistUserCard(
+      {super.key, required this.index, required this.playlists, this.onTap});
 
   @override
   State<PlaylistUserCard> createState() => _PlaylistUserCardState();
 }
 
 class _PlaylistUserCardState extends State<PlaylistUserCard> {
-  bool _isHovered = false;
+  bool _hovering = false;
+  bool _pressed = false;
+
+  String _formatDuration(int seconds) {
+    final minutes = seconds ~/ 60;
+    final remainingSeconds = seconds % 60;
+    return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+
+  Color _backgroundColor(BuildContext context) {
+    if (_pressed) {
+      return Theme.of(context).colorScheme.primary.withOpacity(0.13);
+    }
+    if (_hovering) {
+      return Theme.of(context).colorScheme.primary.withOpacity(0.07);
+    }
+    return Colors.transparent;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isInteractive = widget.onTap != null;
+
     return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() {
+        _hovering = false;
+        _pressed = false;
+      }),
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,
+        onTapDown: isInteractive ? (_) => setState(() => _pressed = true) : null,
+        onTapUp: isInteractive ? (_) => setState(() => _pressed = false) : null,
+        onTapCancel: isInteractive ? () => setState(() => _pressed = false) : null,
         child: AnimatedContainer(
-          padding: const EdgeInsets.all(8),
-          duration: const Duration(milliseconds: 100),
-          decoration: BoxDecoration(
-            color: _isHovered
-                ? Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.7)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Container(
-            width: double.infinity,
-            // padding: EdgeInsets.all(_isHovered ? 8 : 0),
-            child: Row(
-              crossAxisAlignment:
-                  CrossAxisAlignment.center, // Thay đổi từ start sang center
-
-              children: [
-                Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Builder(
-                        builder: (context) {
-                          final image =
-                              (widget.playlists['image'] ?? '').toString();
-                          final fallbackAsset = 'assets/images/khongbuon.png';
-
-                          if (image.startsWith('http://') ||
-                              image.startsWith('https://')) {
-                            return Image.network(
-                              image,
-                              width: 50,
-                              height: 50,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Image.asset(
-                                fallbackAsset,
-                                width: 50,
-                                height: 50,
-                                fit: BoxFit.cover,
-                              ),
-                            );
-                          }
-
-                          return Image.asset(
-                            image.isNotEmpty ? image : fallbackAsset,
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Image.asset(
-                              fallbackAsset,
-                              width: 50,
-                              height: 50,
-                              fit: BoxFit.cover,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-
-                    // if (_isHovered)
-                    //     Positioned(
-                    //       bottom: 8,
-                    //       right: 8,
-                    //       child: Container(
-                    //         width: 48,
-                    //         height: 48,
-                    //         decoration: BoxDecoration(
-                    //           color: const Color(0xFFE62429),
-                    //           shape: BoxShape.circle,
-                    //           boxShadow: [
-                    //             BoxShadow(
-                    //               color: Colors.black.withOpacity(0.3),
-                    //               blurRadius: 8,
-                    //               offset: const Offset(0, 4),
-                    //             ),
-                    //           ],
-                    //         ),
-                    //         child: const Icon(
-                    //           Icons.play_arrow,
-                    //           color: Colors.black,
-                    //           size: 28,
-                    //         ),
-                    //       ),
-                    //     ),
-                  ],
+          duration: const Duration(milliseconds: 120),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+          color: _backgroundColor(context),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Index number
+              SizedBox(
+                width: 30,
+                child: Text(
+                  '${widget.index}',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
+              ),
 
-                const SizedBox(width: 8),
-                Column(
+              // Thumbnail image
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Builder(
+                  builder: (context) {
+                    final image =
+                        (widget.playlists['image'] ?? '').toString();
+                    final fallbackAsset = 'assets/images/khongbuon.png';
+
+                    if (image.startsWith('http://') ||
+                        image.startsWith('https://')) {
+                      return Image.network(
+                        image,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Image.asset(
+                          fallbackAsset,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                        ),
+                      );
+                    }
+
+                    return Image.asset(
+                      image.isNotEmpty ? image : fallbackAsset,
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Image.asset(
+                        fallbackAsset,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              // Playlist name and owner
+              Expanded(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       widget.playlists['name'],
-
                       style: TextStyle(
-                        color: _isHovered
-                            ? Theme.of(context).colorScheme.onSurface
-                            : Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withOpacity(0.95),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(height: 2),
                     Text(
-                      widget.playlists['type'] +
-                          ' · ' +
-                          widget.playlists['owner'],
+                      widget.playlists['owner'],
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 12,
@@ -1206,26 +1167,32 @@ class _PlaylistUserCardState extends State<PlaylistUserCard> {
                     ),
                   ],
                 ),
+              ),
 
-                // Text(
-                //   widget.playlists['role'],
-                //   style: TextStyle(
-                //     color: Colors.grey[400],
-                //     fontSize: 12,
-                //   ),
-                //   maxLines: 1,
-                //   overflow: TextOverflow.ellipsis,
-                // ),
-              ],
-            ),
+              const SizedBox(width: 12),
+
+              // Total duration
+              Text(
+                _formatDuration(
+                  (widget.playlists['duration'] ?? 0) is int
+                      ? widget.playlists['duration']
+                      : int.tryParse(
+                              widget.playlists['duration']?.toString() ?? '0') ??
+                          0,
+                ),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 }
-
-// Create Playlist Dialog - Spotify style
 class _CreatePlaylistDialog extends StatefulWidget {
   final String defaultName;
   final Function(Playlist) onCreatePlaylist;

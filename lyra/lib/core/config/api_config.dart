@@ -10,11 +10,11 @@ class ApiConfig {
   // Microservice Base URLs - Configure for your FastAPI services
   static const Map<String, Map<String, String>> _serviceUrls = {
     'dev': {
-      'auth': 'http://23.20.250.253:3000',
-      'music': 'http://23.20.250.253:3000',
-      'user': 'http://23.20.250.253:3000',
-      'playlist': 'http://23.20.250.253:3000',
-      'search': 'http://23.20.250.253:3000',
+      'auth': 'http://54.209.94.184:3000',
+      'music': 'http://54.209.94.184:3000',
+      'user': 'http://54.209.94.184:3000',
+      'playlist': 'http://54.209.94.184:3000',
+      'search': 'http://54.209.94.184:3000',
     },
     'staging': {
       'auth': 'https://staging-auth.lyra.app',
@@ -82,7 +82,9 @@ class ApiConfig {
   // API Endpoints for Playlist Service
   static String get playlistServiceUrl => getServiceUrl('playlist');
   static const String playlistsEndpoint = '/api/v1/playlists';
-  static const String playlistDetailEndpoint = '/api/v1/playlists/{id}';
+  // Detail endpoint used by sidebar playlist playback.
+  // Swagger: GET /playlists/{playlist_id}
+  static const String playlistDetailEndpoint = '/playlists/{id}';
   static const String createPlaylistEndpoint = '/api/v1/playlists';
   static const String playlistsCreateEndpoint = '/playlists/create';
   static const String yourPlaylistsEndpoint = '/playlists/your-playlists';
