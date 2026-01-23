@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../core/config/api_config.dart';
 import '../../core/di/service_locator.dart';
 import '../../models/track.dart';
 import '../../providers/music_player_provider.dart';
@@ -27,6 +28,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   PlaylistDetail? _playlistDetail;
   bool _isLoading = true;
   String? _error;
+  String? _ownerName;
 
   @override
   void initState() {
@@ -53,9 +55,87 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       final detail = await serviceLocator.playlistService
           .getPlaylistDetail(widget.playlistId);
 
+      final apiClient = ServiceLocator().apiClient;
+
+      // Fetch owner/artist name using userId
+      String? ownerName;
+      if (detail.userId.isNotEmpty) {
+        try {
+          final artistResponse = await apiClient.get<Map<String, dynamic>>(
+            ApiConfig.musicServiceUrl,
+            '/artists/info/profile/${detail.userId}',
+            fromJson: (json) => json as Map<String, dynamic>,
+          );
+          if (artistResponse.success && artistResponse.data != null) {
+            ownerName = artistResponse.data!['nickname']?.toString();
+          }
+        } catch (e) {
+          debugPrint('Failed to load owner name: $e');
+        }
+      }
+
+      // Fetch artist names for tracks that don't have artist_name
+      final Map<String, String> artistNameCache = {};
+      final List<Track> updatedTracks = [];
+      
+      for (final track in detail.tracks) {
+        // If track already has artistName or artistObj, use as-is
+        if (track.artistName.isNotEmpty || track.artistObj != null) {
+          updatedTracks.add(track);
+          continue;
+        }
+        
+        // Otherwise fetch artist name
+        final artistId = track.artistId;
+        if (artistId.isEmpty) {
+          updatedTracks.add(track);
+          continue;
+        }
+        
+        // Check cache first
+        if (artistNameCache.containsKey(artistId)) {
+          updatedTracks.add(track.copyWith(artistName: artistNameCache[artistId]));
+          continue;
+        }
+        
+        // Fetch from API
+        try {
+          final artistResponse = await apiClient.get<Map<String, dynamic>>(
+            ApiConfig.musicServiceUrl,
+            '/artists/info/profile/$artistId',
+            fromJson: (json) => json as Map<String, dynamic>,
+          );
+          if (artistResponse.success && artistResponse.data != null) {
+            final nickname = artistResponse.data!['nickname']?.toString() ?? '';
+            artistNameCache[artistId] = nickname;
+            updatedTracks.add(track.copyWith(artistName: nickname));
+          } else {
+            updatedTracks.add(track);
+          }
+        } catch (e) {
+          debugPrint('Failed to load artist name for $artistId: $e');
+          updatedTracks.add(track);
+        }
+      }
+
+      // Create updated detail with new tracks
+      final updatedDetail = PlaylistDetail(
+        playlistId: detail.playlistId,
+        playlistName: detail.playlistName,
+        userId: detail.userId,
+        isPublic: detail.isPublic,
+        imageUrl: detail.imageUrl,
+        releaseDate: detail.releaseDate,
+        totalTracks: detail.totalTracks,
+        duration: detail.duration,
+        totalStreams: detail.totalStreams,
+        tracks: updatedTracks,
+      );
+
       if (mounted) {
         setState(() {
-          _playlistDetail = detail;
+          _playlistDetail = updatedDetail;
+          _ownerName = ownerName;
           _isLoading = false;
         });
       }
@@ -277,6 +357,23 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                             const SizedBox(height: 16),
                             Row(
                               children: [
+                                if (_ownerName != null) ...[
+                                  Text(
+                                    _ownerName!,
+                                    style: TextStyle(
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    ' • ',
+                                    style: TextStyle(
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
                                 Text(
                                   '${detail.totalTracks} tracks, ${_formatDuration(detail.duration)}',
                                   style: TextStyle(
