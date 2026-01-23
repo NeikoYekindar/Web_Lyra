@@ -83,6 +83,10 @@ class ApiConfig {
   static const String searchEndpoint = '/api/v1/search';
   static const String suggestionsEndpoint = '/api/v1/search/suggestions';
 
+  // API Endpoints for Recommendations Service
+  static const String interactionsEndpoint = '/recommendations/interactions';
+  static const String userRecommendationsEndpoint = '/recommendations/user/{user_id}';
+
   // Request Configuration
   static const Duration connectionTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);

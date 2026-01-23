@@ -8,8 +8,10 @@ import 'package:lyra/theme/app_theme.dart';
 import 'package:lyra/l10n/app_localizations.dart';
 import '../../services/music_service_v2.dart' hide Artist;
 import '../../services/playlist_service_v2.dart';
+import '../../services/interaction_service.dart';
 import '../../models/track.dart';
 import '../../models/artist.dart';
+import '../../models/current_user.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_player_provider.dart';
 import '../../shell/app_shell_controller.dart';
@@ -32,11 +34,13 @@ class _HomeCenterState extends State<HomeCenter> {
   int _selectedCategoryIndex = 0; // Index của category được chọn
   List<String> _categories = []; // Danh sách categories từ API
   List<Track> _trendingSongs = [];
+  List<Track> _recommendedSongs = []; // Recommended songs from API
   List<Artist> _popularArtists = [];
   List<Album> _topAlbums = []; // Top albums list
   Album? _featuredAlbum; // Album to display in banner
   bool _isLoadingCategories = true;
   bool _isLoadingTrendingSongs = true;
+  bool _isLoadingRecommendedSongs = true;
   bool _isLoadingPopularArtists = true;
   bool _isLoadingTopAlbums = true;
   List<Map<String, dynamic>> _favoriteItems = []; // Danh sách yêu thích đang hiển thị
@@ -55,6 +59,7 @@ class _HomeCenterState extends State<HomeCenter> {
       _loadCategories(),
       _loadFavoriteItems(),
       _loadTrendingSongs(),
+      _loadRecommendedSongs(),
       _loadPopularArtists(),
       _loadTopAlbums(),
     ]);
@@ -100,6 +105,42 @@ class _HomeCenterState extends State<HomeCenter> {
         });
       }
       print('Error loading trending songs: $e');
+    }
+  }
+
+  Future<void> _loadRecommendedSongs() async {
+    try {
+      final userId = CurrentUser.instance.user?.userId;
+      if (userId == null || userId.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _recommendedSongs = [];
+            _isLoadingRecommendedSongs = false;
+          });
+        }
+        return;
+      }
+
+      final response = await InteractionService.getRecommendations(
+        userId: userId,
+        n: 10,
+        filterLiked: true,
+      );
+
+      if (mounted) {
+        setState(() {
+          _recommendedSongs = response;
+          _isLoadingRecommendedSongs = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _recommendedSongs = [];
+          _isLoadingRecommendedSongs = false;
+        });
+      }
+      print('Error loading recommended songs: $e');
     }
   }
 
@@ -321,6 +362,13 @@ class _HomeCenterState extends State<HomeCenter> {
 
     switch (item['type']) {
       case 'album':
+        // Add album to left sidebar saved list
+        shellController.addAlbum({
+          'album_id': item['id'],
+          'album_name': item['title'],
+          'album_image_url': item['image'],
+          'artist_name': item['subtitle']?.replaceAll(' • Album', '') ?? '',
+        });
         // Navigate to album detail
         shellController.showCenterContent(
           AlbumDetailScreen(
@@ -332,6 +380,12 @@ class _HomeCenterState extends State<HomeCenter> {
         );
         break;
       case 'artist':
+        // Add artist to left sidebar saved list
+        shellController.addArtist({
+          'artist_id': item['id'],
+          'nickname': item['title'],
+          'profile_picture': item['image'],
+        });
         // Navigate to artist profile
         SchedulerBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
@@ -400,7 +454,36 @@ class _HomeCenterState extends State<HomeCenter> {
     }
   }
 
+  // Method để xử lý khi user tap vào recommended song
+  void _onRecommendedSongTapped(Track song) async {
+    try {
+      final musicPlayerProvider = Provider.of<MusicPlayerProvider>(
+        context,
+        listen: false,
+      );
+
+      // Load the track into player with full recommended songs as queue
+      await musicPlayerProvider.setTrack(song, queue: _recommendedSongs);
+
+      // Always play the new track
+      musicPlayerProvider.play();
+
+      print('Playing recommended: ${song.trackName} by ${song.artist}');
+      print('Queue size: ${_recommendedSongs.length}');
+    } catch (e) {
+      print('Error playing recommended song: $e');
+    }
+  }
+
   void _onPopularArtistTapped(Artist artist) {
+    // Add artist to left sidebar saved list
+    final shellController = Provider.of<AppShellController>(context, listen: false);
+    shellController.addArtist({
+      'artist_id': artist.artistId,
+      'nickname': artist.nickname,
+      'profile_picture': artist.imageUrl,
+    });
+    
     // Use SchedulerBinding to navigate after current frame to avoid GlobalKey conflicts
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -672,11 +755,18 @@ class _HomeCenterState extends State<HomeCenter> {
                                         ElevatedButton(
                                           onPressed: () {
                                             if (_featuredAlbum != null) {
-                                              // Open album detail
+                                              // Add album to left sidebar saved list
                                               final shellController = Provider.of<AppShellController>(
                                                 context,
                                                 listen: false,
                                               );
+                                              shellController.addAlbum({
+                                                'album_id': _featuredAlbum!.id,
+                                                'album_name': _featuredAlbum!.title,
+                                                'album_image_url': _featuredAlbum!.coverUrl,
+                                                'artist_name': _featuredAlbum!.artistName,
+                                              });
+                                              // Open album detail
                                               shellController.showCenterContent(
                                                 AlbumDetailScreen(
                                                   key: ValueKey('album_${_featuredAlbum!.id}'),
@@ -899,6 +989,63 @@ class _HomeCenterState extends State<HomeCenter> {
                       ),
                     ),
                   ),
+            const SizedBox(height: 16),
+
+            // Recommended for you section
+            Text(
+              'Recommended for you',
+              style: GoogleFonts.inter(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            _isLoadingRecommendedSongs
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: AppTheme.redPrimary,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : _recommendedSongs.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No recommendations yet',
+                          style: GoogleFonts.inter(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            fontSize: 14,
+                          ),
+                        ),
+                      )
+                    : SizedBox(
+                        height: 300,
+                        child: ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(context).copyWith(
+                            dragDevices: {
+                              PointerDeviceKind.touch,
+                              PointerDeviceKind.mouse,
+                            },
+                          ),
+                          child: ListView.separated(
+                            primary: false,
+                            shrinkWrap: true,
+                            scrollDirection: Axis.horizontal,
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: _recommendedSongs.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(width: 20),
+                            itemBuilder: (context, index) {
+                              final song = _recommendedSongs[index];
+                              return _TrendingSongCard(
+                                song: song,
+                                onTap: () => _onRecommendedSongTapped(song),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
             const SizedBox(height: 16),
 
             Text(

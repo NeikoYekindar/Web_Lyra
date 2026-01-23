@@ -1,5 +1,7 @@
 import '../core/config/api_config.dart';
 import '../core/network/api_client.dart';
+import '../models/current_user.dart';
+import 'interaction_service.dart';
 
 /// Track service for like/unlike operations
 class TrackService {
@@ -24,6 +26,18 @@ class TrackService {
 
       if (response.success) {
         print('Successfully ${toggle ? 'liked' : 'unliked'} track: $trackId');
+        
+        // Record like interaction if user liked the track
+        if (toggle) {
+          final userId = CurrentUser.instance.user?.userId;
+          if (userId != null) {
+            InteractionService.recordLike(
+              trackId: trackId,
+              userId: userId,
+            );
+          }
+        }
+        
         return true;
       } else {
         print('Toggle like failed: ${response.message}');
