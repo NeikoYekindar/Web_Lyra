@@ -147,6 +147,20 @@ class AppShellController extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Center content overlay (for album/playlist detail, etc.)
+  Widget? _centerContentWidget;
+  Widget? get centerContentWidget => _centerContentWidget;
+
+  void showCenterContent(Widget content) {
+    _centerContentWidget = content;
+    notifyListeners();
+  }
+
+  void closeCenterContent() {
+    _centerContentWidget = null;
+    notifyListeners();
+  }
+
   /// Called after first frame to load initial data.
   void init(BuildContext context) {
     // No longer loading demo track - will restore last played track instead

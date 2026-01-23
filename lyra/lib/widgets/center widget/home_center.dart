@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lyra/core/di/service_locator.dart';
 import 'package:lyra/core/models/api_response.dart';
 import 'package:lyra/theme/app_theme.dart';

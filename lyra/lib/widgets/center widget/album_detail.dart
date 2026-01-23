@@ -270,7 +270,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                         context,
                         listen: false,
                       );
-                      shellController.clearCenterContent();
+                      shellController.closeCenterContent();
                     },
                     icon: Icon(
                       Icons.arrow_back,
