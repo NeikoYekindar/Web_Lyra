@@ -108,6 +108,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get female => 'Female';
 
   @override
+  String get other => 'Other';
+
+  @override
   String get writeSomething => 'Write something';
 
   @override
@@ -136,6 +139,129 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recent => 'Recent';
+
+  @override
+  String get enterEmailPassword => 'Please enter email and password';
+
+  @override
+  String get loginFailed => 'Login failed';
+
+  @override
+  String get failedToPickImage => 'Failed to pick image';
+
+  @override
+  String get skip => 'skip';
+
+  @override
+  String get createYourProfile => 'Create Your Profile';
+
+  @override
+  String get musicExperience => 'Help us personalize your music experience';
+
+  @override
+  String get profilePicture => 'Profile Picture';
+
+  @override
+  String get uploadPhoto => 'Upload Photo';
+
+  @override
+  String get max => 'Max';
+
+  @override
+  String get howShouldWeCallYou => 'How should we call you?';
+
+  @override
+  String get select => 'Select';
+
+  @override
+  String get tellUsAbUrSelf => 'Tell us about yourself';
+
+  @override
+  String get selectAtLeastOneGenre => 'Select at least one genre';
+
+  @override
+  String get yourPersonalized => 'Your personalized playlists will appear here';
+
+  @override
+  String get enterDisplayName => 'Please enter a display name';
+
+  @override
+  String get failedToSaveProfile => 'Failed to save profile';
+
+  @override
+  String get finish => 'Finish';
+
+  @override
+  String get loginDescribe1 => 'Stream millions of songs with Lyra.';
+
+  @override
+  String get loginDescribe2 => 'Discover new artists, create playlists, and enjoy your favorite music anywhere.';
+
+  @override
+  String get signUp => 'Sign Up';
+
+  @override
+  String get signIn => 'Sign In';
+
+  @override
+  String get millionsOfSongs => 'Millions of Songs';
+
+  @override
+  String get accessAVastLibrary => 'Access a vast library of music from';
+
+  @override
+  String get artistsAroundTheWorld => 'artists around the world.';
+
+  @override
+  String get personalized => 'Personalized';
+
+  @override
+  String get getRecommendationsBasedOn => 'Get recommendations based on';
+
+  @override
+  String get yourUniqueMusicalTaste => 'your unique musical taste.';
+
+  @override
+  String get anywhere => 'Anywhere';
+
+  @override
+  String get listenOnAnyDevice => 'Listen on any device, online or offline';
+
+  @override
+  String get whereverYouGo => 'wherever you go.';
+
+  @override
+  String get welcomeBack => 'Welcome back';
+
+  @override
+  String get loginContLis => 'Log in to continue listening';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get enterPass => 'Enter Password';
+
+  @override
+  String get rememberMe => 'Remember me';
+
+  @override
+  String get validEmail => 'Please enter a valid email address';
+
+  @override
+  String get logIn => 'Log In';
+
+  @override
+  String get continueWith => 'Or continue with';
+
+  @override
+  String get dontHaveAccount => 'Don\'t have account?';
+
+  @override
+  String get selectDateOfBirth => 'Select Date of Birth';
+
+  @override
+  String get continueC => 'Continue';
 
   @override
   String get noResults => 'No results found';
@@ -175,6 +301,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchSongsAndPodcasts => 'Search for songs and podcasts';
+
+  @override
+  String get changeAvatar => 'Change avatar';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get passwordResetSuccessfully => 'Password reset successfully!';
+
+  @override
+  String failedToResetPassword(Object error) {
+    return 'Failed to reset password: $error';
+  }
+
+  @override
+  String logoutFailed(Object error) {
+    return 'Logout failed: $error';
+  }
+
+  @override
+  String failedToSendCode(Object error) {
+    return 'Failed to send code: $error';
+  }
+
+  @override
+  String get verificationCodeResent => 'Verification code resent. Please check your inbox.';
+
+  @override
+  String failedToResendCode(Object error) {
+    return 'Failed to resend code: $error';
+  }
+
+  @override
+  String get checkingLoginSession => 'Checking login session...';
+
+  @override
+  String failedToSaveChanges(Object error) {
+    return 'Failed to save: $error';
+  }
 
   @override
   String get createPlaylist => 'Create Playlist';

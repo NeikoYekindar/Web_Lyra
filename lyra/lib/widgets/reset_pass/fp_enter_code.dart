@@ -9,6 +9,7 @@ import 'package:lyra/core/di/service_locator.dart';
 import 'package:lyra/widgets/common/circle_icon_container.dart';
 import 'package:lyra/widgets/common/custom_button.dart';
 import 'package:lyra/widgets/reset_pass/fp_enter_new_password.dart';
+import 'package:lyra/l10n/app_localizations.dart';
 
 class EnterResetCode extends StatefulWidget {
   final String email;
@@ -52,8 +53,8 @@ class _EnterResetCodeScreenState extends State<EnterResetCode> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Verification code resent. Please check your inbox.'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.verificationCodeResent),
             backgroundColor: Colors.green,
           ),
         );
@@ -62,7 +63,7 @@ class _EnterResetCodeScreenState extends State<EnterResetCode> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to resend code: $error'),
+            content: Text('${AppLocalizations.of(context)!.failedToResendCode}$error'),
             backgroundColor: Colors.red,
           ),
         );
