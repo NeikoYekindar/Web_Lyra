@@ -1,7 +1,11 @@
+import 'dart:convert';
+import 'dart:js_interop';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lyra/services/music_service_v2.dart' as music_service;
 import 'package:lyra/widgets/common/header_info_section.dart';
 import 'package:lyra/widgets/common/playlist_card.dart';
 import 'package:lyra/widgets/common/trackItem.dart';
@@ -11,10 +15,12 @@ import 'package:lyra/core/config/api_config.dart';
 
 import 'package:lyra/models/track.dart';
 import 'package:lyra/models/artist.dart';
+import 'package:lyra/models/album.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_player_provider.dart';
 import '../../providers/artist_follow_provider.dart';
 import '../../shell/app_shell_controller.dart';
+import 'package:lyra/models/search_response.dart';
 
 class ArtistPage extends StatefulWidget {
   final Artist artist;
@@ -30,7 +36,8 @@ class _ArtistPageState extends State<ArtistPage> {
   bool _isLoadingPlaylists = true;
   List<Track>? _artistTracks;
   bool _isLoadingTracks = true;
-
+  List<Album>? _artistAlbums;
+  bool _isLoadingAlbums = true;
   @override
   void initState() {
     super.initState();
@@ -46,7 +53,11 @@ class _ArtistPageState extends State<ArtistPage> {
 
   Future<void> _loadArtistData() async {
     // Load all artist data in parallel
-    await Future.wait([_loadArtistTracks(), _loadArtistPlaylists()]);
+    await Future.wait([
+      _loadArtistTracks(),
+      _loadArtistPlaylists(),
+      _loadArtistAlbum(),
+    ]);
   }
 
   Future<void> _loadArtistPlaylists() async {
@@ -92,6 +103,32 @@ class _ArtistPageState extends State<ArtistPage> {
         setState(() {
           _artistTracks = [];
           _isLoadingTracks = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadArtistAlbum() async {
+    try {
+      print('Loading albums for artist: ${widget.artist.artistId}');
+      final albums = await serviceLocator.artistService.getArtistAlbums(
+        artistId: widget.artist.artistId,
+      );
+      if (mounted) {
+        setState(() {
+          _artistAlbums = albums;
+          _isLoadingAlbums = false;
+        });
+        print('Loaded albums for artist: ${widget.artist.artistId}');
+        print('Loaded ${albums.length} albums for artist');
+        print('Albums: ${albums.map((a) => a.albumName).toList()}');
+      }
+    } catch (e) {
+      print('Error loading artist albums: $e');
+      if (mounted) {
+        setState(() {
+          _artistAlbums = [];
+          _isLoadingAlbums = false;
         });
       }
     }
@@ -395,6 +432,74 @@ class _ArtistPageState extends State<ArtistPage> {
                                   ),
                                 ),
                               ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+              const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            ],
+            // Albums Section
+            if (_isLoadingAlbums ||
+                (_artistAlbums != null && _artistAlbums!.isNotEmpty)) ...[
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    "Albums",
+                    style: GoogleFonts.inter(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              _isLoadingAlbums
+                  ? SliverToBoxAdapter(
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
+                    )
+                  : SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: SizedBox(
+                          height: 260,
+                          child: ScrollConfiguration(
+                            behavior: ScrollConfiguration.of(context).copyWith(
+                              dragDevices: {
+                                PointerDeviceKind.touch,
+                                PointerDeviceKind.mouse,
+                              },
+                            ),
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              primary: false,
+                              shrinkWrap: true,
+                              physics: const BouncingScrollPhysics(),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              itemCount: _artistAlbums!.length,
+                              itemBuilder: (context, i) {
+                                final album = _artistAlbums![i];
+                                return Container(
+                                  width: 180,
+                                  margin: const EdgeInsets.only(right: 16),
+                                  child: PlaylistCard(
+                                    item: PlaylistItem(
+                                      title: album.albumName,
+                                      author: album.artistName,
+                                      coverUrl: album.albumImageUrl,
+                                      songCount: album.totalTrack,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),

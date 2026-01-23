@@ -2,6 +2,7 @@ import '../core/config/api_config.dart';
 import '../core/network/api_client.dart';
 import '../models/track.dart';
 import '../services/playlist_service_v2.dart';
+import 'package:lyra/models/album.dart';
 
 /// Artist service using ApiClient with authentication
 class ArtistServiceV2 {
@@ -153,9 +154,7 @@ class ArtistServiceV2 {
 
   /// Get artist albums
   /// Endpoint: GET /artists/info/albums/{artist_id}
-  Future<List<Map<String, dynamic>>> getArtistAlbums({
-    required String artistId,
-  }) async {
+  Future<List<Album>> getArtistAlbums({required String artistId}) async {
     try {
       final response = await _apiClient.get<dynamic>(
         ApiConfig.getServiceUrl('music'),
@@ -168,7 +167,9 @@ class ArtistServiceV2 {
 
         // Handle direct list response
         if (data is List) {
-          return data.map((json) => json as Map<String, dynamic>).toList();
+          return data
+              .map((json) => Album.fromJson(json as Map<String, dynamic>))
+              .toList();
         }
 
         // Handle wrapped response
@@ -176,7 +177,7 @@ class ArtistServiceV2 {
           final albumsJson = data['albums'] ?? data['data'] ?? [];
           if (albumsJson is List) {
             return albumsJson
-                .map((json) => json as Map<String, dynamic>)
+                .map((json) => Album.fromJson(json as Map<String, dynamic>))
                 .toList();
           }
         }

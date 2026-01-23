@@ -10,25 +10,11 @@ class ApiConfig {
   // Microservice Base URLs - Configure for your FastAPI services
   static const Map<String, Map<String, String>> _serviceUrls = {
     'dev': {
-      'auth': 'http://54.91.151.109:3000',
-      'music': 'http://54.91.151.109:3000',
-      'user': 'http://54.91.151.109:3000',
-      'playlist': 'http://54.91.151.109:3000',
-      'search': 'http://54.91.151.109:3000',
-    },
-    'staging': {
-      'auth': 'https://staging-auth.lyra.app',
-      'music': 'https://staging-music.lyra.app',
-      'user': 'https://staging-user.lyra.app',
-      'playlist': 'https://staging-playlist.lyra.app',
-      'search': 'https://staging-search.lyra.app',
-    },
-    'prod': {
-      'auth': 'https://auth.lyra.app',
-      'music': 'https://music.lyra.app',
-      'user': 'https://user.lyra.app',
-      'playlist': 'https://playlist.lyra.app',
-      'search': 'https://search.lyra.app',
+      'auth': 'http://54.209.94.184:3000',
+      'music': 'http://54.209.94.184:3000',
+      'user': 'http://54.209.94.184:3000',
+      'playlist': 'http://54.209.94.184:3000',
+      'search': 'http://54.209.94.184:3000',
     },
   };
 

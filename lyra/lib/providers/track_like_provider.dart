@@ -25,6 +25,7 @@ class TrackLikeProvider with ChangeNotifier {
       final isLiked = await serviceLocator.trackService.isTrackLiked(
         trackId: trackId,
       );
+      print('Checked like status for $trackId: $isLiked');
       _likeStatus[trackId] = isLiked;
       notifyListeners();
     } catch (e) {

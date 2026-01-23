@@ -73,16 +73,24 @@ class _AppHeaderState extends State<AppHeader> {
           Expanded(
             flex: 2,
             child: Center(
-              child: ColorFiltered(
-                colorFilter: ColorFilter.mode(
-                  Theme.of(context).colorScheme.primary,
-                  BlendMode.srcIn,
-                ),
-                child: Image.asset(
-                  'assets/logos/Lyra.png',
-                  width: 120,
-                  height: 40,
-                  fit: BoxFit.contain,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () {
+                    AppNav.key.currentState?.pushNamed(AppRoutes.home);
+                  },
+                  child: ColorFiltered(
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.primary,
+                      BlendMode.srcIn,
+                    ),
+                    child: Image.asset(
+                      'assets/logos/Lyra.png',
+                      width: 120,
+                      height: 40,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                 ),
               ),
             ),

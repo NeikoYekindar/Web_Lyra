@@ -183,18 +183,15 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
   }
 
   final List<String> genres = [
-    "Pop",
-    "Rock",
-    "Hip Hop",
-    "R&B",
-    "Jazz",
-    "Electronic",
-    "Classical",
-    "Country",
-    "Latin",
-    "Indie",
-    "Metal",
-    "Folk",
+    'Pop',
+    'Rap',
+    'Hip-Hop',
+    'R&D',
+    'Lofi',
+    'US-UK pop',
+    'Latin pop',
+    'Indie',
+    'Soul',
   ];
 
   @override

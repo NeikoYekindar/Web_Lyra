@@ -32,17 +32,14 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
   bool _isLoading = false;
   final List<String> _genres = [
     'Pop',
-    'Rock',
-    'Hip Hop',
-    'R&B',
-    'Jazz',
-    'Electronic',
-    'Classical',
-    'Country',
-    'Latin',
+    'Rap',
+    'Hip-Hop',
+    'R&D',
+    'Lofi',
+    'US-UK pop',
+    'Latin pop',
     'Indie',
-    'Metal',
-    'Folk',
+    'Soul',
   ];
   final List<String> _selectedGenres = [];
 
@@ -339,7 +336,9 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                               Expanded(
                                 flex: 2,
                                 child: DropdownButtonFormField<String>(
-                                  initialValue: _gender.isEmpty ? null : _gender,
+                                  initialValue: _gender.isEmpty
+                                      ? null
+                                      : _gender,
                                   dropdownColor: const Color(0xFF1E1E1E),
                                   style: GoogleFonts.inter(
                                     color: Colors.white,

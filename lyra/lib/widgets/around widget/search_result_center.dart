@@ -343,7 +343,7 @@ class _SearchResultCenterState extends State<SearchResultCenter> {
                           padding: const EdgeInsets.only(bottom: 8.0),
                           child: TrackItem(
                             title: hit.trackName,
-                            artist: hit.artistName,
+                            artist: hit.artistObj?.nickname ?? 'Unknown Artist',
                             albumArtist: hit.kind,
                             duration: _formatStreams(hit.streams),
                             image:
@@ -509,7 +509,7 @@ class _SearchResultCenterState extends State<SearchResultCenter> {
                                                 fontSize: 11,
                                               ),
                                             ),
-                                            if (album.totalTracks != null)
+                                            if (album.totalTrack != null)
                                               Text(
                                                 ' • ',
                                                 style: GoogleFonts.inter(
@@ -518,9 +518,9 @@ class _SearchResultCenterState extends State<SearchResultCenter> {
                                                 ),
                                               ),
                                           ],
-                                          if (album.totalTracks != null)
+                                          if (album.totalTrack != null)
                                             Text(
-                                              '${album.totalTracks} tracks',
+                                              '${album.totalTrack} tracks',
                                               style: GoogleFonts.inter(
                                                 color: Colors.grey,
                                                 fontSize: 11,

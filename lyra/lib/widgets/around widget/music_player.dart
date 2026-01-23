@@ -18,6 +18,8 @@ class MusicPlayer extends StatefulWidget {
 }
 
 class _MusicPlayerState extends State<MusicPlayer> {
+  String? _lastCheckedTrackId;
+
   @override
   void initState() {
     super.initState();
@@ -29,9 +31,21 @@ class _MusicPlayerState extends State<MusicPlayer> {
         listen: false,
       );
       if (player.currentTrack != null) {
+        _lastCheckedTrackId = player.currentTrack!.trackId;
         likeProvider.checkLikeStatus(player.currentTrack!.trackId);
       }
     });
+  }
+
+  void _checkLikeStatusIfNeeded(String? trackId) {
+    if (trackId != null && trackId != _lastCheckedTrackId) {
+      _lastCheckedTrackId = trackId;
+      final likeProvider = Provider.of<TrackLikeProvider>(
+        context,
+        listen: false,
+      );
+      likeProvider.checkLikeStatus(trackId);
+    }
   }
 
   Future<void> _toggleLike(String trackId) async {
@@ -46,6 +60,9 @@ class _MusicPlayerState extends State<MusicPlayer> {
     // Hide player completely when no track is loaded
     return Consumer<MusicPlayerProvider>(
       builder: (context, player, _) {
+        // Check like status whenever track changes
+        _checkLikeStatusIfNeeded(player.currentTrack?.trackId);
+
         if (player.currentTrack == null) {
           return const SizedBox.shrink(); // Hide player completely
         }
