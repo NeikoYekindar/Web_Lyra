@@ -301,6 +301,59 @@ class ApiClient {
     }
   }
 
+  /// PUT request with multipart/form-data
+  Future<ApiResponse<T>> putMultipart<T>(
+    String serviceUrl,
+    String endpoint, {
+    required List<http.MultipartFile> files,
+    Map<String, dynamic>? fields,
+    Map<String, String>? headers,
+    T Function(dynamic)? fromJson,
+  }) async {
+    final uri = _buildUri(serviceUrl, endpoint, null);
+    final requestHeaders = await _buildHeaders(headers);
+
+    try {
+      for (var interceptor in _requestInterceptors) {
+        await interceptor.onRequest(
+          uri,
+          'PUT-MULTIPART',
+          requestHeaders,
+          null,
+        );
+      }
+
+      final request = http.MultipartRequest('PUT', uri);
+      request.headers.addAll(requestHeaders);
+
+      if (fields != null) {
+        fields.forEach((key, value) {
+          if (value is String) {
+            request.fields[key] = value;
+          } else if (value is List<String>) {
+            // Add repeated text parts using MultipartFile.fromString
+            for (final v in value) {
+              request.files.add(http.MultipartFile.fromString(key, v));
+            }
+          } else if (value != null) {
+            request.fields[key] = value.toString();
+          }
+        });
+      }
+
+      for (final f in files) request.files.add(f);
+
+      final streamed = await request.send().timeout(
+        ApiConfig.connectionTimeout,
+      );
+      final resp = await http.Response.fromStream(streamed);
+
+      return await _handleResponse<T>(resp, fromJson);
+    } catch (e) {
+      return _handleError<T>(e);
+    }
+  }
+
   /// Generic PUT request
   Future<ApiResponse<T>> put<T>(
     String serviceUrl,

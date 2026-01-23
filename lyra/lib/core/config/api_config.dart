@@ -16,6 +16,20 @@ class ApiConfig {
       'playlist': 'http://52.73.105.174:3000',
       'search': 'http://52.73.105.174:3000',
     },
+    'staging': {
+      'auth': 'https://staging-auth.lyra.app',
+      'music': 'https://staging-music.lyra.app',
+      'user': 'https://staging-user.lyra.app',
+      'playlist': 'https://staging-playlist.lyra.app',
+      'search': 'https://staging-search.lyra.app',
+    },
+    'prod': {
+      'auth': 'https://auth.lyra.app',
+      'music': 'https://music.lyra.app',
+      'user': 'https://user.lyra.app',
+      'playlist': 'https://playlist.lyra.app',
+      'search': 'https://search.lyra.app',
+    },
   };
 
   // Get service URL by name
@@ -82,6 +96,10 @@ class ApiConfig {
   static String get searchServiceUrl => getServiceUrl('search');
   static const String searchEndpoint = '/api/v1/search';
   static const String suggestionsEndpoint = '/api/v1/search/suggestions';
+
+  // API Endpoints for Change Password
+  static String get changePasswordServiceUrl => getServiceUrl('user');
+  static const String changePasswordEndpoint = '/users/change-pass';
 
   // Request Configuration
   static const Duration connectionTimeout = Duration(seconds: 30);
