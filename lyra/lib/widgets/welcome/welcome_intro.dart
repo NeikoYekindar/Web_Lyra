@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lyra/theme/app_theme.dart';
 // import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';

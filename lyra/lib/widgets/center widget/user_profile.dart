@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lyra/l10n/app_localizations.dart';
-import 'package:lyra/widgets/common/header_info_section.dart';
 import 'package:lyra/widgets/common/silver_app_bar.dart';
 import 'package:lyra/widgets/common/playlist_card.dart';
 import 'package:lyra/widgets/common/trackItem.dart';

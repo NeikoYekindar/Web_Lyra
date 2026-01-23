@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:lyra/theme/app_theme.dart';
 import 'package:lyra/core/di/service_locator.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_player_provider.dart';

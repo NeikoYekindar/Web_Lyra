@@ -4,11 +4,8 @@ import 'package:collection/collection.dart';
 import 'package:lyra/l10n/app_localizations.dart';
 import 'package:lyra/widgets/common/favorite_card.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import '../../models/current_user.dart';
-import '../../models/user.dart';
 import '../../core/di/service_locator.dart';
-import '../../services/user_service_v2.dart';
 
 class EditProfilePopup extends StatefulWidget {
   const EditProfilePopup({super.key});
@@ -114,9 +111,9 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
               ),
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text(
-                  'Xóa ảnh',
-                  style: TextStyle(color: Colors.red),
+                title: Text(
+                  'Delete image',
+                  style: GoogleFonts.inter(color: Colors.red),
                 ),
                 onTap: () => Navigator.of(ctx).pop('clear'),
               ),
@@ -614,7 +611,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _hasChanges
                                 ? colorScheme.primary
-                                : colorScheme.surfaceVariant,
+                                : colorScheme.surfaceContainerHighest,
                             foregroundColor: _hasChanges
                                 ? colorScheme.onPrimary
                                 : colorScheme.onSurfaceVariant,
@@ -823,11 +820,12 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
               firstDate: DateTime(1960),
               lastDate: DateTime.now(),
             );
-            if (picked != null)
+            if (picked != null) {
               setState(() {
                 dob = picked;
                 _checkChanges();
               });
+            }
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),

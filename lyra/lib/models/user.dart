@@ -74,8 +74,9 @@ class UserModel {
         if (json['favorite_genre'] != null) {
           final val = json['favorite_genre'];
           if (val is String) return [val];
-          if (val is List)
+          if (val is List) {
             return List<String>.from(val.map((e) => e.toString()));
+          }
         }
         return null;
       }(),

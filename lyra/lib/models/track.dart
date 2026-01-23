@@ -37,9 +37,10 @@ class Track implements MediaItem {
 
   // Backwards-compatible getters used elsewhere in the app
   String get id => trackId;
+  @override
   String get title => trackName;
   String get artist =>
-      this.artistObj?.nickname ?? artistId; // Use artist nickname if available
+      artistObj?.nickname ?? artistId; // Use artist nickname if available
   String get albumArtUrl => trackImageUrl;
   int get durationMs => duration * 1000;
   String get audioUrl => trackFileUrl;

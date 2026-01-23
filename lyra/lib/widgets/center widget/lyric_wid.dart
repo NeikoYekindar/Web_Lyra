@@ -348,7 +348,7 @@ class _LyricViewState extends State<LyricView> {
                     color: isHover && !isCurrent
                         ? Theme.of(
                             context,
-                          ).colorScheme.surfaceVariant.withOpacity(0.3)
+                          ).colorScheme.surfaceContainerHighest.withOpacity(0.3)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(8),
                   ),

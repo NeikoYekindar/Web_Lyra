@@ -9,8 +9,7 @@ import 'package:lyra/widgets/welcome/welcome_login.dart';
 class EnterNewPasswordScreen extends StatefulWidget {
   final String email;
 
-  const EnterNewPasswordScreen({Key? key, required this.email})
-    : super(key: key);
+  const EnterNewPasswordScreen({super.key, required this.email});
 
   @override
   _EnterNewPasswordScreenState createState() => _EnterNewPasswordScreenState();

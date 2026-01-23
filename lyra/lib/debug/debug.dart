@@ -70,7 +70,7 @@ Future<void> main() async {
 }
 
 class _DebugApp extends StatelessWidget {
-  const _DebugApp({super.key});
+  const _DebugApp();
 
   @override
   Widget build(BuildContext context) {

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:lyra/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:lyra/shell/app_shell_controller.dart';
 import 'package:lyra/core/di/service_locator.dart';
 import 'package:lyra/models/search_response.dart';
 import 'package:lyra/widgets/common/trackItem.dart';
 import 'package:lyra/providers/music_player_provider.dart';
-import 'package:lyra/models/track.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SearchResultCenter extends StatefulWidget {
   final String? initialQuery;
@@ -25,6 +24,8 @@ class _SearchResultCenterState extends State<SearchResultCenter> {
   // Search results state
   bool _isLoading = false;
   SearchTracksResponse? _searchResults;
+  SearchAlbumsResponse? _albumResults;
+  SearchArtistsResponse? _artistResults;
   String? _errorMessage;
 
   @override
@@ -60,13 +61,29 @@ class _SearchResultCenterState extends State<SearchResultCenter> {
 
     try {
       final searchService = ServiceLocator().searchService;
-      print('Calling API with query: $query');
-      final results = await searchService.searchTracksV2(query: query);
-      print('API returned ${results.total} results');
+      print('Calling search APIs with query: $query');
+
+      // Gọi cả 3 endpoints song song
+      final results = await Future.wait([
+        searchService.searchTracksV2(query: query),
+        searchService.searchAlbumsV2(query: query),
+        searchService.searchArtistsV2(query: query),
+      ]);
+
+      final trackResults = results[0] as SearchTracksResponse;
+      final albumResults = results[1] as SearchAlbumsResponse;
+      final artistResults = results[2] as SearchArtistsResponse;
+
+      print(
+        'API returned: ${trackResults.total} tracks, '
+        '${albumResults.total} albums, ${artistResults.total} artists',
+      );
 
       if (mounted) {
         setState(() {
-          _searchResults = results;
+          _searchResults = trackResults;
+          _albumResults = albumResults;
+          _artistResults = artistResults;
           _isLoading = false;
         });
       }
@@ -81,51 +98,15 @@ class _SearchResultCenterState extends State<SearchResultCenter> {
     }
   }
 
-  // Mock Data giả lập
+  // Filter options
   final List<String> _filters = [
     'All',
     'Artists',
     'Songs',
     'Playlists',
     'Albums',
-    'Podcasts',
   ];
   int _selectedFilterIndex = 0;
-
-  final List<Map<String, String>> _artists = [
-    {'name': 'Sơn Tùng M-TP', 'image': 'assets/images/HTH.png'},
-    {'name': 'SOOBIN', 'image': 'assets/images/HTH.png'},
-    {'name': 'Shiki', 'image': 'assets/images/HTH.png'}, // Placeholder
-    {'name': 'Saabirose', 'image': 'assets/images/HTH.png'},
-    {'name': 'Seachains', 'image': 'assets/images/HTH.png'},
-  ];
-
-  final List<Map<String, String>> _songs = [
-    {
-      'title': 'SO ĐẬM',
-      'artist': 'EM XINH "SAY HI", Phương Ly...',
-      'image': 'assets/images/HTH.png',
-      'duration': '3:40',
-    },
-    {
-      'title': 'Sinh Ra Đã Là Thứ Đối Lập nhau',
-      'artist': 'Emcee L (Da LAB), Badbies',
-      'image': 'assets/images/HTH.png',
-      'duration': '3:54',
-    },
-    {
-      'title': 'Say Yes (Vietnamese Version)',
-      'artist': 'OgeNus, PiaLinh',
-      'image': 'assets/images/HTH.png',
-      'duration': '3:43',
-    },
-    {
-      'title': 'Sau Cơn Mưa',
-      'artist': 'CoolKid, RHYDER',
-      'image': 'assets/images/HTH.png',
-      'duration': '2:34',
-    },
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -165,7 +146,7 @@ class _SearchResultCenterState extends State<SearchResultCenter> {
                         },
                         backgroundColor: Colors.transparent,
                         selectedColor: Colors.white,
-                        labelStyle: TextStyle(
+                        labelStyle: GoogleFonts.inter(
                           color: isSelected ? Colors.black : Colors.white,
                           fontWeight: isSelected
                               ? FontWeight.bold
@@ -189,13 +170,19 @@ class _SearchResultCenterState extends State<SearchResultCenter> {
                 if (searchQuery.isNotEmpty) ...[
                   Text(
                     'Search results for: "$searchQuery"',
-                    style: const TextStyle(color: Colors.white70, fontSize: 16),
+                    style: GoogleFonts.inter(
+                      color: Colors.white70,
+                      fontSize: 16,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   if (_searchResults != null)
                     Text(
                       'Found ${_searchResults!.total} results',
-                      style: const TextStyle(color: Colors.grey, fontSize: 14),
+                      style: GoogleFonts.inter(
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
                     ),
                   const SizedBox(height: 20),
                 ],
@@ -224,7 +211,7 @@ class _SearchResultCenterState extends State<SearchResultCenter> {
                           const SizedBox(height: 16),
                           Text(
                             'Error: $_errorMessage',
-                            style: const TextStyle(color: Colors.red),
+                            style: GoogleFonts.inter(color: Colors.red),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 16),
@@ -239,58 +226,104 @@ class _SearchResultCenterState extends State<SearchResultCenter> {
 
                 // Results
                 if (!_isLoading && _errorMessage == null) ...[
-                  // 2. Artists Section (Mock data - endpoint not ready)
-                  const Text(
+                  // 2. Artists Section
+                  Text(
                     'Artists',
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 16),
-                  SizedBox(
-                    height: 180, // Chiều cao cố định cho list ngang
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _artists.length,
-                      separatorBuilder: (ctx, index) =>
-                          const SizedBox(width: 20),
-                      itemBuilder: (ctx, index) {
-                        return Column(
-                          children: [
-                            CircleAvatar(
-                              radius: 60,
-                              backgroundImage: AssetImage(
-                                _artists[index]['image']!,
+                  if (_artistResults != null && _artistResults!.hits.isNotEmpty)
+                    SizedBox(
+                      height: 200,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _artistResults!.hits.length,
+                        separatorBuilder: (ctx, index) =>
+                            const SizedBox(width: 20),
+                        itemBuilder: (ctx, index) {
+                          final artist = _artistResults!.hits[index];
+                          return GestureDetector(
+                            onTap: () {
+                              // Navigate to artist page
+                              Navigator.of(
+                                context,
+                              ).pushNamed('/artist', arguments: artist);
+                            },
+                            child: MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: Column(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 60,
+                                    backgroundImage:
+                                        artist.imageUrl != null &&
+                                            artist.imageUrl!.isNotEmpty
+                                        ? NetworkImage(artist.imageUrl!)
+                                        : const AssetImage(
+                                                'assets/images/HTH.png',
+                                              )
+                                              as ImageProvider,
+                                    backgroundColor: Colors.grey[800],
+                                  ),
+                                  const SizedBox(height: 10),
+                                  SizedBox(
+                                    width: 120,
+                                    child: Text(
+                                      artist.nickname,
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${_formatStreams(artist.totalFollowers)} followers',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.grey,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Artist',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.grey,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              backgroundColor: Colors.grey[800],
                             ),
-                            const SizedBox(height: 10),
-                            Text(
-                              _artists[index]['name']!,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const Text(
-                              'Artist',
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
+                          );
+                        },
+                      ),
+                    )
+                  else if (_artistResults != null &&
+                      _artistResults!.hits.isEmpty)
+                    Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Text(
+                        'No artists found',
+                        style: GoogleFonts.inter(
+                          color: Colors.grey,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
-                  ),
+
+                  const SizedBox(height: 30),
 
                   // 3. Songs Section
-                  const Text(
+                  Text(
                     'Songs',
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -362,92 +395,159 @@ class _SearchResultCenterState extends State<SearchResultCenter> {
                     )
                   else if (_searchResults != null &&
                       _searchResults!.hits.isEmpty)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.all(40.0),
                       child: Center(
                         child: Text(
                           'No songs found',
-                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                          style: GoogleFonts.inter(
+                            color: Colors.grey,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
                     ),
 
                   const SizedBox(height: 30),
 
-                  // 4. Playlists Section (Mock data - endpoint not ready)
-                  const Text(
-                    'Playlists',
-                    style: TextStyle(
+                  // 4. Albums Section
+                  Text(
+                    'Albums',
+                    style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 16),
-                  SizedBox(
-                    height: 180,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: 5,
-                      itemBuilder: (ctx, index) {
-                        return Container(
-                          width: 150,
-                          margin: const EdgeInsets.only(right: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[900],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: const BorderRadius.vertical(
-                                      top: Radius.circular(8),
+                  if (_albumResults != null && _albumResults!.hits.isNotEmpty)
+                    SizedBox(
+                      height: 230,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _albumResults!.hits.length,
+                        itemBuilder: (ctx, index) {
+                          final album = _albumResults!.hits[index];
+                          return Container(
+                            width: 150,
+                            margin: const EdgeInsets.only(right: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[900],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: const BorderRadius.vertical(
+                                        top: Radius.circular(8),
+                                      ),
+                                      color: Colors.grey[800],
                                     ),
-                                    color: Colors
-                                        .primaries[index %
-                                            Colors.primaries.length]
-                                        .withOpacity(0.5),
-                                  ),
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.music_note,
-                                      color: Colors.white,
-                                      size: 40,
-                                    ),
+                                    child: album.albumImageUrl != null
+                                        ? ClipRRect(
+                                            borderRadius:
+                                                const BorderRadius.vertical(
+                                                  top: Radius.circular(8),
+                                                ),
+                                            child: Image.network(
+                                              album.albumImageUrl!,
+                                              fit: BoxFit.cover,
+                                              width: double.infinity,
+                                              errorBuilder: (_, __, ___) =>
+                                                  const Center(
+                                                    child: Icon(
+                                                      Icons.album,
+                                                      color: Colors.white,
+                                                      size: 40,
+                                                    ),
+                                                  ),
+                                            ),
+                                          )
+                                        : const Center(
+                                            child: Icon(
+                                              Icons.album,
+                                              color: Colors.white,
+                                              size: 40,
+                                            ),
+                                          ),
                                   ),
                                 ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Playlist ${index + 1}',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        album.albumName,
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ),
-                                    const Text(
-                                      'By Lyra',
-                                      style: TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 12,
+                                      Text(
+                                        album.artistName,
+                                        style: GoogleFonts.inter(
+                                          color: Colors.grey,
+                                          fontSize: 12,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ),
-                                  ],
+                                      Row(
+                                        children: [
+                                          if (album.releaseYear != null) ...[
+                                            Text(
+                                              album.releaseYear!,
+                                              style: GoogleFonts.inter(
+                                                color: Colors.grey,
+                                                fontSize: 11,
+                                              ),
+                                            ),
+                                            if (album.totalTracks != null)
+                                              Text(
+                                                ' • ',
+                                                style: GoogleFonts.inter(
+                                                  color: Colors.grey,
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                          ],
+                                          if (album.totalTracks != null)
+                                            Text(
+                                              '${album.totalTracks} tracks',
+                                              style: GoogleFonts.inter(
+                                                color: Colors.grey,
+                                                fontSize: 11,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  else if (_albumResults != null && _albumResults!.hits.isEmpty)
+                    Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Text(
+                        'No albums found',
+                        style: GoogleFonts.inter(
+                          color: Colors.grey,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
-                  ),
                 ], // End if (!_isLoading && _errorMessage == null)
                 // Spacer bottom
                 const SizedBox(height: 50),

@@ -1,17 +1,13 @@
-import 'dart:js_interop';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lyra/l10n/app_localizations.dart';
 import 'package:lyra/widgets/common/header_info_section.dart';
-import 'package:lyra/widgets/common/silver_app_bar.dart';
 import 'package:lyra/widgets/common/playlist_card.dart';
 import 'package:lyra/widgets/common/trackItem.dart';
-import 'package:lyra/models/current_user.dart';
 import 'package:lyra/core/di/service_locator.dart';
 import 'package:lyra/services/playlist_service_v2.dart';
+import 'package:lyra/core/config/api_config.dart';
 
 import 'package:lyra/models/track.dart';
 import 'package:lyra/models/artist.dart';
@@ -120,8 +116,45 @@ class _ArtistPageState extends State<ArtistPage> {
         listen: false,
       );
 
-      // Load track with artist tracks as queue
-      await musicPlayerProvider.setTrack(track, queue: _artistTracks ?? []);
+      // Prepare queue with artist tracks and ensure artistObj is set
+      List<Track> queue = (_artistTracks ?? []).map((t) {
+        // Ensure each track has the artist object
+        return t.artistObj == null ? t.copyWith(artistObj: widget.artist) : t;
+      }).toList();
+
+      // Check if queue size is sufficient (use defaultPageSize as minimum)
+      const minQueueSize = ApiConfig.defaultPageSize;
+      if (queue.length < minQueueSize) {
+        try {
+          // Load trending songs to fill the queue
+          final trendingSongs = await serviceLocator.musicService
+              .getTrendingTracks(limit: minQueueSize);
+
+          // Remove duplicates and add trending songs
+          final existingIds = queue.map((t) => t.trackId).toSet();
+          final additionalSongs = trendingSongs
+              .where((t) => !existingIds.contains(t.trackId))
+              .toList();
+
+          queue.addAll(additionalSongs);
+
+          print(
+            'Queue enhanced: ${_artistTracks?.length ?? 0} artist tracks + '
+            '${additionalSongs.length} trending songs = ${queue.length} total',
+          );
+        } catch (e) {
+          print('Error loading trending songs for queue: $e');
+          // Continue with just artist tracks if trending fetch fails
+        }
+      }
+
+      // Ensure the current track also has artistObj
+      final trackWithArtist = track.artistObj == null
+          ? track.copyWith(artistObj: widget.artist)
+          : track;
+
+      // Load track with enhanced queue
+      await musicPlayerProvider.setTrack(trackWithArtist, queue: queue);
       musicPlayerProvider.play();
     } catch (e) {
       print('Error playing track: $e');
@@ -404,10 +437,11 @@ class _ArtistPageState extends State<ArtistPage> {
                     return TrackItem(
                       index: index + 1,
                       title: track.title,
-                      artist: track.artistObj?.nickname ?? 'Unknown Artist',
-                      albumArtist: 'Album',
+                      artist: widget.artist.nickname,
+                      albumArtist: 'Track',
                       duration: _formatDuration(track.durationMs),
                       image: track.albumArtUrl,
+                      onTap: () => _onTrackTapped(track),
                     );
                   }, childCount: _artistTracks!.length),
                 ),

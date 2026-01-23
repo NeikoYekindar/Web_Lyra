@@ -13,7 +13,6 @@ import 'core/di/service_locator.dart';
 import 'models/current_user.dart';
 import 'widgets/auth_gate.dart' as widgets;
 import 'l10n/app_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

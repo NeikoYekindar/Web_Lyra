@@ -3,7 +3,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../theme_toggle_button.dart';
 import '../../screens/theme_test_screen.dart';
 import 'package:lyra/theme/app_theme.dart';
-import 'app_header_controller.dart';
 import 'package:provider/provider.dart';
 import '../popup/ava_button.dart';
 import 'package:lyra/shell/app_nav.dart';
@@ -63,7 +62,7 @@ class _AppHeaderState extends State<AppHeader> {
     return Container(
       height: 70,
       // Use custom header color from ThemeExtension; fallback to background.
-      color: extra?.headerAndAll ?? Theme.of(context).colorScheme.background,
+      color: extra?.headerAndAll ?? Theme.of(context).colorScheme.surface,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

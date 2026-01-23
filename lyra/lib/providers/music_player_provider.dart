@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/track.dart';
 import '../models/current_user.dart';
 import '../core/di/service_locator.dart';
-import '../services/music_service_v2.dart';
 
 class MusicPlayerProvider extends ChangeNotifier {
   final AudioPlayer _player = AudioPlayer();
@@ -347,9 +346,6 @@ class MusicPlayerProvider extends ChangeNotifier {
         try {
           debugPrint('🔍 Attempting to load recent/top tracks for queue');
           final musicService = serviceLocator.musicService;
-          if (musicService == null) {
-            debugPrint('⚠️ serviceLocator.musicService is null');
-          }
 
           final recentTracks = await musicService.getRecentTracks();
           debugPrint('ℹ️ recentTracks count: ${recentTracks.length}');

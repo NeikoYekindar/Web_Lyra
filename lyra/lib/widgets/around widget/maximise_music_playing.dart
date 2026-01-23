@@ -2,16 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:lyra/widgets/common/trackItem.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:lyra/theme/app_theme.dart';
 import '../../providers/music_player_provider.dart';
-import '../../providers/auth_provider_v2.dart';
 import '../../providers/artist_follow_provider.dart';
-import '../../core/di/service_locator.dart';
 import '../../shell/app_shell_controller.dart';
-import '../../models/current_user.dart';
 import 'package:lyra/models/track.dart';
 import 'package:lyra/models/artist.dart';
-
+import 'package:google_fonts/google_fonts.dart';
 class MaximiseMusicPlaying extends StatefulWidget {
   const MaximiseMusicPlaying({super.key});
 
@@ -24,7 +20,7 @@ class _MaximiseMusicPlayingState extends State<MaximiseMusicPlaying>
   late AnimationController _controller;
   // rotation period in seconds (smaller = faster)
   // default: 0.25x speed => 4.0 seconds per rotation
-  double _rotationSeconds = 4.0;
+  final double _rotationSeconds = 4.0;
 
   @override
   void initState() {
@@ -91,7 +87,7 @@ class _MaximiseMusicPlayingState extends State<MaximiseMusicPlaying>
                           children: [
                             Text(
                               track?.title ?? "Chưa chọn bài hát",
-                              style: TextStyle(
+                              style: GoogleFonts.inter(
                                 color: Colors.white,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -100,7 +96,7 @@ class _MaximiseMusicPlayingState extends State<MaximiseMusicPlaying>
                             ),
                             Text(
                               track?.artist ?? "Nghệ sĩ chưa rõ",
-                              style: TextStyle(
+                              style: GoogleFonts.inter(
                                 color: Colors.grey,
                                 fontSize: 14,
                               ),
@@ -136,56 +132,29 @@ class _MaximiseMusicPlayingState extends State<MaximiseMusicPlaying>
                   ),
                 ),
                 const SizedBox(height: 40),
-                SizedBox(
-                  width: albumSize + vinylOffset + 100,
-                  height: 500,
-                  child: Stack(
-                    alignment: Alignment.centerLeft,
-                    children: [
-                      // Đĩa than nằm dưới
-                      Positioned(
-                        left: vinylOffset,
-                        child: RotationTransition(
-                          turns: _controller,
-                          child: Container(
-                            width: vinylSize,
-                            height: vinylSize,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.transparent, // Màu nền đĩa
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(0.0), // Viền đĩa
-                              child: Image.asset(
-                                'assets/images/vinyl_record.png',
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
+                // Đĩa xoay với ảnh track
+                Center(
+                  child: Container(
+                    width: vinylSize,
+                    height: vinylSize,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.4),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: RotationTransition(
+                      turns: _controller,
+                      child: ClipOval(
+                        child: _buildAlbumArt(
+                          track?.albumArtUrl ?? 'assets/images/HTH.png',
                         ),
                       ),
-                      // Album Art nằm trên
-                      Container(
-                        width: 300,
-                        height: 300,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.4),
-                              blurRadius: 15,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: _buildAlbumArt(
-                            track?.albumArtUrl ?? 'assets/images/HTH.png',
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -242,22 +211,31 @@ class _MaximiseMusicPlayingState extends State<MaximiseMusicPlaying>
 
   Widget _buildAlbumArt(String imageUrl) {
     if (imageUrl.isEmpty) {
-      return const Icon(Icons.music_note, color: Colors.white, size: 60);
+      return Container(
+        width: 380,
+        height: 380,
+        color: Colors.grey.shade800,
+        child: const Icon(Icons.music_note, color: Colors.white, size: 100),
+      );
     }
 
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
       return Image.network(
         imageUrl,
-        width: 300,
-        height: 300,
+        width: 380,
+        height: 380,
         fit: BoxFit.cover,
         errorBuilder: (_, __, ___) => Image.asset(
           'assets/images/HTH.png',
-          width: 300,
-          height: 300,
+          width: 380,
+          height: 380,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) =>
-              const Icon(Icons.music_note, color: Colors.white, size: 60),
+          errorBuilder: (_, __, ___) => Container(
+            width: 380,
+            height: 380,
+            color: Colors.grey.shade800,
+            child: const Icon(Icons.music_note, color: Colors.white, size: 100),
+          ),
         ),
       );
     }
@@ -267,16 +245,20 @@ class _MaximiseMusicPlayingState extends State<MaximiseMusicPlaying>
         : 'assets/$imageUrl';
     return Image.asset(
       assetPath,
-      width: 300,
-      height: 300,
+      width: 380,
+      height: 380,
       fit: BoxFit.cover,
       errorBuilder: (_, __, ___) => Image.asset(
         'assets/images/HTH.png',
-        width: 300,
-        height: 300,
+        width: 380,
+        height: 380,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) =>
-            const Icon(Icons.music_note, color: Colors.white, size: 60),
+        errorBuilder: (_, __, ___) => Container(
+          width: 380,
+          height: 380,
+          color: Colors.grey.shade800,
+          child: const Icon(Icons.music_note, color: Colors.white, size: 100),
+        ),
       ),
     );
   }
@@ -340,8 +322,8 @@ class _ArtistInfoCardMaximizedState extends State<_ArtistInfoCardMaximized> {
               Positioned.fill(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.asset(
-                    'assets/images/image 18.png',
+                  child: Image.network(
+                    widget.artist?.imageUrl ?? 'assets/images/HTH.png',
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) =>
                         Container(color: Colors.grey.shade800),
@@ -368,12 +350,12 @@ class _ArtistInfoCardMaximizedState extends State<_ArtistInfoCardMaximized> {
               ),
 
               // Tiêu đề
-              const Positioned(
+               Positioned(
                 top: 20,
                 left: 20,
                 child: Text(
                   "About the artist",
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -391,7 +373,7 @@ class _ArtistInfoCardMaximizedState extends State<_ArtistInfoCardMaximized> {
                   children: [
                     Text(
                       widget.artist?.nickname ?? 'Unknown artist',
-                      style: const TextStyle(
+                      style:  GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -400,14 +382,14 @@ class _ArtistInfoCardMaximizedState extends State<_ArtistInfoCardMaximized> {
                     const SizedBox(height: 4),
                     Text(
                       "${widget.artist?.totalStreams ?? 0} listeners",
-                      style: const TextStyle(color: Colors.grey, fontSize: 14),
+                      style: GoogleFonts.inter(color: Colors.grey, fontSize: 14),
                     ),
                     const SizedBox(height: 12),
                     Text(
                       widget.artist?.bio ?? '',
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         color: Colors.white70,
                         fontSize: 13,
                         height: 1.5,
@@ -442,7 +424,7 @@ class _ArtistInfoCardMaximizedState extends State<_ArtistInfoCardMaximized> {
                             )
                           : Text(
                               isFollowing ? "Following" : "Follow",
-                              style: const TextStyle(color: Colors.white),
+                              style: GoogleFonts.inter(color: Colors.white),
                             ),
                     ),
                   ],
@@ -503,9 +485,9 @@ class _NextQueueSection extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+             Text(
               "Next in queue",
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -519,9 +501,9 @@ class _NextQueueSection extends StatelessWidget {
                 );
                 shellCtrl?.openQueue();
               },
-              child: const Text(
+              child: Text(
                 "Open queue",
-                style: TextStyle(color: Colors.grey, fontSize: 12),
+                style: GoogleFonts.inter(color: Colors.grey, fontSize: 12),
               ),
             ),
           ],
@@ -536,12 +518,12 @@ class _NextQueueSection extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           child: upcomingTracks.isEmpty
-              ? const Center(
+              ?  Center(
                   child: Padding(
                     padding: EdgeInsets.all(20.0),
                     child: Text(
                       "Queue is empty",
-                      style: TextStyle(color: Colors.white54, fontSize: 14),
+                      style: GoogleFonts.inter(color: Colors.white54, fontSize: 14),
                     ),
                   ),
                 )

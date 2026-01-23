@@ -152,7 +152,7 @@ class MusicServiceV2 {
   Future<List<Track>> getTrendingTracks({int limit = 10}) async {
     final response = await _apiClient.get<List<Track>>(
       ApiConfig.musicServiceUrl,
-      '${ApiConfig.topTracks}',
+      ApiConfig.topTracks,
       queryParameters: {'limit': limit.toString()},
       fromJson: (json) {
         if (json is List) {

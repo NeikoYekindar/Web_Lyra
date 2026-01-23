@@ -1,19 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:lyra/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_player_provider.dart';
-import '../../providers/auth_provider_v2.dart';
 import '../../providers/artist_follow_provider.dart';
-import '../../services/playlist_service.dart';
-import '../../core/di/service_locator.dart';
-import '../../models/current_user.dart';
-import 'right_playlist_user_card.dart';
-import 'right_sidebar_controller.dart';
-import '../../services/left_sidebar_service.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../shell/app_shell_controller.dart';
 import 'package:lyra/models/track.dart';
 import 'package:lyra/models/artist.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class RightSidebarDetailSong extends StatelessWidget {
   const RightSidebarDetailSong({super.key});
@@ -43,7 +35,7 @@ class RightSidebarDetailSong extends StatelessWidget {
                   Expanded(
                     child: Text(
                       'Now Playing',
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -105,7 +97,7 @@ class RightSidebarDetailSong extends StatelessWidget {
                   // Tên bài hát
                   Text(
                     track?.title ?? 'No Track Playing',
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -118,7 +110,7 @@ class RightSidebarDetailSong extends StatelessWidget {
                   // Tên nghệ sĩ
                   Text(
                     track?.artistObj?.nickname ?? 'Unknown Artist',
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 16,
                     ),
@@ -142,7 +134,7 @@ class RightSidebarDetailSong extends StatelessWidget {
                           Expanded(
                             child: Text(
                               'Next in queue',
-                              style: TextStyle(
+                              style: GoogleFonts.inter(
                                 color: Theme.of(context).colorScheme.onSurface,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -169,7 +161,7 @@ class RightSidebarDetailSong extends StatelessWidget {
                               ),
                               child: Text(
                                 'Open',
-                                style: TextStyle(
+                                style: GoogleFonts.inter(
                                   color: Theme.of(
                                     context,
                                   ).colorScheme.onSurfaceVariant,
@@ -329,7 +321,7 @@ class _ArtistInfoCardState extends State<_ArtistInfoCard> {
                     left: 12,
                     child: Text(
                       artist.nickname,
-                      style: const TextStyle(
+                      style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -362,7 +354,7 @@ class _ArtistInfoCardState extends State<_ArtistInfoCard> {
                             onPressed: isLoading ? null : _toggleFollow,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isFollowing
-                                  ? Theme.of(context).colorScheme.surfaceVariant
+                                  ? Theme.of(context).colorScheme.surfaceContainerHighest
                                   : Theme.of(context).colorScheme.primary,
                               foregroundColor: isFollowing
                                   ? Theme.of(
@@ -393,7 +385,7 @@ class _ArtistInfoCardState extends State<_ArtistInfoCard> {
                         bio,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                           fontSize: 12,
                         ),
@@ -487,7 +479,7 @@ class _NextQueueSection extends StatelessWidget {
             decoration: BoxDecoration(
               color: Theme.of(
                 context,
-              ).colorScheme.surfaceVariant.withOpacity(0.2),
+              ).colorScheme.surfaceContainerHighest.withOpacity(0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             padding: const EdgeInsets.all(12),
@@ -517,7 +509,7 @@ class _NextQueueSection extends StatelessWidget {
                     children: [
                       Text(
                         'No next track',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -528,7 +520,7 @@ class _NextQueueSection extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         'Queue is empty',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                           fontSize: 12,
                         ),
@@ -600,7 +592,7 @@ class _NextQueueSection extends StatelessWidget {
                           title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                          style: GoogleFonts.inter(
                             color: Theme.of(context).colorScheme.onSurface,
                             fontSize: fontSize,
                             fontWeight: FontWeight.w600,
@@ -611,7 +603,7 @@ class _NextQueueSection extends StatelessWidget {
                           artist,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                          style: GoogleFonts.inter(
                             color: Theme.of(
                               context,
                             ).colorScheme.onSurfaceVariant,

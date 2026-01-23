@@ -9,13 +9,13 @@ class MediaCard extends StatefulWidget {
   final BorderRadius? imageBorderRadius;
 
   const MediaCard({
-    Key? key,
+    super.key,
     required this.item,
     this.onTap,
     this.size,
     this.imageShape = BoxShape.rectangle,
     this.imageBorderRadius,
-  }) : super(key: key);
+  });
 
   @override
   State<MediaCard> createState() => _MediaCardState();
@@ -32,7 +32,7 @@ class _MediaCardState extends State<MediaCard> {
     if (_hovering) {
       return Theme.of(context).colorScheme.primary.withOpacity(0.08);
     }
-    return Theme.of(context).colorScheme.surfaceVariant;
+    return Theme.of(context).colorScheme.surfaceContainerHighest;
   }
 
   @override
@@ -74,7 +74,7 @@ class _MediaCardState extends State<MediaCard> {
                   borderRadius: widget.imageShape == BoxShape.rectangle
                       ? (widget.imageBorderRadius ?? BorderRadius.circular(8))
                       : null,
-                  color: Theme.of(context).colorScheme.surfaceVariant,
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 ),
                 child: ClipRRect(
                   borderRadius: widget.imageShape == BoxShape.rectangle
@@ -137,7 +137,7 @@ class _MediaCardState extends State<MediaCard> {
 
   Widget _buildPlaceholder(BuildContext context) {
     return Container(
-      color: Theme.of(context).colorScheme.surfaceVariant,
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
       child: Icon(
         Icons.music_note,
         size: 48,

@@ -1,7 +1,4 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/music_player_provider.dart';
 
 class AppShellController extends ChangeNotifier {
   // Lyrics overlay
@@ -56,7 +53,7 @@ class AppShellController extends ChangeNotifier {
   bool get isRightSidebarDetail => _isRightSidebarDetail;
   bool get isLeftSidebarExpanded => _isLeftSidebarExpanded;
 
-  bool _isPlayerMaximized = false;
+  final bool _isPlayerMaximized = false;
   bool get isPlayerMaximized => _isPlayerMaximized;
 
   bool _isBrowseAllExpanded = false;

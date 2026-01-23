@@ -9,8 +9,6 @@ import '/providers/track_like_provider.dart';
 import '/models/track.dart';
 import 'package:lyra/shell/app_shell_controller.dart';
 import 'package:lyra/widgets/around%20widget/music_player_controller.dart';
-import 'package:lyra/shell/app_nav.dart';
-import 'package:lyra/shell/app_routes.dart';
 
 class MusicPlayer extends StatefulWidget {
   const MusicPlayer({super.key});
@@ -112,7 +110,7 @@ class _MusicPlayerState extends State<MusicPlayer> {
                                   children: [
                                     Text(
                                       track?.title ?? "Chưa chọn bài hát",
-                                      style: TextStyle(
+                                      style: GoogleFonts.inter(
                                         color: Theme.of(
                                           context,
                                         ).colorScheme.onSurface,
@@ -125,7 +123,7 @@ class _MusicPlayerState extends State<MusicPlayer> {
                                     Text(
                                       track?.artistObj?.nickname ??
                                           "Nghệ sĩ chưa rõ",
-                                      style: TextStyle(
+                                      style: GoogleFonts.inter(
                                         color: Theme.of(
                                           context,
                                         ).colorScheme.onSurfaceVariant,
@@ -263,7 +261,7 @@ class _MusicPlayerState extends State<MusicPlayer> {
                                       const SizedBox(width: 8),
                                       Text(
                                         _fmt(duration),
-                                        style: TextStyle(
+                                        style: GoogleFonts.inter(
                                           color: Theme.of(
                                             context,
                                           ).colorScheme.onSurfaceVariant,
@@ -360,7 +358,34 @@ class _MusicPlayerState extends State<MusicPlayer> {
                           ),
 
                           const SizedBox(width: 10),
-                          _icon(context, "assets/icons/queue.svg"),
+
+                          // Queue button
+                          Builder(
+                            builder: (ctx) {
+                              final shellLocal = ctx
+                                  .watch<AppShellController>();
+                              return IconButton(
+                                onPressed: () {
+                                  ctx.read<AppShellController>().toggleQueue();
+                                },
+                                icon: SvgPicture.asset(
+                                  'assets/icons/queue.svg',
+                                  width: 20,
+                                  colorFilter: ColorFilter.mode(
+                                    shellLocal.showQueue
+                                        ? Theme.of(ctx).colorScheme.primary
+                                        : Theme.of(
+                                            ctx,
+                                          ).colorScheme.onSurfaceVariant,
+                                    BlendMode.srcIn,
+                                  ),
+                                ),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              );
+                            },
+                          ),
+
                           const SizedBox(width: 10),
 
                           // Volume control

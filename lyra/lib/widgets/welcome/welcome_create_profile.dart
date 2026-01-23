@@ -1,10 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:lyra/theme/app_theme.dart';
 // import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:typed_data';
 import 'package:image_picker/image_picker.dart';
 import 'package:lyra/core/di/service_locator.dart';
 import 'package:lyra/models/current_user.dart';
@@ -341,7 +339,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                               Expanded(
                                 flex: 2,
                                 child: DropdownButtonFormField<String>(
-                                  value: _gender.isEmpty ? null : _gender,
+                                  initialValue: _gender.isEmpty ? null : _gender,
                                   dropdownColor: const Color(0xFF1E1E1E),
                                   style: GoogleFonts.inter(
                                     color: Colors.white,
@@ -636,7 +634,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                       ),
                     ),
                     const SizedBox(width: 30),
-                    Container(
+                    SizedBox(
                       width: 500,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,

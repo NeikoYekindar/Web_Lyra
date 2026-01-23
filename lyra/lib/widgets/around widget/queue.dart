@@ -1,19 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:lyra/theme/app_theme.dart';
-import 'package:lyra/widgets/common/playlist_card.dart';
 import 'package:lyra/widgets/common/trackItem.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_player_provider.dart';
-import '../../providers/auth_provider_v2.dart';
-import '../../services/playlist_service.dart';
-import '../../services/artist_service.dart';
-import '../../models/current_user.dart';
-import 'right_playlist_user_card.dart';
-import 'right_sidebar_controller.dart';
-import '../../services/left_sidebar_service.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../shell/app_shell_controller.dart';
-import 'package:lyra/models/track.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class MockArtistService {
   static Future<Map<String, dynamic>?> getArtistInfo(String artistName) async {
@@ -49,7 +39,7 @@ class _QueueList extends StatelessWidget {
       return Center(
         child: Text(
           'No upcoming tracks',
-          style: TextStyle(
+          style: GoogleFonts.inter(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
             fontSize: 14,
           ),
@@ -114,7 +104,7 @@ class QueueWid extends StatelessWidget {
                 children: [
                   Text(
                     'Queue',
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -143,7 +133,7 @@ class QueueWid extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'Now Playing',
-            style: TextStyle(
+            style: GoogleFonts.inter(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -160,7 +150,7 @@ class QueueWid extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'Next Up',
-            style: TextStyle(
+            style: GoogleFonts.inter(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 14,
               fontWeight: FontWeight.w600,

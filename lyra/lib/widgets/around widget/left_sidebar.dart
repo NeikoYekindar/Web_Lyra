@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lyra/l10n/app_localizations.dart';
-import 'package:lyra/theme/app_theme.dart';
 import 'package:lyra/services/left_sidebar_service.dart';
 import 'package:lyra/core/di/service_locator.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +8,7 @@ import '../../providers/music_player_provider.dart';
 import '../../models/track.dart';
 import '../../shell/app_shell_controller.dart';
 import '../common/trackItem.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LeftSidebar extends StatefulWidget {
   final VoidCallback? onCollapsePressed;
@@ -139,7 +139,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
                 const SizedBox(width: 8),
                 Text(
                   AppLocalizations.of(context)?.yourLibrary ?? 'Your Library',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -183,7 +183,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isSelected
                           ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.surfaceVariant,
+                          : Theme.of(context).colorScheme.surfaceContainerHighest,
                       foregroundColor: isSelected
                           ? Theme.of(context).colorScheme.onPrimary
                           : Theme.of(context).colorScheme.onSurfaceVariant,
@@ -198,7 +198,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
                     ),
                     child: Text(
                       categories[index],
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         fontWeight: isSelected
                             ? FontWeight.w600
                             : FontWeight.w400,
@@ -231,7 +231,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
                 const Spacer(),
                 Text(
                   AppLocalizations.of(context)?.recent ?? 'Recent',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
@@ -417,11 +417,11 @@ class _PlaylistUserCardState extends State<PlaylistUserCard> {
           duration: const Duration(milliseconds: 100),
           decoration: BoxDecoration(
             color: _isHovered
-                ? Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.7)
+                ? Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.7)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Container(
+          child: SizedBox(
             width: double.infinity,
             // padding: EdgeInsets.all(_isHovered ? 8 : 0),
             child: Row(
@@ -477,7 +477,7 @@ class _PlaylistUserCardState extends State<PlaylistUserCard> {
                     Text(
                       widget.playlists['name'],
 
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         color: _isHovered
                             ? Theme.of(context).colorScheme.onSurface
                             : Theme.of(
@@ -494,7 +494,7 @@ class _PlaylistUserCardState extends State<PlaylistUserCard> {
                       widget.playlists['type'] +
                           ' · ' +
                           widget.playlists['owner'],
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
@@ -507,7 +507,7 @@ class _PlaylistUserCardState extends State<PlaylistUserCard> {
 
                 // Text(
                 //   widget.playlists['role'],
-                //   style: TextStyle(
+                //   style: GoogleFonts.inter(
                 //     color: Colors.grey[400],
                 //     fontSize: 12,
                 //   ),

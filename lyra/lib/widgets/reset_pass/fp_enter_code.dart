@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'dart:async';
 // import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lyra/core/di/service_locator.dart';
@@ -13,7 +11,7 @@ import 'package:lyra/widgets/reset_pass/fp_enter_new_password.dart';
 class EnterResetCode extends StatefulWidget {
   final String email;
 
-  const EnterResetCode({Key? key, required this.email}) : super(key: key);
+  const EnterResetCode({super.key, required this.email});
 
   @override
   _EnterResetCodeScreenState createState() => _EnterResetCodeScreenState();
@@ -27,7 +25,7 @@ class _EnterResetCodeScreenState extends State<EnterResetCode> {
   Timer? _resendTimer;
   List<TextEditingController> _codeControllers = [];
   List<FocusNode> _codeFocusNodes = [];
-  bool _suppressOnChanged = false;
+  final bool _suppressOnChanged = false;
   bool _isCodeComplete = false;
   List<String> _previousValues = [];
 
