@@ -69,6 +69,7 @@ class AlbumDetailScreen extends StatefulWidget {
 
 class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
   AlbumDetail? _albumDetail;
+  String? _artistName;
   bool _isLoading = true;
   String? _error;
 
@@ -107,9 +108,93 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
       if (response.success && response.data != null) {
         print('🎵 [AlbumDetail] Raw response: ${response.data}');
         
+        final albumDetail = AlbumDetail.fromJson(response.data!);
+        
+        // Load artist name from artist profile API
+        String? artistName;
+        if (albumDetail.artistId.isNotEmpty) {
+          try {
+            print('🎵 [AlbumDetail] Loading artist profile: ${albumDetail.artistId}');
+            final artistResponse = await apiClient.get<Map<String, dynamic>>(
+              ApiConfig.musicServiceUrl,
+              '/artists/info/profile/${albumDetail.artistId}',
+              fromJson: (json) => json as Map<String, dynamic>,
+            );
+            if (artistResponse.success && artistResponse.data != null) {
+              artistName = artistResponse.data!['nickname']?.toString();
+              print('✅ [AlbumDetail] Artist name: $artistName');
+            }
+          } catch (e) {
+            print('⚠️ [AlbumDetail] Failed to load artist: $e');
+          }
+        }
+
+        // Fetch artist names for tracks that don't have artist_name
+        final Map<String, String> artistNameCache = {};
+        // Pre-cache the album artist if available
+        if (artistName != null && albumDetail.artistId.isNotEmpty) {
+          artistNameCache[albumDetail.artistId] = artistName;
+        }
+        
+        final List<Track> updatedTracks = [];
+        
+        for (final track in albumDetail.tracks) {
+          // If track already has artistName or artistObj, use as-is
+          if (track.artistName.isNotEmpty || track.artistObj != null) {
+            updatedTracks.add(track);
+            continue;
+          }
+          
+          // Otherwise fetch artist name
+          final trackArtistId = track.artistId;
+          if (trackArtistId.isEmpty) {
+            updatedTracks.add(track);
+            continue;
+          }
+          
+          // Check cache first
+          if (artistNameCache.containsKey(trackArtistId)) {
+            updatedTracks.add(track.copyWith(artistName: artistNameCache[trackArtistId]));
+            continue;
+          }
+          
+          // Fetch from API
+          try {
+            final trackArtistResponse = await apiClient.get<Map<String, dynamic>>(
+              ApiConfig.musicServiceUrl,
+              '/artists/info/profile/$trackArtistId',
+              fromJson: (json) => json as Map<String, dynamic>,
+            );
+            if (trackArtistResponse.success && trackArtistResponse.data != null) {
+              final nickname = trackArtistResponse.data!['nickname']?.toString() ?? '';
+              artistNameCache[trackArtistId] = nickname;
+              updatedTracks.add(track.copyWith(artistName: nickname));
+            } else {
+              updatedTracks.add(track);
+            }
+          } catch (e) {
+            print('⚠️ [AlbumDetail] Failed to load artist name for $trackArtistId: $e');
+            updatedTracks.add(track);
+          }
+        }
+
+        // Create updated album detail with new tracks
+        final updatedAlbumDetail = AlbumDetail(
+          albumId: albumDetail.albumId,
+          albumName: albumDetail.albumName,
+          artistId: albumDetail.artistId,
+          totalTracks: albumDetail.totalTracks,
+          duration: albumDetail.duration,
+          imageUrl: albumDetail.imageUrl,
+          releaseDate: albumDetail.releaseDate,
+          streams: albumDetail.streams,
+          tracks: updatedTracks,
+        );
+        
         if (mounted) {
           setState(() {
-            _albumDetail = AlbumDetail.fromJson(response.data!);
+            _albumDetail = updatedAlbumDetail;
+            _artistName = artistName;
             _isLoading = false;
           });
           
@@ -337,6 +422,23 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                             const SizedBox(height: 16),
                             Row(
                               children: [
+                                if (_artistName != null) ...[
+                                  Text(
+                                    _artistName!,
+                                    style: TextStyle(
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    ' • ',
+                                    style: TextStyle(
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
                                 Text(
                                   '${detail.totalTracks} tracks${detail.duration > 0 ? ', ${_formatDuration(detail.duration)}' : ''}',
                                   style: TextStyle(
