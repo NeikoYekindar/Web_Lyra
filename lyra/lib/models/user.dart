@@ -1,6 +1,7 @@
 class UserModel {
   final String userId;
   final String displayName;
+  final String? fullName;
   final String userType;
   final String email;
   final bool isEmailVerified;
@@ -15,6 +16,7 @@ class UserModel {
   const UserModel({
     required this.userId,
     required this.displayName,
+    this.fullName,
     required this.userType,
     required this.email,
     this.isEmailVerified = false,
@@ -38,6 +40,7 @@ class UserModel {
     return UserModel(
       userId: json['user_id']?.toString() ?? '',
       displayName: json['display_name']?.toString() ?? '',
+      fullName: json['full_name']?.toString(),
       userType: json['user_type']?.toString() ?? '',
       email: json['email']?.toString() ?? '',
       isEmailVerified:
@@ -86,6 +89,7 @@ class UserModel {
   Map<String, dynamic> toJson() => {
     'user_id': userId,
     'display_name': displayName,
+    'full_name': fullName,
     'user_type': userType,
     'email': email,
     'is_email_verified': isEmailVerified,
@@ -105,6 +109,7 @@ class UserModel {
   UserModel copyWith({
     String? userId,
     String? displayName,
+    String? fullName,
     String? userType,
     String? email,
     bool? isEmailVerified,
@@ -120,6 +125,7 @@ class UserModel {
     return UserModel(
       userId: userId ?? this.userId,
       displayName: displayName ?? this.displayName,
+      fullName: fullName ?? this.fullName,
       userType: userType ?? this.userType,
       email: email ?? this.email,
       isEmailVerified: isEmailVerified ?? this.isEmailVerified,

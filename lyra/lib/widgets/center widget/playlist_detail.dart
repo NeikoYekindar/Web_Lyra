@@ -8,6 +8,8 @@ import '../../services/playlist_service_v2.dart';
 import '../../shell/app_shell_controller.dart';
 import '../common/trackItem.dart';
 import 'package:lyra/theme/app_theme.dart';
+import 'package:lyra/models/artist.dart';
+
 class PlaylistDetailScreen extends StatefulWidget {
   final String playlistId;
   final String playlistName;
@@ -52,8 +54,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         _error = null;
       });
 
-      final detail = await serviceLocator.playlistService
-          .getPlaylistDetail(widget.playlistId);
+      final detail = await serviceLocator.playlistService.getPlaylistDetail(
+        widget.playlistId,
+      );
 
       final apiClient = ServiceLocator().apiClient;
 
@@ -74,46 +77,57 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         }
       }
 
-      // Fetch artist names for tracks that don't have artist_name
-      final Map<String, String> artistNameCache = {};
+      // Fetch artist information for tracks
+      final Map<String, Map<String, dynamic>> artistDataCache = {};
       final List<Track> updatedTracks = [];
-      
+
       for (final track in detail.tracks) {
-        // If track already has artistName or artistObj, use as-is
-        if (track.artistName.isNotEmpty || track.artistObj != null) {
+        // If track already has complete artistObj, use as-is
+        if (track.artistObj != null) {
           updatedTracks.add(track);
           continue;
         }
-        
-        // Otherwise fetch artist name
+
         final artistId = track.artistId;
+
+        // If no artistId, keep track as-is (with existing artistName if any)
         if (artistId.isEmpty) {
           updatedTracks.add(track);
           continue;
         }
-        
+
         // Check cache first
-        if (artistNameCache.containsKey(artistId)) {
-          updatedTracks.add(track.copyWith(artistName: artistNameCache[artistId]));
+        if (artistDataCache.containsKey(artistId)) {
+          updatedTracks.add(
+            track.copyWith(
+              artistObj: Artist.fromJson(artistDataCache[artistId]!),
+            ),
+          );
           continue;
         }
-        
-        // Fetch from API
+
+        // Fetch artist data from API
         try {
           final artistResponse = await apiClient.get<Map<String, dynamic>>(
             ApiConfig.musicServiceUrl,
             '/artists/info/profile/$artistId',
             fromJson: (json) => json as Map<String, dynamic>,
           );
-          if (artistResponse.success && artistResponse.data != null) {
-            final nickname = artistResponse.data!['nickname']?.toString() ?? '';
-            artistNameCache[artistId] = nickname;
-            updatedTracks.add(track.copyWith(artistName: nickname));
+
+          // Artist data is in the 'fr' field of the response
+          final artistData = artistResponse.data! as Map<String, dynamic>?;
+          if (artistData != null) {
+            artistDataCache[artistId] = artistData;
+            updatedTracks.add(
+              track.copyWith(artistObj: Artist.fromJson(artistData)),
+            );
           } else {
+            // If 'fr' field doesn't exist, keep track as-is
             updatedTracks.add(track);
           }
         } catch (e) {
-          debugPrint('Failed to load artist name for $artistId: $e');
+          debugPrint('Failed to load artist data for $artistId: $e');
+          // If API call fails, keep track with existing artistName
           updatedTracks.add(track);
         }
       }
@@ -176,9 +190,29 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       listen: false,
     );
 
+    // Prepare queue and ensure artistObj exists on tracks
+    List<Track> queue = _playlistDetail!.tracks.map((t) => t).toList();
+
+    // Ensure minimum queue size (pad with trending songs if needed)
+    const minQueueSize = ApiConfig.defaultPageSize;
+    if (queue.length < minQueueSize) {
+      try {
+        final trending = await serviceLocator.musicService.getTrendingTracks(
+          limit: minQueueSize,
+        );
+        final existingIds = queue.map((t) => t.trackId).toSet();
+        final additional = trending.where((t) => !existingIds.contains(t.trackId)).toList();
+        queue.addAll(additional);
+      } catch (e) {
+        debugPrint('Error loading trending songs to pad playlist queue: $e');
+      }
+    }
+
+    final firstTrack = queue.isNotEmpty ? queue.first : _playlistDetail!.tracks.first;
+
     await musicPlayerProvider.setTrack(
-      _playlistDetail!.tracks.first,
-      queue: _playlistDetail!.tracks,
+      firstTrack,
+      queue: queue,
     );
     musicPlayerProvider.play();
 
@@ -199,10 +233,36 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       listen: false,
     );
 
-    await musicPlayerProvider.setTrack(
-      track,
-      queue: _playlistDetail!.tracks,
-    );
+    // Build queue from playlist tracks and ensure artistObj is present
+    List<Track> queue = _playlistDetail!.tracks.map((t) => t).toList();
+
+    // If selected track is not first, rotate queue so selected track plays first
+    final startIndex = queue.indexWhere((t) => t.trackId == track.trackId);
+    if (startIndex > 0) {
+      final head = queue.sublist(startIndex);
+      final tail = queue.sublist(0, startIndex);
+      queue = [...head, ...tail];
+    }
+
+    // Ensure minimum queue size
+    const minQueueSize = ApiConfig.defaultPageSize;
+    if (queue.length < minQueueSize) {
+      try {
+        final trending = await serviceLocator.musicService.getTrendingTracks(
+          limit: minQueueSize,
+        );
+        final existingIds = queue.map((t) => t.trackId).toSet();
+        final additional = trending.where((t) => !existingIds.contains(t.trackId)).toList();
+        queue.addAll(additional);
+      } catch (e) {
+        debugPrint('Error loading trending songs to pad playlist queue: $e');
+      }
+    }
+
+    // Ensure the current track object contains artistObj if available in playlist
+    final current = queue.isNotEmpty ? queue.first : track;
+
+    await musicPlayerProvider.setTrack(current, queue: queue);
     musicPlayerProvider.play();
 
     if (!shellController.isPlayerMaximized) {
@@ -222,35 +282,35 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
       child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Error loading playlist',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _error!,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadPlaylistDetail,
-                        child: const Text('Retry'),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Error loading playlist',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                )
-              : _buildContent(),
+                  const SizedBox(height: 8),
+                  Text(
+                    _error!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _loadPlaylistDetail,
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            )
+          : _buildContent(),
     );
   }
 
@@ -292,14 +352,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       );
                       shellController.closeCenterContent();
                     },
-                    icon: Icon(
-                      Icons.arrow_back,
-                      color: Colors.white,
-                      size: 28,
-                    ),
+                    icon: Icon(Icons.arrow_back, color: Colors.white, size: 28),
                   ),
                 ),
-                
+
                 // Playlist info section
                 Padding(
                   padding: const EdgeInsets.all(32.0),
@@ -361,7 +417,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                   Text(
                                     _ownerName!,
                                     style: TextStyle(
-                                      color: Theme.of(context).colorScheme.onSurface,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -369,7 +427,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                   Text(
                                     ' • ',
                                     style: TextStyle(
-                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
                                       fontSize: 14,
                                     ),
                                   ),
@@ -377,8 +437,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                 Text(
                                   '${detail.totalTracks} tracks, ${_formatDuration(detail.duration)}',
                                   style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.onSurfaceVariant,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
                                     fontSize: 14,
                                   ),
                                 ),
@@ -467,7 +528,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.1),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant.withOpacity(0.1),
                   width: 1,
                 ),
               ),
@@ -517,28 +580,23 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final track = detail.tracks[index];
-                return TrackItem(
-                  index: index + 1,
-                  title: track.trackName,
-                  artist: track.artist,
-                  albumArtist: track.kind,
-                  duration: _formatTrackDuration(track.duration),
-                  image: track.trackImageUrl,
-                  onTap: () => _playTrack(track),
-                );
-              },
-              childCount: detail.tracks.length,
-            ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final track = detail.tracks[index];
+              return TrackItem(
+                index: index + 1,
+                title: track.trackName,
+                artist: track.artistObj?.nickname ?? track.artistName,
+                albumArtist: track.kind,
+                duration: _formatTrackDuration(track.duration),
+                image: track.trackImageUrl,
+                onTap: () => _playTrack(track),
+              );
+            }, childCount: detail.tracks.length),
           ),
         ),
 
         // Bottom padding
-        const SliverToBoxAdapter(
-          child: SizedBox(height: 100),
-        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 100)),
       ],
     );
   }
