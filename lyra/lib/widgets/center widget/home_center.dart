@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:lyra/core/di/service_locator.dart';
+import 'package:lyra/core/models/api_response.dart';
 import 'package:lyra/theme/app_theme.dart';
 import 'package:lyra/l10n/app_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../services/music_service_v2.dart' hide Artist;
+import '../../services/playlist_service_v2.dart';
 import '../../models/track.dart';
 import '../../models/artist.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +14,8 @@ import '../../providers/music_player_provider.dart';
 import '../../shell/app_shell_controller.dart';
 import '../../shell/app_nav.dart';
 import '../../shell/app_routes.dart';
+import 'album_detail.dart';
+import 'playlist_detail.dart';
 // import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
 // Removed flutter_svg import (unused after cleanup)
 
@@ -28,10 +32,14 @@ class _HomeCenterState extends State<HomeCenter> {
   List<String> _categories = []; // Danh sách categories từ API
   List<Track> _trendingSongs = [];
   List<Artist> _popularArtists = [];
+  List<Album> _topAlbums = []; // Top albums list
+  Album? _featuredAlbum; // Album to display in banner
   bool _isLoadingCategories = true;
   bool _isLoadingTrendingSongs = true;
   bool _isLoadingPopularArtists = true;
-  List<Map<String, dynamic>> _favoriteItems = []; // Danh sách yêu thích
+  bool _isLoadingTopAlbums = true;
+  List<Map<String, dynamic>> _favoriteItems = []; // Danh sách yêu thích đang hiển thị
+  List<Map<String, dynamic>> _allFavoriteItems = []; // Tất cả items gốc để filter
   bool _isLoadingFavorites = true;
 
   @override
@@ -47,6 +55,7 @@ class _HomeCenterState extends State<HomeCenter> {
       _loadFavoriteItems(),
       _loadTrendingSongs(),
       _loadPopularArtists(),
+      _loadTopAlbums(),
     ]);
   }
 
@@ -93,6 +102,69 @@ class _HomeCenterState extends State<HomeCenter> {
     }
   }
 
+  Future<void> _loadTopAlbums() async {
+    try {
+      print('🎵 [_loadTopAlbums] Step 1: Fetching top albums list...');
+      final musicservice = ServiceLocator().musicService;
+      final response = await musicservice.getTopAlbums(limit: 10);
+      print('🎵 [_loadTopAlbums] Step 2: Got ${response.length} albums');
+      
+      if (mounted && response.isNotEmpty) {
+        final firstAlbum = response.first;
+        print('🎵 [_loadTopAlbums] Step 3: First album - ${firstAlbum.title} (artist_id: ${firstAlbum.artistId})');
+        
+        // Fetch artist name nếu chưa có
+        Album detailedAlbum = firstAlbum;
+        if (firstAlbum.artistName.isEmpty && firstAlbum.artistId.isNotEmpty) {
+          try {
+            print('🎵 [_loadTopAlbums] Step 4: Fetching artist profile: ${firstAlbum.artistId}');
+            final artist = await musicservice.getArtistProfile(firstAlbum.artistId);
+            print('🎵 [_loadTopAlbums] Step 5: Got artist - ${artist.nickname}');
+            
+            detailedAlbum = Album(
+              id: firstAlbum.id,
+              title: firstAlbum.title,
+              artistId: firstAlbum.artistId,
+              artistName: artist.nickname,
+              coverUrl: firstAlbum.coverUrl,
+              releaseYear: firstAlbum.releaseYear,
+              totalTracks: firstAlbum.totalTracks,
+              trackIds: firstAlbum.trackIds,
+            );
+          } catch (e) {
+            print('⚠️ [_loadTopAlbums] Failed to fetch artist, using album as-is: $e');
+          }
+        } else {
+          print('🎵 [_loadTopAlbums] Artist name already present: ${firstAlbum.artistName}');
+        }
+        
+        setState(() {
+          _topAlbums = response;
+          _featuredAlbum = detailedAlbum;
+          _isLoadingTopAlbums = false;
+        });
+        print('✅ [_loadTopAlbums] Success!');
+      } else if (mounted) {
+        setState(() {
+          _topAlbums = response;
+          _featuredAlbum = response.isNotEmpty ? response.first : null;
+          _isLoadingTopAlbums = false;
+        });
+        print('⚠️ [_loadTopAlbums] No albums found');
+      }
+    } catch (e, stackTrace) {
+      print('❌ [_loadTopAlbums] Error occurred: $e');
+      print('📍 Stack trace: $stackTrace');
+      if (mounted) {
+        setState(() {
+          _topAlbums = [];
+          _featuredAlbum = null;
+          _isLoadingTopAlbums = false;
+        });
+      }
+    }
+  }
+
   // Gọi API
   Future<void> _loadCategories() async {
     try {
@@ -126,86 +198,103 @@ class _HomeCenterState extends State<HomeCenter> {
   }
 
   // Gọi API để lấy danh sách yêu thích (tối đa 8 items)
+  // Kết hợp top albums, top playlists và top artists
   Future<void> _loadFavoriteItems() async {
     try {
-      // Giả lập API call
-      await Future.delayed(const Duration(milliseconds: 800));
-
-      final List<Map<String, dynamic>> apiResponse = [
-        {
-          'id': '1',
-          'title': 'Thiền Hạ Nghe Gì',
-          'subtitle': 'Daily Mix',
-          'image': 'assets/images/thienhanghegi.png',
-          'type': 'playlist',
-        },
-        {
-          'id': '2',
-          'title': 'B Ray Radio',
-          'subtitle': 'Daily',
-          'image': 'assets/images/brayradio.png',
-          'type': 'radio',
-        },
-        {
-          'id': '3',
-          'title': 'HIEUTHUHAI Radio',
-          'subtitle': 'HIEUTHUHAI',
-          'image': 'assets/images/HTH_radio.png',
-          'type': 'radio',
-        },
-        {
-          'id': '4',
-          'title': 'Hoàng Dũng',
+      print('🎵 [Favorites] Loading top items from API...');
+      final musicService = ServiceLocator().musicService;
+      final playlistService = ServiceLocator().playlistService;
+      
+      // Load top albums, artists, playlists separately to handle errors
+      List<Album> topAlbums = [];
+      List<Artist> topArtists = [];
+      List<Playlist> topPlaylists = [];
+      
+      // Load albums (3 for All view)
+      try {
+        topAlbums = await musicService.getTopAlbums(limit: 3);
+        print('✅ [Favorites] Got ${topAlbums.length} albums');
+      } catch (e) {
+        print('⚠️ [Favorites] Failed to load albums: $e');
+      }
+      
+      // Load artists (2 for All view)
+      try {
+        topArtists = await musicService.getTopArtists(limit: 2);
+        print('✅ [Favorites] Got ${topArtists.length} artists');
+      } catch (e) {
+        print('⚠️ [Favorites] Failed to load artists: $e');
+      }
+      
+      // Load playlists (3 for All view)
+      try {
+        topPlaylists = await playlistService.getTopPlaylists(limit: 3);
+        print('✅ [Favorites] Got ${topPlaylists.length} playlists');
+      } catch (e) {
+        print('⚠️ [Favorites] Failed to load playlists: $e');
+      }
+      
+      print('🎵 [Favorites] Total: ${topAlbums.length} albums, ${topArtists.length} artists, ${topPlaylists.length} playlists');
+      
+      // Convert to favorite items format
+      final List<Map<String, dynamic>> items = [];
+      
+      // Add albums
+      for (var album in topAlbums) {
+        items.add({
+          'id': album.id,
+          'title': album.title,
+          'subtitle': '${album.artistName} • Album',
+          'image': album.coverUrl,
+          'type': 'album',
+          'streams': 0, // Albums don't have streams in current model
+        });
+      }
+      
+      // Add artists
+      for (var artist in topArtists) {
+        items.add({
+          'id': artist.artistId,
+          'title': artist.nickname,
           'subtitle': 'Artist',
-          'image': 'assets/images/hoangdung.png',
+          'image': artist.imageUrl,
           'type': 'artist',
-        },
-        {
-          'id': '5',
-          'title': 'Have a sip',
-          'subtitle': 'Playlist • 24 songs',
-          'image': 'assets/images/haveasip.png',
+          'streams': artist.totalStreams,
+        });
+      }
+      
+      // Add playlists
+      for (var playlist in topPlaylists) {
+        items.add({
+          'id': playlist.id,
+          'title': playlist.name,
+          'subtitle': '${playlist.ownerName} • Playlist',
+          'image': playlist.coverUrl,
           'type': 'playlist',
-        },
-        {
-          'id': '6',
-          'title': 'Vũ.',
-          'subtitle': 'Artist • 2.1M followers',
-          'image': 'assets/images/vu.png',
-          'type': 'artist',
-        },
-        {
-          'id': '7',
-          'title': 'Ballad buồn',
-          'subtitle': 'Made for you',
-          'image': 'assets/images/balladbuon.png',
-          'type': 'playlist',
-        },
-        {
-          'id': '8',
-          'title': 'Indie Việt',
-          'subtitle': 'Playlist • 156 songs',
-          'image': 'assets/images/indieviet.png',
-          'type': 'playlist',
-        },
-      ];
-
+          'streams': playlist.totalStreams, // Use total streams for sorting
+        });
+      }
+      
+      // Sort by streams (popularity)
+      items.sort((a, b) => (b['streams'] as int).compareTo(a['streams'] as int));
+      
       if (mounted) {
         setState(() {
-          _favoriteItems = apiResponse
-              .take(8)
-              .toList(); // Chỉ lấy tối đa 8 items
+          _allFavoriteItems = items.take(8).toList(); // Lưu trữ tất cả items gốc
+          _favoriteItems = _allFavoriteItems; // Hiển thị tất cả
           _isLoadingFavorites = false;
         });
       }
+      
+      print('✅ [Favorites] Loaded ${_favoriteItems.length} favorite items');
     } catch (e) {
+      print('❌ [Favorites] Error: $e');
       if (mounted) {
         setState(() {
           _favoriteItems = [];
           _isLoadingFavorites = false;
         });
       }
-      print('Error loading favorite items: $e');
     }
   }
 
@@ -224,19 +313,63 @@ class _HomeCenterState extends State<HomeCenter> {
   void _onFavoriteItemTapped(Map<String, dynamic> item) {
     print('Tapped favorite item: ${item['title']} (${item['type']})');
 
-    // TODO: Implement navigation based on item type
+    final shellController = Provider.of<AppShellController>(
+      context,
+      listen: false,
+    );
+
     switch (item['type']) {
-      case 'playlist':
-        // Navigate to playlist detail
+      case 'album':
+        // Navigate to album detail
+        shellController.showCenterContent(
+          AlbumDetailScreen(
+            key: ValueKey('album_${item['id']}'),
+            albumId: item['id'],
+            albumName: item['title'],
+            albumImage: item['image'],
+          ),
+        );
         break;
       case 'artist':
         // Navigate to artist profile
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            // Find artist object from _popularArtists
+            final artist = _popularArtists.firstWhere(
+              (a) => a.id == item['id'],
+              orElse: () => Artist(
+                artistId: item['id'],
+                nickname: item['title'],
+                userId: '',
+                totalTracks: 0,
+                totalAlbums: 0,
+                totalFollowers: 0,
+                totalStreams: 0,
+                status: true,
+                createdAt: '',
+                imageUrl: item['image'],
+              ),
+            );
+            AppNav.key.currentState?.pushNamed(AppRoutes.artist, arguments: artist);
+          }
+        });
+        break;
+      case 'playlist':
+        // Navigate to playlist detail
+        shellController.showCenterContent(
+          PlaylistDetailScreen(
+            key: ValueKey('playlist_${item['id']}'),
+            playlistId: item['id'],
+            playlistName: item['title'],
+            playlistImage: item['image'],
+          ),
+        );
         break;
       case 'radio':
-        // Start playing radio
+        // TODO: Implement radio navigation
+        print('Radio navigation not implemented yet');
         break;
       default:
-        // Default action
         break;
     }
   }
@@ -277,18 +410,86 @@ class _HomeCenterState extends State<HomeCenter> {
 
   // Gọi API để lấy nội dung theo category
   Future<void> _loadContentByCategory(String category) async {
+    setState(() {
+      _isLoadingFavorites = true;
+    });
+    
     try {
-      // OPTION 1:
-      // final content = await CategoryService.getContentByCategory(category);
-
-      // OPTION 2: Giả lập API call
-      await Future.delayed(const Duration(milliseconds: 500));
       print('Loading content for category: $category');
-
-      // TODO: Update UI với dữ liệu mới từ API
-      // Ví dụ: setState(() { _contentList = content; });
+      final musicService = ServiceLocator().musicService;
+      final playlistService = ServiceLocator().playlistService;
+      final List<Map<String, dynamic>> items = [];
+      
+      if (category == 'All') {
+        // Load mixed: 2 artists, 3 albums, 3 playlists
+        await _loadFavoriteItems();
+        return;
+      } else if (category == 'Artists') {
+        // Load 8 artists
+        try {
+          final artists = await musicService.getTopArtists(limit: 8);
+          for (var artist in artists) {
+            items.add({
+              'id': artist.artistId,
+              'title': artist.nickname,
+              'subtitle': 'Artist',
+              'image': artist.imageUrl,
+              'type': 'artist',
+              'streams': artist.totalStreams,
+            });
+          }
+        } catch (e) {
+          print('⚠️ Failed to load artists: $e');
+        }
+      } else if (category == 'Albums') {
+        // Load 8 albums
+        try {
+          final albums = await musicService.getTopAlbums(limit: 8);
+          for (var album in albums) {
+            items.add({
+              'id': album.id,
+              'title': album.title,
+              'subtitle': '${album.artistName} • Album',
+              'image': album.coverUrl,
+              'type': 'album',
+              'streams': 0,
+            });
+          }
+        } catch (e) {
+          print('⚠️ Failed to load albums: $e');
+        }
+      } else if (category == 'Playlists') {
+        // Load 8 playlists
+        try {
+          final playlists = await playlistService.getTopPlaylists(limit: 8);
+          for (var playlist in playlists) {
+            items.add({
+              'id': playlist.id,
+              'title': playlist.name,
+              'subtitle': '${playlist.ownerName} • Playlist',
+              'image': playlist.coverUrl,
+              'type': 'playlist',
+              'streams': playlist.totalStreams,
+            });
+          }
+        } catch (e) {
+          print('⚠️ Failed to load playlists: $e');
+        }
+      }
+      
+      if (mounted) {
+        setState(() {
+          _favoriteItems = items;
+          _isLoadingFavorites = false;
+        });
+      }
     } catch (e) {
       print('Error loading content for category $category: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingFavorites = false;
+        });
+      }
     }
   }
 
@@ -342,10 +543,27 @@ class _HomeCenterState extends State<HomeCenter> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Image(
-                            image: AssetImage('assets/images/HTH.png'),
-                            fit: BoxFit.cover,
-                          ),
+                          child: _isLoadingTopAlbums
+                              ? const Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppTheme.redPrimary,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : (_featuredAlbum?.coverUrl != null &&
+                                      _featuredAlbum!.coverUrl.isNotEmpty)
+                                  ? Image.network(
+                                      _featuredAlbum!.coverUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => const Image(
+                                        image: AssetImage('assets/images/HTH.png'),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                  : const Image(
+                                      image: AssetImage('assets/images/HTH.png'),
+                                      fit: BoxFit.cover,
+                                    ),
                         ),
 
                       // Right Side - Text Info
@@ -371,8 +589,8 @@ class _HomeCenterState extends State<HomeCenter> {
                                   ),
                                   SizedBox(height: isNarrow ? 8 : 20),
                                   Text(
-                                    'Ai Cũng Phải Bắt Đầu Từ Đâu Đó',
-                                    style: GoogleFonts.inter(
+                                    _featuredAlbum?.title ?? 'Ai Cũng Phải Bắt Đầu Từ Đâu Đó',
+                                    style: TextStyle(
                                       color: const Color(0xFFFFFFFF),
                                       fontSize: isNarrow
                                           ? 16
@@ -392,7 +610,7 @@ class _HomeCenterState extends State<HomeCenter> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.start,
                                       children: [
-                                        if (!isNarrow)
+                                        if (!isNarrow && _featuredAlbum != null)
                                           Container(
                                             width: 30,
                                             height: 30,
@@ -403,23 +621,43 @@ class _HomeCenterState extends State<HomeCenter> {
                                                 context,
                                               ).colorScheme.primary,
                                             ),
-                                            child: const Image(
-                                              image: AssetImage(
-                                                'assets/images/HTH_icon.png',
-                                              ),
-                                              fit: BoxFit.fill,
-                                            ),
+                                            child: _featuredAlbum!.coverUrl.isNotEmpty
+                                                ? ClipRRect(
+                                                    borderRadius: BorderRadius.circular(30),
+                                                    child: Image.network(
+                                                      _featuredAlbum!.coverUrl,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder: (_, __, ___) => const Image(
+                                                        image: AssetImage(
+                                                          'assets/images/HTH_icon.png',
+                                                        ),
+                                                        fit: BoxFit.fill,
+                                                      ),
+                                                    ),
+                                                  )
+                                                : const Image(
+                                                    image: AssetImage(
+                                                      'assets/images/HTH_icon.png',
+                                                    ),
+                                                    fit: BoxFit.fill,
+                                                  ),
                                           ),
                                         if (!isNarrow)
                                           const SizedBox(width: 10),
                                         Flexible(
                                           child: Text(
-                                            isNarrow
-                                                ? 'HIEUTHUHAI • 2023'
-                                                : (isMedium
-                                                      ? 'HIEUTHUHAI • 2023 • 13 songs'
-                                                      : 'HIEUTHUHAI • 2023 • 13 songs, 39 min 44 sec '),
-                                            style: GoogleFonts.inter(
+                                            _featuredAlbum != null
+                                                ? isNarrow
+                                                    ? '${_featuredAlbum!.artistName} • ${_featuredAlbum!.releaseYear ?? 2023}'
+                                                    : isMedium
+                                                        ? '${_featuredAlbum!.artistName} • ${_featuredAlbum!.releaseYear ?? 2023} • ${_featuredAlbum!.totalTracks ?? 0} songs'
+                                                        : '${_featuredAlbum!.artistName} • ${_featuredAlbum!.releaseYear ?? 2023} • ${_featuredAlbum!.totalTracks ?? 0} songs'
+                                                : (isNarrow
+                                                    ? 'HIEUTHUHAI • 2023'
+                                                    : (isMedium
+                                                        ? 'HIEUTHUHAI • 2023 • 13 songs'
+                                                        : 'HIEUTHUHAI • 2023 • 13 songs, 39 min 44 sec ')),
+                                            style: TextStyle(
                                               color: const Color(0xFFB0B0B0),
                                               fontSize: isNarrow
                                                   ? 11
@@ -432,9 +670,21 @@ class _HomeCenterState extends State<HomeCenter> {
                                         const SizedBox(width: 10),
                                         ElevatedButton(
                                           onPressed: () {
-                                            setState(() {
-                                              _isPlaying = !_isPlaying;
-                                            });
+                                            if (_featuredAlbum != null) {
+                                              // Open album detail
+                                              final shellController = Provider.of<AppShellController>(
+                                                context,
+                                                listen: false,
+                                              );
+                                              shellController.showCenterContent(
+                                                AlbumDetailScreen(
+                                                  key: ValueKey('album_${_featuredAlbum!.id}'),
+                                                  albumId: _featuredAlbum!.id,
+                                                  albumName: _featuredAlbum!.title,
+                                                  albumImage: _featuredAlbum!.coverUrl,
+                                                ),
+                                              );
+                                            }
                                           },
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Theme.of(
@@ -756,22 +1006,42 @@ class _FavoriteItemCardState extends State<_FavoriteItemCard> {
                     topLeft: Radius.circular(8),
                     bottomLeft: Radius.circular(8),
                   ),
-                  child: widget.item['image'] != null
-                      ? Image.asset(
-                          widget.item['image'],
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey[700],
-                              child: const Icon(
-                                Icons.music_note,
-                                color: Colors.white54,
-                                size: 20,
-                              ),
-                            );
-                          },
-                        )
+                  child: widget.item['image'] != null && widget.item['image'].toString().isNotEmpty
+                      ? (widget.item['image'].toString().startsWith('http')
+                          ? Image.network(
+                              widget.item['image'],
+                              fit: BoxFit.cover,
+                              width: 60,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  width: 60,
+                                  color: Colors.grey[700],
+                                  child: const Icon(
+                                    Icons.music_note,
+                                    color: Colors.white54,
+                                    size: 20,
+                                  ),
+                                );
+                              },
+                            )
+                          : Image.asset(
+                              widget.item['image'],
+                              fit: BoxFit.cover,
+                              width: 60,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  width: 60,
+                                  color: Colors.grey[700],
+                                  child: const Icon(
+                                    Icons.music_note,
+                                    color: Colors.white54,
+                                    size: 20,
+                                  ),
+                                );
+                              },
+                            ))
                       : Container(
+                          width: 60,
                           color: Colors.grey[700],
                           child: const Icon(
                             Icons.music_note,
