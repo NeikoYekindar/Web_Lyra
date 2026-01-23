@@ -29,6 +29,20 @@ class AppShellController extends ChangeNotifier {
   bool _isBrowseAllExpanded = false;
   bool get isBrowseAllExpanded => _isBrowseAllExpanded;
 
+  // Center content widget (for playlist detail, artist page, etc.)
+  Widget? _centerContentWidget;
+  Widget? get centerContentWidget => _centerContentWidget;
+
+  void showCenterContent(Widget widget) {
+    _centerContentWidget = widget;
+    notifyListeners();
+  }
+
+  void clearCenterContent() {
+    _centerContentWidget = null;
+    notifyListeners();
+  }
+
   String searchText = '';
 
   void toggleSidebar() {

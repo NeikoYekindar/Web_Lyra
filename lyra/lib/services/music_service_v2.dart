@@ -100,6 +100,88 @@ class MusicServiceV2 {
 
   MusicServiceV2(this._apiClient);
 
+  /// Search tracks (catalog service)
+  ///
+  /// Docs: GET /tracks/search?q=...&kind=...&sort_by=...
+  /// Response schema is not strictly defined in OpenAPI, so parsing is tolerant.
+  Future<List<Track>> searchTracks({
+    required String query,
+    String? kind,
+    String? sortBy,
+    int limit = 20,
+  }) async {
+    final q = query.trim();
+    if (q.isEmpty) return [];
+
+    final response = await _apiClient.get<List<Track>>(
+      ApiConfig.musicServiceUrl,
+      ApiConfig.tracksSearchEndpoint,
+      queryParameters: {
+        'q': q,
+        if (kind != null && kind.trim().isNotEmpty) 'kind': kind.trim(),
+        if (sortBy != null && sortBy.trim().isNotEmpty)
+          'sort_by': sortBy.trim(),
+        // Some backends accept limit/page_size. Safe to send; ignored if unsupported.
+        'limit': limit.toString(),
+      },
+      fromJson: (json) {
+        List<dynamic>? rawItems;
+
+        if (json is List) {
+          rawItems = json;
+        } else if (json is Map<String, dynamic>) {
+          // Catalog search currently returns { query, hits: [...], total }
+          // but other endpoints may return { items: [...] } or { data: [...] } etc.
+          final hits = json['hits'];
+          final items = json['items'];
+          final data = json['data'];
+          final tracks = json['tracks'];
+          final results = json['results'];
+
+          if (hits is List) {
+            rawItems = hits;
+          } else if (items is List) {
+            rawItems = items;
+          } else if (results is List) {
+            rawItems = results;
+          } else if (data is List) {
+            rawItems = data;
+          } else if (tracks is List) {
+            rawItems = tracks;
+          } else if (data is Map<String, dynamic>) {
+            // Sometimes responses are wrapped: { data: { hits/items/tracks: [...] } }
+            final nestedHits = data['hits'];
+            final nestedItems = data['items'];
+            final nestedTracks = data['tracks'];
+            final nestedResults = data['results'];
+
+            if (nestedHits is List) {
+              rawItems = nestedHits;
+            } else if (nestedItems is List) {
+              rawItems = nestedItems;
+            } else if (nestedResults is List) {
+              rawItems = nestedResults;
+            } else if (nestedTracks is List) {
+              rawItems = nestedTracks;
+            }
+          }
+        }
+
+        if (rawItems == null) return <Track>[];
+        return rawItems
+            .whereType<Map<String, dynamic>>()
+            .map(Track.fromApi)
+            .toList();
+      },
+    );
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+
+    throw Exception(response.message ?? 'Failed to search tracks');
+  }
+
   /// Get all tracks with pagination
   Future<PaginatedResponse<Track>> getTracks({
     int page = 1,
@@ -147,25 +229,39 @@ class MusicServiceV2 {
   }
 
   Future<List<Track>> getTrendingTracks({int limit = 10}) async {
-    final response = await _apiClient.get<List<Track>>(
-      ApiConfig.musicServiceUrl,
-      '${ApiConfig.topTracks}',
-      queryParameters: {'limit': limit.toString()},
-      fromJson: (json) {
-        if (json is List) {
-          return json
-              .map((e) => Track.fromApi(e as Map<String, dynamic>))
-              .toList();
-        }
-        return [];
-      },
-    );
+    /// Toggle nhanh khi test backend:
+    /// - `true`  => dùng endpoint `/tracks/top-tracks` (cần Authorization)
+    /// - `false` => dùng endpoint `/tracks/search?q=*` (public, thường trả nhiều bài hơn)
+    const bool useTopTracksEndpoint = true;
 
-    if (response.success && response.data != null) {
-      return response.data!;
+    /// CÁCH 1: /tracks/top-tracks (auth-gated)
+    if (useTopTracksEndpoint) {
+      final response = await _apiClient.get<List<Track>>(
+        ApiConfig.musicServiceUrl,
+        ApiConfig.topTracks,
+        queryParameters: {'limit': limit.toString()},
+        fromJson: (json) {
+          // Some services wrap list under { data: [...] } which ApiClient already unwraps.
+          if (json is List) {
+            return json
+                .whereType<Map<String, dynamic>>()
+                .map(Track.fromApi)
+                .toList();
+          }
+          return <Track>[];
+        },
+      );
+
+      if (response.success && response.data != null) {
+        return response.data!;
+      }
+      throw Exception(response.message ?? 'Failed to fetch trending tracks');
     }
 
-    throw Exception(response.message ?? 'Failed to fetch trending tracks');
+    /// CÁCH 2: /tracks/search?q=* (public)
+    // final tracks = await searchTracks(query: '*', limit: limit);
+    // if (tracks.length <= limit) return tracks;
+    // return tracks.take(limit).toList();
   }
 
   /// Get all albums with pagination

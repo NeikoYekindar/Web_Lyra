@@ -8,6 +8,7 @@ class TrackItem extends StatefulWidget {
   final String albumArtist;
   final String duration;
   final String image;
+  final VoidCallback? onTap;
 
   const TrackItem({
     super.key,
@@ -17,6 +18,7 @@ class TrackItem extends StatefulWidget {
     required this.albumArtist,
     required this.duration,
     required this.image,
+    this.onTap,
   });
 
   @override
@@ -39,6 +41,8 @@ class _TrackItemState extends State<TrackItem> {
 
   @override
   Widget build(BuildContext context) {
+    final isInteractive = widget.onTap != null;
+
     return MouseRegion(
       onEnter: (_) => setState(() => _hovering = true),
       onExit: (_) => setState(() {
@@ -46,9 +50,11 @@ class _TrackItemState extends State<TrackItem> {
         _pressed = false;
       }),
       child: GestureDetector(
-        onTapDown: (_) => setState(() => _pressed = true),
-        onTapUp: (_) => setState(() => _pressed = false),
-        onTapCancel: () => setState(() => _pressed = false),
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.onTap,
+        onTapDown: isInteractive ? (_) => setState(() => _pressed = true) : null,
+        onTapUp: isInteractive ? (_) => setState(() => _pressed = false) : null,
+        onTapCancel: isInteractive ? () => setState(() => _pressed = false) : null,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOut,
