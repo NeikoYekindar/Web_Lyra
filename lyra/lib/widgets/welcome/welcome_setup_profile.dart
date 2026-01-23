@@ -8,7 +8,7 @@ import 'package:lyra/models/current_user.dart';
 class WelcomeSetupProfile extends StatefulWidget {
   final String userId;
 
-  const WelcomeSetupProfile({Key? key, required this.userId}) : super(key: key);
+  const WelcomeSetupProfile({super.key, required this.userId});
 
   @override
   State<WelcomeSetupProfile> createState() => _WelcomeSetupProfileState();
@@ -184,7 +184,7 @@ class _WelcomeSetupProfileState extends State<WelcomeSetupProfile> {
                         ),
                         const SizedBox(height: 8),
                         DropdownButtonFormField<String>(
-                          value: _gender,
+                          initialValue: _gender,
                           dropdownColor: const Color(0xFF1E1E1E),
                           style: GoogleFonts.inter(color: Colors.white),
                           decoration: InputDecoration(

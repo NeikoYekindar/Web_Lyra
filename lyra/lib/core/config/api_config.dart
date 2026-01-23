@@ -52,12 +52,15 @@ class ApiConfig {
   // API Endpoints for Music Service
   static String get musicServiceUrl => getServiceUrl('music');
   static const String topTracks = '/tracks/top-tracks';
-  static const String trackDetailEndpoint = '/api/v1/tracks/{id}';
+  static const String trackDetailEndpoint = '/tracks/{track_id}';
   static const String albumsEndpoint = '/api/v1/albums';
+  static const String topAlbumsEndpoint = '/albums/top-albums';
   static const String artistsEndpoint = '/api/v1/artists';
+  static const String artistProfileEndpoint = '/artists/info/profile/{artist_id}';
   static const String topArtistsEndpoint = '/artists/top-artists';
   static const String trackStreamsEndpoint = '/tracks/{id}/streams';
   static const String recentTracksEndpoint = '/tracks/recent-tracks';
+  static const String tracksSearchEndpoint = '/tracks/search';
 
   // API Endpoints for User Service
   static String get userServiceUrl => getServiceUrl('user');
@@ -81,8 +84,13 @@ class ApiConfig {
   // API Endpoints for Playlist Service
   static String get playlistServiceUrl => getServiceUrl('playlist');
   static const String playlistsEndpoint = '/api/v1/playlists';
-  static const String playlistDetailEndpoint = '/api/v1/playlists/{id}';
+  // Detail endpoint used by sidebar playlist playback.
+  // Swagger: GET /playlists/{playlist_id}
+  static const String playlistDetailEndpoint = '/playlists/{id}';
   static const String createPlaylistEndpoint = '/api/v1/playlists';
+  static const String playlistsCreateEndpoint = '/playlists/create';
+  static const String yourPlaylistsEndpoint = '/playlists/your-playlists';
+  static const String topPlaylistsEndpoint = '/playlists/top-playlists';
 
   // API Endpoints for Search Service
   static String get searchServiceUrl => getServiceUrl('search');

@@ -1,15 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:lyra/l10n/app_localizations.dart';
-import 'package:lyra/theme/app_theme.dart';
 // import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:typed_data';
 import 'package:image_picker/image_picker.dart';
 import 'package:lyra/core/di/service_locator.dart';
 import 'package:lyra/models/current_user.dart';
-import '../../shell/app_shell.dart';
+import '../../screens/welcome_screen.dart';
 
 class WelcomeCreateProfile extends StatefulWidget {
   final VoidCallback onBackPressed;
@@ -35,17 +32,14 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
   bool _isLoading = false;
   final List<String> _genres = [
     'Pop',
-    'Rock',
-    'Hip Hop',
-    'R&B',
-    'Jazz',
-    'Electronic',
-    'Classical',
-    'Country',
-    'Latin',
+    'Rap',
+    'Hip-Hop',
+    'R&D',
+    'Lofi',
+    'US-UK pop',
+    'Latin pop',
     'Indie',
-    'Metal',
-    'Folk',
+    'Soul',
   ];
   final List<String> _selectedGenres = [];
 
@@ -342,7 +336,9 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                               Expanded(
                                 flex: 2,
                                 child: DropdownButtonFormField<String>(
-                                  value: _gender.isEmpty ? null : _gender,
+                                  initialValue: _gender.isEmpty
+                                      ? null
+                                      : _gender,
                                   dropdownColor: const Color(0xFF1E1E1E),
                                   style: GoogleFonts.inter(
                                     color: Colors.white,
@@ -637,7 +633,7 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                       ),
                     ),
                     const SizedBox(width: 30),
-                    Container(
+                    SizedBox(
                       width: 500,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -1019,13 +1015,33 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                                               .saveToPrefs();
 
                                           if (mounted) {
-                                            // Replace navigation stack with AppShell (dashboard)
+                                            // Show success message
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Profile created successfully! Please log in to continue.',
+                                                ),
+                                                backgroundColor: Colors.green,
+                                                duration: Duration(seconds: 3),
+                                              ),
+                                            );
+
+                                            // Logout and redirect to login screen
+                                            await ServiceLocator().apiClient
+                                                .clearTokens();
+                                            CurrentUser.instance.logout();
+                                            await CurrentUser.instance
+                                                .clearPrefs();
+
+                                            // Navigate back to welcome/login screen
                                             Navigator.of(
                                               context,
                                             ).pushAndRemoveUntil(
                                               MaterialPageRoute(
                                                 builder: (_) =>
-                                                    const AppShell(),
+                                                    const WelcomeScreen(),
                                               ),
                                               (route) => false,
                                             );
@@ -1071,16 +1087,39 @@ class _WelcomeCreateProfileState extends State<WelcomeCreateProfile> {
                               ElevatedButton(
                                 onPressed: _isLoading
                                     ? null
-                                    : () {
-                                        // Skip and go directly to AppShell
-                                        Navigator.of(
-                                          context,
-                                        ).pushAndRemoveUntil(
-                                          MaterialPageRoute(
-                                            builder: (_) => const AppShell(),
-                                          ),
-                                          (route) => false,
-                                        );
+                                    : () async {
+                                        // Skip profile setup and go to login
+                                        if (mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Profile setup skipped. Please log in to continue.',
+                                              ),
+                                              backgroundColor: Colors.orange,
+                                              duration: Duration(seconds: 2),
+                                            ),
+                                          );
+
+                                          // Logout and clear session
+                                          await ServiceLocator().apiClient
+                                              .clearTokens();
+                                          CurrentUser.instance.logout();
+                                          await CurrentUser.instance
+                                              .clearPrefs();
+
+                                          // Navigate to welcome/login screen
+                                          Navigator.of(
+                                            context,
+                                          ).pushAndRemoveUntil(
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  const WelcomeScreen(),
+                                            ),
+                                            (route) => false,
+                                          );
+                                        }
                                       },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF0B0B0B),

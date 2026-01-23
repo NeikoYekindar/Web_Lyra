@@ -281,7 +281,7 @@ class _ProfileViewState extends State<ProfileView> {
                                       return Container(
                                         color: Theme.of(
                                           context,
-                                        ).colorScheme.surfaceVariant,
+                                        ).colorScheme.surfaceContainerHighest,
                                         child: Icon(
                                           Icons.music_note,
                                           color: Theme.of(
@@ -299,7 +299,7 @@ class _ProfileViewState extends State<ProfileView> {
                                       return Container(
                                         color: Theme.of(
                                           context,
-                                        ).colorScheme.surfaceVariant,
+                                        ).colorScheme.surfaceContainerHighest,
                                         child: Icon(
                                           Icons.music_note,
                                           color: Theme.of(
@@ -314,7 +314,7 @@ class _ProfileViewState extends State<ProfileView> {
                                 playlistImage = Container(
                                   color: Theme.of(
                                     context,
-                                  ).colorScheme.surfaceVariant,
+                                  ).colorScheme.surfaceContainerHighest,
                                   child: Icon(
                                     Icons.music_note,
                                     color: Theme.of(

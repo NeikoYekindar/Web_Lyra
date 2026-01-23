@@ -1,32 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:lyra/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_player_provider.dart';
-import '../../providers/auth_provider_v2.dart';
-import '../../services/playlist_service.dart';
-import 'right_playlist_user_card.dart';
-import 'right_sidebar_controller.dart';
-import '../../services/left_sidebar_service.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import '../../providers/artist_follow_provider.dart';
 import '../../shell/app_shell_controller.dart';
 import 'package:lyra/models/track.dart';
-
-class MockArtistService {
-  static Future<Map<String, dynamic>?> getArtistInfo(String artistName) async {
-    // Ở đây bạn gọi API backend để lấy ảnh artist và số lượng người nghe
-    await Future.delayed(const Duration(seconds: 1));
-    return {
-      'image': 'assets/images/image 18.png', // Ví dụ ảnh Sơn Tùng
-      'listeners': '2,345,567 monthly listeners',
-      'bio': 'Nguyễn Thanh Tùng, born in 1994...',
-      'more_info':
-          'Nguyễn Thanh Tùng, born in 1994, known professionally as Sơn Tùng M-TP, is a Vietnamese singer, songwriter, producer, and actor. He is not only known as one of the ...',
-    };
-  }
-}
+import 'package:lyra/models/artist.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class RightSidebarDetailSong extends StatelessWidget {
   const RightSidebarDetailSong({super.key});
+
   @override
   Widget build(BuildContext context) {
     final player = Provider.of<MusicPlayerProvider>(context);
@@ -52,7 +35,7 @@ class RightSidebarDetailSong extends StatelessWidget {
                   Expanded(
                     child: Text(
                       'Now Playing',
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -114,7 +97,7 @@ class RightSidebarDetailSong extends StatelessWidget {
                   // Tên bài hát
                   Text(
                     track?.title ?? 'No Track Playing',
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -126,8 +109,8 @@ class RightSidebarDetailSong extends StatelessWidget {
 
                   // Tên nghệ sĩ
                   Text(
-                    track?.artist ?? 'Unknown Artist',
-                    style: TextStyle(
+                    track?.artistObj?.nickname ?? 'Unknown Artist',
+                    style: GoogleFonts.inter(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 16,
                     ),
@@ -137,7 +120,8 @@ class RightSidebarDetailSong extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // Thẻ thông tin nghệ sĩ
-                  if (track != null) _ArtistInfoCard(artistName: track.artist),
+                  if (track != null && track.artistObj != null)
+                    _ArtistInfoCard(artist: track.artistObj!),
                   const SizedBox(height: 24),
 
                   // Header Next Queue
@@ -150,7 +134,7 @@ class RightSidebarDetailSong extends StatelessWidget {
                           Expanded(
                             child: Text(
                               'Next in queue',
-                              style: TextStyle(
+                              style: GoogleFonts.inter(
                                 color: Theme.of(context).colorScheme.onSurface,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -160,7 +144,14 @@ class RightSidebarDetailSong extends StatelessWidget {
                           ),
                           if (showButton)
                             TextButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                final shellCtrl =
+                                    Provider.of<AppShellController?>(
+                                      context,
+                                      listen: false,
+                                    );
+                                shellCtrl?.openQueue();
+                              },
                               style: TextButton.styleFrom(
                                 minimumSize: Size.zero,
                                 padding: const EdgeInsets.symmetric(
@@ -170,7 +161,7 @@ class RightSidebarDetailSong extends StatelessWidget {
                               ),
                               child: Text(
                                 'Open',
-                                style: TextStyle(
+                                style: GoogleFonts.inter(
                                   color: Theme.of(
                                     context,
                                   ).colorScheme.onSurfaceVariant,
@@ -244,68 +235,47 @@ class RightSidebarDetailSong extends StatelessWidget {
 }
 
 class _ArtistInfoCard extends StatefulWidget {
-  final String artistName;
-  const _ArtistInfoCard({required this.artistName});
+  final Artist artist;
+  const _ArtistInfoCard({required this.artist});
 
   @override
   State<_ArtistInfoCard> createState() => _ArtistInfoCardState();
 }
 
 class _ArtistInfoCardState extends State<_ArtistInfoCard> {
-  late Future<Map<String, dynamic>?> _future;
-  bool _isFollowing = false;
-  bool _isLoading = false;
-
   @override
   void initState() {
     super.initState();
-    _future = MockArtistService.getArtistInfo(widget.artistName);
+    // Check follow status using provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ArtistFollowProvider>(
+        context,
+        listen: false,
+      ).checkFollowStatus(widget.artist.artistId);
+    });
   }
 
   Future<void> _toggleFollow() async {
-    setState(() => _isLoading = true);
-
-    // Simulate API call delay
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    setState(() {
-      _isFollowing = !_isFollowing;
-      _isLoading = false;
-    });
-
-    // TODO: Call actual API to follow/unfollow artist
-    // try {
-    //   if (_isFollowing) {
-    //     await MusicServiceV2().followArtist(widget.artistName);
-    //   } else {
-    //     await MusicServiceV2().unfollowArtist(widget.artistName);
-    //   }
-    // } catch (e) {
-    //   debugPrint('Error toggling follow: $e');
-    // }
+    final followProvider = Provider.of<ArtistFollowProvider>(
+      context,
+      listen: false,
+    );
+    await followProvider.toggleFollow(widget.artist.artistId);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Gọi API lấy thông tin chi tiết nghệ sĩ
-    return FutureBuilder<Map<String, dynamic>?>(
-      future: _future, // Thay bằng Service thật
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Container(
-            height: 100,
-            alignment: Alignment.center,
-            child: const CircularProgressIndicator(strokeWidth: 2),
-          );
-        }
+    final artist = widget.artist;
+    final imageUrl = artist.imageUrl ?? 'assets/images/HTH.png';
+    final bio = artist.bio ?? '';
+    final listeners = artist.totalStreams > 0
+        ? '${_formatNumber(artist.totalStreams)} total streams'
+        : 'No streams yet';
 
-        final data = snapshot.data;
-        // Nếu không có dữ liệu hoặc lỗi, ẩn phần này hoặc hiện placeholder
-        if (data == null) return const SizedBox.shrink();
-        final more_info = data['more_info'] ?? '';
-        final imageUrl = data['image'];
-        final listeners = data['listeners'];
-        // final bio = data['bio']; // Có thể hiển thị thêm bio nếu muốn
+    return Consumer<ArtistFollowProvider>(
+      builder: (context, followProvider, child) {
+        final isFollowing = followProvider.isFollowing(artist.artistId);
+        final isLoading = followProvider.isLoading(artist.artistId);
 
         return Container(
           width: double.infinity,
@@ -324,23 +294,7 @@ class _ArtistInfoCardState extends State<_ArtistInfoCard> {
                     height: 180,
                     width: double.infinity,
                     color: Colors.grey.shade800,
-                    child: Image.network(
-                      imageUrl,
-                      width: double.infinity,
-                      height: 180,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Image.asset(
-                        'assets/images/HTH.png',
-                        width: double.infinity,
-                        height: 180,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(
-                          Icons.person,
-                          color: Colors.white54,
-                          size: 60,
-                        ),
-                      ),
-                    ),
+                    child: _buildArtistImage(imageUrl),
                   ),
                   // Gradient mờ ở dưới ảnh để chữ dễ đọc hơn
                   Positioned(
@@ -366,8 +320,8 @@ class _ArtistInfoCardState extends State<_ArtistInfoCard> {
                     bottom: 12,
                     left: 12,
                     child: Text(
-                      widget.artistName,
-                      style: const TextStyle(
+                      artist.nickname,
+                      style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -390,25 +344,25 @@ class _ArtistInfoCardState extends State<_ArtistInfoCard> {
                       runSpacing: 8,
                       children: [
                         Text(
-                          listeners ?? '',
+                          listeners,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: _isLoading ? null : _toggleFollow,
+                            onPressed: isLoading ? null : _toggleFollow,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: _isFollowing
-                                  ? Theme.of(context).colorScheme.surfaceVariant
+                              backgroundColor: isFollowing
+                                  ? Theme.of(context).colorScheme.surfaceContainerHighest
                                   : Theme.of(context).colorScheme.primary,
-                              foregroundColor: _isFollowing
+                              foregroundColor: isFollowing
                                   ? Theme.of(
                                       context,
                                     ).colorScheme.onSurfaceVariant
                                   : Theme.of(context).colorScheme.onPrimary,
                             ),
-                            child: _isLoading
+                            child: isLoading
                                 ? SizedBox(
                                     width: 16,
                                     height: 16,
@@ -419,27 +373,23 @@ class _ArtistInfoCardState extends State<_ArtistInfoCard> {
                                       ).colorScheme.onPrimary,
                                     ),
                                   )
-                                : Text(_isFollowing ? 'Following' : 'Follow'),
+                                : Text(isFollowing ? 'Following' : 'Follow'),
                           ),
                         ),
                       ],
                     ),
 
                     const SizedBox(height: 8),
-                    if (more_info != null && more_info.isNotEmpty)
+                    if (bio.isNotEmpty)
                       Text(
-                        more_info,
-                        maxLines: 2, // Giới hạn 2 dòng để không bị dài quá
-                        overflow:
-                            TextOverflow.ellipsis, // Hiện dấu ... nếu dài quá
-                        style: TextStyle(
+                        bio,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
-
                           fontSize: 12,
                         ),
                       ),
-
-                    // Nút Follow
                   ],
                 ),
               ),
@@ -448,6 +398,63 @@ class _ArtistInfoCardState extends State<_ArtistInfoCard> {
         );
       },
     );
+  }
+
+  Widget _buildArtistImage(String imageUrl) {
+    if (imageUrl.isEmpty || imageUrl == 'assets/images/HTH.png') {
+      return Image.asset(
+        'assets/images/HTH.png',
+        width: double.infinity,
+        height: 180,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) =>
+            const Icon(Icons.person, color: Colors.white54, size: 60),
+      );
+    }
+
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return Image.network(
+        imageUrl,
+        width: double.infinity,
+        height: 180,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Image.asset(
+          'assets/images/HTH.png',
+          width: double.infinity,
+          height: 180,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) =>
+              const Icon(Icons.person, color: Colors.white54, size: 60),
+        ),
+      );
+    }
+
+    final assetPath = imageUrl.startsWith('assets/')
+        ? imageUrl
+        : 'assets/$imageUrl';
+    return Image.asset(
+      assetPath,
+      width: double.infinity,
+      height: 180,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Image.asset(
+        'assets/images/HTH.png',
+        width: double.infinity,
+        height: 180,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) =>
+            const Icon(Icons.person, color: Colors.white54, size: 60),
+      ),
+    );
+  }
+
+  String _formatNumber(int number) {
+    if (number >= 1000000) {
+      return '${(number / 1000000).toStringAsFixed(1)}M';
+    } else if (number >= 1000) {
+      return '${(number / 1000).toStringAsFixed(1)}K';
+    }
+    return number.toString();
   }
 }
 
@@ -472,7 +479,7 @@ class _NextQueueSection extends StatelessWidget {
             decoration: BoxDecoration(
               color: Theme.of(
                 context,
-              ).colorScheme.surfaceVariant.withOpacity(0.2),
+              ).colorScheme.surfaceContainerHighest.withOpacity(0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             padding: const EdgeInsets.all(12),
@@ -502,7 +509,7 @@ class _NextQueueSection extends StatelessWidget {
                     children: [
                       Text(
                         'No next track',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -513,7 +520,7 @@ class _NextQueueSection extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         'Queue is empty',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                           fontSize: 12,
                         ),
@@ -585,7 +592,7 @@ class _NextQueueSection extends StatelessWidget {
                           title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                          style: GoogleFonts.inter(
                             color: Theme.of(context).colorScheme.onSurface,
                             fontSize: fontSize,
                             fontWeight: FontWeight.w600,
@@ -596,7 +603,7 @@ class _NextQueueSection extends StatelessWidget {
                           artist,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                          style: GoogleFonts.inter(
                             color: Theme.of(
                               context,
                             ).colorScheme.onSurfaceVariant,

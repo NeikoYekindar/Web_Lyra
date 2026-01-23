@@ -20,7 +20,7 @@ class FavoriteCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final pickedBg = Theme.of(context).colorScheme.onSurface;
     final pickedText = Theme.of(context).colorScheme.surface;
-    final unpickedBg = Theme.of(context).colorScheme.surfaceVariant;
+    final unpickedBg = Theme.of(context).colorScheme.surfaceContainerHighest;
     final unpickedText = Theme.of(context).colorScheme.onSurfaceVariant;
 
     final content = Padding(
@@ -44,16 +44,14 @@ class FavoriteCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(30),
-        child: minHeight != null
-            ? ConstrainedBox(
+        child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: minHeight!,
-                  minWidth: minWidth!,
+                  minHeight: minHeight,
+                  minWidth: minWidth,
                   maxWidth: 100,
                 ),
                 child: content,
-              )
-            : content,
+              ),
       ),
     );
   }

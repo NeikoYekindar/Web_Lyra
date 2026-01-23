@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'dart:async';
 // import 'package:lyra/services/category_service.dart'; // Uncomment để sử dụng API thực
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lyra/core/di/service_locator.dart';
@@ -17,12 +15,12 @@ class WelcomeVerifyEmail extends StatefulWidget {
   final VoidCallback? onBackPressed;
   final String? createdUserId;
 
-  WelcomeVerifyEmail({
-    Key? key,
+  const WelcomeVerifyEmail({
+    super.key,
     this.initialEmail,
     this.onBackPressed,
     this.createdUserId,
-  }) : super(key: key);
+  });
 
   @override
   _WelcomeVerifyEmailScreenState createState() =>
@@ -37,7 +35,7 @@ class _WelcomeVerifyEmailScreenState extends State<WelcomeVerifyEmail> {
   Timer? _resendTimer;
   List<TextEditingController> _codeControllers = [];
   List<FocusNode> _codeFocusNodes = [];
-  bool _suppressOnChanged = false;
+  final bool _suppressOnChanged = false;
   bool _isCodeComplete = false;
 
   Future<bool> _sendVerificationEmail() async {

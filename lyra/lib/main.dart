@@ -4,14 +4,15 @@ import 'package:provider/provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/music_player_provider.dart';
 import 'providers/auth_provider_v2.dart';
+import 'providers/artist_follow_provider.dart';
+import 'providers/track_like_provider.dart';
 import 'theme/app_theme.dart';
 import 'shell/app_shell_controller.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/di/service_locator.dart';
 import 'models/current_user.dart';
-import 'widgets/auth_gate.dart';
+import 'widgets/auth_gate.dart' as widgets;
 import 'l10n/app_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,6 +42,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AppShellController()),
         // New microservice-based auth provider
         ChangeNotifierProvider(create: (_) => AuthProviderV2()),
+        // Artist follow status provider
+        ChangeNotifierProvider(create: (_) => ArtistFollowProvider()),
+        // Track like status provider
+        ChangeNotifierProvider(create: (_) => TrackLikeProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
@@ -60,7 +65,7 @@ class MyApp extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
             ],
             supportedLocales: const [Locale('en'), Locale('vi')],
-            home: const AuthGate(),
+            home: const widgets.AuthGate(),
           );
         },
       ),

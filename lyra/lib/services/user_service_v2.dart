@@ -1,11 +1,9 @@
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
-import 'dart:convert';
 
 import '../core/config/api_config.dart';
 import '../core/network/api_client.dart';
-import '../core/models/api_response.dart';
 import '../models/user.dart';
 import '../models/auth_response.dart';
 
@@ -195,7 +193,7 @@ class UserServiceV2 {
         if (json is Map<String, dynamic> && json.containsKey('url')) {
           return json['url'] as String;
         }
-        if (json is String) return json as String;
+        if (json is String) return json;
         throw Exception('Unexpected upload response');
       },
     );

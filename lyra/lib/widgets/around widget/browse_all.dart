@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:lyra/theme/app_theme.dart';
-
+import 'package:google_fonts/google_fonts.dart';
 class BrowseAllCenter extends StatefulWidget {
   const BrowseAllCenter({super.key});
   @override
@@ -115,7 +114,7 @@ class _BrowseAllCenterState extends State<BrowseAllCenter> {
                   children: [
                     Text(
                       'Browse all',
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -214,7 +213,7 @@ class _CategoryCard extends StatelessWidget {
                     alignment: Alignment.topLeft,
                     child: Text(
                       item['title'],
-                      style: const TextStyle(
+                      style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 22,
                         fontWeight: FontWeight.bold,

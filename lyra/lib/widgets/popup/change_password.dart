@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/foundation.dart';
 // Removed unused imports
@@ -535,7 +534,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: _isFormValid
                                         ? colorScheme.primary
-                                        : colorScheme.surfaceVariant,
+                                        : colorScheme.surfaceContainerHighest,
                                     foregroundColor: _isFormValid
                                         ? colorScheme.onPrimary
                                         : colorScheme.onSurfaceVariant,
@@ -592,7 +591,7 @@ class PasswordStrengthIndicator extends StatelessWidget {
     if (s == 1) return const Color(0xFFFB923C); // orange
     if (s == 2) return cs.primary;
     if (s >= 3) return const Color(0xFF22C55E); // green
-    return cs.surfaceVariant.withOpacity(0.3);
+    return cs.surfaceContainerHighest.withOpacity(0.3);
   }
 
   String _labelForScore(int s) {
@@ -631,7 +630,7 @@ class PasswordStrengthIndicator extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: active
                         ? _activeColorForScore(context, score)
-                        : cs.surfaceVariant.withOpacity(0.28),
+                        : cs.surfaceContainerHighest.withOpacity(0.28),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   transform: Matrix4.diagonal3Values(

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lyra/l10n/app_localizations.dart';
-import 'package:lyra/theme/app_theme.dart';
 import 'package:lyra/services/left_sidebar_service.dart';
 import 'package:lyra/core/di/service_locator.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_player_provider.dart';
 import '../../models/track.dart';
+import '../../models/current_user.dart';
 import '../../shell/app_shell_controller.dart';
 import '../common/trackItem.dart';
+import '../../services/playlist_service_v2.dart';
+import '../center widget/playlist_detail.dart';
 
 // Enum for sort options
 enum SortOption { recent, recentlyAdded, alphabetical, creator }
@@ -32,7 +34,8 @@ class _LeftSidebarState extends State<LeftSidebar> {
   bool _isLoadingCategories = true;
   bool _isLoadingPlaylistsUser = true;
   List<Track> _recentTracks = [];
-  List<Track> _originalRecentTracks = []; // Store original order for "Recent" sort
+  List<Track> _originalRecentTracks =
+      []; // Store original order for "Recent" sort
   bool _isLoadingTracks = true;
   List<Track> _queueTracks = []; // Queue lớn hơn cho playback
 
@@ -65,17 +68,29 @@ class _LeftSidebarState extends State<LeftSidebar> {
       return name.contains(query) || owner.contains(query);
     }).toList();
   }
+
   @override
   void initState() {
     super.initState();
     _loadLeftSidebarCategories();
     _loadRecentTracks();
+    _loadPlayListUser();
     _searchController.addListener(() {
       setState(() {
         _searchQuery = _searchController.text;
       });
     });
   }
+
+  String get _selectedCategoryName {
+    if (categories.isEmpty || _selectedCategoryIndex >= categories.length) {
+      return 'Tracks';
+    }
+    return categories[_selectedCategoryIndex];
+  }
+
+  bool get _showTracks => _selectedCategoryName.toLowerCase() == 'tracks';
+  bool get _showPlaylists => _selectedCategoryName.toLowerCase() == 'playlists';
 
   @override
   void didChangeDependencies() {
@@ -107,7 +122,9 @@ class _LeftSidebarState extends State<LeftSidebar> {
       if (mounted) {
         setState(() {
           _recentTracks = recentTracks;
-          _originalRecentTracks = List.from(recentTracks); // Save original order
+          _originalRecentTracks = List.from(
+            recentTracks,
+          ); // Save original order
           // Combine recent and top tracks for queue, remove duplicates
           final allTracks = [...recentTracks];
           final seenIds = <String>{};
@@ -157,7 +174,44 @@ class _LeftSidebarState extends State<LeftSidebar> {
 
   Future<void> _loadPlayListUser() async {
     try {
-      final apiResponse = await LeftSidebarService.getPlaylistsUser();
+      final userId = CurrentUser.instance.user?.userId ?? '';
+      if (mounted) {
+        setState(() {
+          _isLoadingPlaylistsUser = true;
+        });
+      }
+
+      if (userId.isEmpty) {
+        if (mounted) {
+          setState(() {
+            PlaylistsUser = [];
+            _isLoadingPlaylistsUser = false;
+          });
+        }
+        return;
+      }
+
+      final playlists = await serviceLocator.playlistService.getYourPlaylists(
+        userId: userId,
+      );
+
+      final ownerName = CurrentUser.instance.user?.displayName ?? 'You';
+      final apiResponse = playlists
+          .map(
+            (p) => {
+              'id': p.id,
+              'name': p.name,
+              'type': 'Playlist',
+              'owner': (p.ownerName.isNotEmpty ? p.ownerName : ownerName),
+              'image': (p.coverUrl != null && p.coverUrl!.isNotEmpty)
+                  ? p.coverUrl!
+                  : 'assets/images/khongbuon.png',
+              'duration': p.duration,
+              // Preserve track ids so tapping playlist can play them.
+              'track_ids': p.trackIds ?? <String>[],
+            },
+          )
+          .toList();
 
       if (mounted) {
         setState(() {
@@ -169,6 +223,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
       if (mounted) {
         setState(() {
           PlaylistsUser = [];
+          _isLoadingPlaylistsUser = false;
         });
       }
       print('Error loading playlists user: $e');
@@ -204,7 +259,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
                 const SizedBox(width: 8),
                 Text(
                   AppLocalizations.of(context)?.yourLibrary ?? 'Your Library',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -239,11 +294,18 @@ class _LeftSidebarState extends State<LeftSidebar> {
                       setState(() {
                         _selectedCategoryIndex = index;
                       });
+
+                      final selected = categories[index].toLowerCase();
+                      if (selected == 'playlists') {
+                        _loadPlayListUser();
+                      } else if (selected == 'tracks') {
+                        _loadRecentTracks();
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isSelected
                           ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.surfaceVariant,
+                          : Theme.of(context).colorScheme.surfaceContainerHighest,
                       foregroundColor: isSelected
                           ? Theme.of(context).colorScheme.onPrimary
                           : Theme.of(context).colorScheme.onSurfaceVariant,
@@ -258,7 +320,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
                     ),
                     child: Text(
                       categories[index],
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         fontWeight: isSelected
                             ? FontWeight.w600
                             : FontWeight.w400,
@@ -294,7 +356,9 @@ class _LeftSidebarState extends State<LeftSidebar> {
                           const SizedBox(width: 8),
                           Icon(
                             Icons.search,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                             size: 20,
                           ),
                           const SizedBox(width: 8),
@@ -307,14 +371,22 @@ class _LeftSidebarState extends State<LeftSidebar> {
                                 fontSize: 14,
                               ),
                               decoration: InputDecoration(
-                                hintText: AppLocalizations.of(context)?.searchLibrary ?? 'Search in library...',
+                                hintText:
+                                    AppLocalizations.of(
+                                      context,
+                                    )?.searchLibrary ??
+                                    'Search in library...',
                                 hintStyle: TextStyle(
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                                   fontSize: 14,
                                 ),
                                 border: InputBorder.none,
                                 isDense: true,
-                                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                ),
                               ),
                             ),
                           ),
@@ -328,7 +400,9 @@ class _LeftSidebarState extends State<LeftSidebar> {
                             },
                             icon: Icon(
                               Icons.close,
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                               size: 18,
                             ),
                             padding: EdgeInsets.zero,
@@ -357,17 +431,18 @@ class _LeftSidebarState extends State<LeftSidebar> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (_filteredRecentTracks.isNotEmpty) ...[
+                  if (_showTracks && _filteredRecentTracks.isNotEmpty) ...[
                     // Image only view - Grid layout
                     if (_currentViewOption == ViewOption.imageOnly)
                       GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: 8,
-                          mainAxisSpacing: 8,
-                        ),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 8,
+                              mainAxisSpacing: 8,
+                            ),
                         itemCount: _filteredRecentTracks.length,
                         itemBuilder: (context, index) {
                           final track = _filteredRecentTracks[index];
@@ -376,8 +451,8 @@ class _LeftSidebarState extends State<LeftSidebar> {
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: buildCoverImage(
-                                track.trackImageUrl.isEmpty 
-                                    ? 'assets/images/khongbuon.png' 
+                                track.trackImageUrl.isEmpty
+                                    ? 'assets/images/khongbuon.png'
                                     : track.trackImageUrl,
                               ),
                             ),
@@ -395,11 +470,16 @@ class _LeftSidebarState extends State<LeftSidebar> {
                           return GestureDetector(
                             onTap: () => _onTrackTapped(track),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 8,
+                                horizontal: 12,
+                              ),
                               child: Text(
                                 track.trackName,
                                 style: TextStyle(
-                                  color: Theme.of(context).colorScheme.onSurface,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -418,56 +498,82 @@ class _LeftSidebarState extends State<LeftSidebar> {
                         itemCount: _filteredRecentTracks.length,
                         itemBuilder: (context, index) {
                           final track = _filteredRecentTracks[index];
-                          return GestureDetector(
+                          return TrackItem(
+                            index: index + 1,
+                            title: track.trackName,
+                            artist: track.artist,
+                            albumArtist: track.kind,
+                            duration: _formatDuration(track.durationMs),
+                            image: track.trackImageUrl,
                             onTap: () => _onTrackTapped(track),
-                            child: TrackItem(
-                              index: index + 1,
-                              title: track.trackName,
-                              artist: track.artist,
-                              albumArtist: track.kind,
-                              duration: _formatDuration(track.durationMs),
-                              image: track.trackImageUrl,
-                            ),
                           );
                         },
                       ),
                     const SizedBox(height: 12),
                   ],
                   // Show "No results" message when searching but nothing found
-                  if (_searchQuery.isNotEmpty && 
-                      _filteredRecentTracks.isEmpty && 
-                      _filteredPlaylistsUser.isEmpty)
+                  if (_searchQuery.isNotEmpty &&
+                      ((_showTracks && _filteredRecentTracks.isEmpty) ||
+                          (_showPlaylists && _filteredPlaylistsUser.isEmpty)))
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Center(
                         child: Text(
-                          AppLocalizations.of(context)?.noResults ?? 'No results found',
+                          AppLocalizations.of(context)?.noResults ??
+                              'No results found',
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                             fontSize: 14,
                           ),
                         ),
                       ),
                     ),
-                  Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(color: Colors.transparent),
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    scrollDirection: Axis.vertical,
-                    itemCount: _filteredPlaylistsUser.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final playlists = _filteredPlaylistsUser[index];
-                      return PlaylistUserCard(
-                        playlists: playlists,
-                        // onTap: () => _onPlaylistUserTapped(playlists),
-                      );
-                    },
-                  ),
-                ),
+                  if (_showPlaylists)
+                    if (_isLoadingPlaylistsUser)
+                      const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (_filteredPlaylistsUser.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Center(
+                          child: Text(
+                            'No playlists',
+                            style: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      Container(
+                        width: double.infinity,
+                        decoration: const BoxDecoration(
+                          color: Colors.transparent,
+                        ),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          scrollDirection: Axis.vertical,
+                          itemCount: _filteredPlaylistsUser.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final playlists = _filteredPlaylistsUser[index];
+                            return PlaylistUserCard(
+                              index: index + 1,
+                              playlists: playlists,
+                              onTap: () => _onPlaylistUserTapped(playlists),
+                            );
+                          },
+                        ),
+                      ),
                 ],
               ),
             ),
@@ -475,6 +581,41 @@ class _LeftSidebarState extends State<LeftSidebar> {
         ],
       ),
     );
+  }
+
+  Future<void> _onPlaylistUserTapped(Map<String, dynamic> playlist) async {
+    try {
+      final playlistId =
+          (playlist['playlist_id'] ?? playlist['id'] ?? '').toString();
+      if (playlistId.trim().isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid playlist id.')),
+        );
+        return;
+      }
+
+      if (!mounted) return;
+      final shellController = Provider.of<AppShellController>(
+        context,
+        listen: false,
+      );
+
+      // Show playlist detail screen in center
+      shellController.showCenterContent(
+        PlaylistDetailScreen(
+          key: ValueKey('playlist_$playlistId'),
+          playlistId: playlistId,
+          playlistName: playlist['name'] ?? 'Playlist',
+          playlistImage: playlist['image'],
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Open playlist failed: $e')));
+    }
   }
 
   // Search icon button widget
@@ -526,9 +667,7 @@ class _LeftSidebarState extends State<LeftSidebar> {
     return PopupMenuButton<dynamic>(
       tooltip: '',
       offset: const Offset(0, 40),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
       onSelected: (value) {
         setState(() {
@@ -555,34 +694,36 @@ class _LeftSidebarState extends State<LeftSidebar> {
           ),
         ),
         // Sort options
-        ...SortOption.values.map((option) => PopupMenuItem<SortOption>(
-          value: option,
-          height: 44,
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  _getSortOptionText(option),
-                  style: TextStyle(
-                    color: _currentSortOption == option
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.onSurface,
-                    fontSize: 14,
-                    fontWeight: _currentSortOption == option
-                        ? FontWeight.w600
-                        : FontWeight.w400,
+        ...SortOption.values.map(
+          (option) => PopupMenuItem<SortOption>(
+            value: option,
+            height: 44,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _getSortOptionText(option),
+                    style: TextStyle(
+                      color: _currentSortOption == option
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.onSurface,
+                      fontSize: 14,
+                      fontWeight: _currentSortOption == option
+                          ? FontWeight.w600
+                          : FontWeight.w400,
+                    ),
                   ),
                 ),
-              ),
-              if (_currentSortOption == option)
-                Icon(
-                  Icons.check,
-                  color: Theme.of(context).colorScheme.primary,
-                  size: 18,
-                ),
-            ],
+                if (_currentSortOption == option)
+                  Icon(
+                    Icons.check,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 18,
+                  ),
+              ],
+            ),
           ),
-        )),
+        ),
         // Divider
         const PopupMenuDivider(),
         // View as header
@@ -697,19 +838,26 @@ class _LeftSidebarState extends State<LeftSidebar> {
           break;
         case SortOption.alphabetical:
           _recentTracks = List.from(_originalRecentTracks);
-          _recentTracks.sort((a, b) => 
-            a.trackName.toLowerCase().compareTo(b.trackName.toLowerCase()));
-          PlaylistsUser.sort((a, b) => 
-            (a['name'] ?? '').toString().toLowerCase()
-              .compareTo((b['name'] ?? '').toString().toLowerCase()));
+          _recentTracks.sort(
+            (a, b) =>
+                a.trackName.toLowerCase().compareTo(b.trackName.toLowerCase()),
+          );
+          PlaylistsUser.sort(
+            (a, b) => (a['name'] ?? '').toString().toLowerCase().compareTo(
+              (b['name'] ?? '').toString().toLowerCase(),
+            ),
+          );
           break;
         case SortOption.creator:
           _recentTracks = List.from(_originalRecentTracks);
-          _recentTracks.sort((a, b) => 
-            a.artist.toLowerCase().compareTo(b.artist.toLowerCase()));
-          PlaylistsUser.sort((a, b) => 
-            (a['owner'] ?? '').toString().toLowerCase()
-              .compareTo((b['owner'] ?? '').toString().toLowerCase()));
+          _recentTracks.sort(
+            (a, b) => a.artist.toLowerCase().compareTo(b.artist.toLowerCase()),
+          );
+          PlaylistsUser.sort(
+            (a, b) => (a['owner'] ?? '').toString().toLowerCase().compareTo(
+              (b['owner'] ?? '').toString().toLowerCase(),
+            ),
+          );
           break;
       }
     });
@@ -761,11 +909,6 @@ class _LeftSidebarState extends State<LeftSidebar> {
       // Load track with full queue (at least 10 tracks)
       await musicPlayerProvider.setTrack(track, queue: _queueTracks);
       musicPlayerProvider.play();
-
-      // Show player if not shown
-      if (!shellController.isPlayerMaximized) {
-        shellController.toggleMaximizePlayer();
-      }
     } catch (e) {
       print('Error playing track: $e');
     }
@@ -803,14 +946,15 @@ class _LeftSidebarState extends State<LeftSidebar> {
   void _showCreatePlaylistDialog() {
     // Generate playlist name with number
     final playlistNumber = PlaylistsUser.length + 1;
-    final defaultName = '${AppLocalizations.of(context)?.myPlaylist ?? "My Playlist"} #$playlistNumber';
-    
+    final defaultName =
+        '${AppLocalizations.of(context)?.myPlaylist ?? "My Playlist"} #$playlistNumber';
+
     showDialog(
       context: context,
       builder: (context) => _CreatePlaylistDialog(
         defaultName: defaultName,
-        onCreatePlaylist: (name) {
-          _createNewPlaylist(name);
+        onCreatePlaylist: (playlist) {
+          _createNewPlaylistFromApi(playlist);
         },
       ),
     );
@@ -827,6 +971,23 @@ class _LeftSidebarState extends State<LeftSidebar> {
         'image': 'assets/images/khongbuon.png', // Default playlist image
       });
     });
+  }
+
+  void _createNewPlaylistFromApi(Playlist playlist) {
+    if (categories.isNotEmpty) {
+      final playlistIndex = categories.indexWhere(
+        (c) => c.toLowerCase() == 'playlists',
+      );
+      if (playlistIndex >= 0) {
+        setState(() {
+          _selectedCategoryIndex = playlistIndex;
+          _searchController.clear();
+          _searchQuery = '';
+        });
+      }
+    }
+
+    _loadPlayListUser();
   }
 
   Widget _buildCustomIconMenuItemLibraryCreate(
@@ -860,107 +1021,137 @@ class _LeftSidebarState extends State<LeftSidebar> {
 }
 
 class PlaylistUserCard extends StatefulWidget {
+  final int index;
   final Map<String, dynamic> playlists;
   final VoidCallback? onTap;
 
-  const PlaylistUserCard({super.key, required this.playlists, this.onTap});
+  const PlaylistUserCard(
+      {super.key, required this.index, required this.playlists, this.onTap});
 
   @override
   State<PlaylistUserCard> createState() => _PlaylistUserCardState();
 }
 
 class _PlaylistUserCardState extends State<PlaylistUserCard> {
-  bool _isHovered = false;
+  bool _hovering = false;
+  bool _pressed = false;
+
+  String _formatDuration(int seconds) {
+    final minutes = seconds ~/ 60;
+    final remainingSeconds = seconds % 60;
+    return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+
+  Color _backgroundColor(BuildContext context) {
+    if (_pressed) {
+      return Theme.of(context).colorScheme.primary.withOpacity(0.13);
+    }
+    if (_hovering) {
+      return Theme.of(context).colorScheme.primary.withOpacity(0.07);
+    }
+    return Colors.transparent;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          padding: const EdgeInsets.all(8),
-          duration: const Duration(milliseconds: 100),
-          decoration: BoxDecoration(
-            color: _isHovered
-                ? Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.7)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Container(
-            width: double.infinity,
-            // padding: EdgeInsets.all(_isHovered ? 8 : 0),
-            child: Row(
-              crossAxisAlignment:
-                  CrossAxisAlignment.center, // Thay đổi từ start sang center
+    final isInteractive = widget.onTap != null;
 
-              children: [
-                Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.asset(
-                        widget.playlists['image'],
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() {
+        _hovering = false;
+        _pressed = false;
+      }),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.onTap,
+        onTapDown: isInteractive ? (_) => setState(() => _pressed = true) : null,
+        onTapUp: isInteractive ? (_) => setState(() => _pressed = false) : null,
+        onTapCancel: isInteractive ? () => setState(() => _pressed = false) : null,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 120),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+          color: _backgroundColor(context),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Index number
+              SizedBox(
+                width: 30,
+                child: Text(
+                  '${widget.index}',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+
+              // Thumbnail image
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Builder(
+                  builder: (context) {
+                    final image =
+                        (widget.playlists['image'] ?? '').toString();
+                    final fallbackAsset = 'assets/images/khongbuon.png';
+
+                    if (image.startsWith('http://') ||
+                        image.startsWith('https://')) {
+                      return Image.network(
+                        image,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Image.asset(
+                          fallbackAsset,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                        ),
+                      );
+                    }
+
+                    return Image.asset(
+                      image.isNotEmpty ? image : fallbackAsset,
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Image.asset(
+                        fallbackAsset,
                         width: 50,
                         height: 50,
                         fit: BoxFit.cover,
                       ),
-                    ),
-
-                    // if (_isHovered)
-                    //     Positioned(
-                    //       bottom: 8,
-                    //       right: 8,
-                    //       child: Container(
-                    //         width: 48,
-                    //         height: 48,
-                    //         decoration: BoxDecoration(
-                    //           color: const Color(0xFFE62429),
-                    //           shape: BoxShape.circle,
-                    //           boxShadow: [
-                    //             BoxShadow(
-                    //               color: Colors.black.withOpacity(0.3),
-                    //               blurRadius: 8,
-                    //               offset: const Offset(0, 4),
-                    //             ),
-                    //           ],
-                    //         ),
-                    //         child: const Icon(
-                    //           Icons.play_arrow,
-                    //           color: Colors.black,
-                    //           size: 28,
-                    //         ),
-                    //       ),
-                    //     ),
-                  ],
+                    );
+                  },
                 ),
+              ),
 
-                const SizedBox(width: 8),
-                Column(
+              const SizedBox(width: 12),
+
+              // Playlist name and owner
+              Expanded(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       widget.playlists['name'],
-
                       style: TextStyle(
-                        color: _isHovered
-                            ? Theme.of(context).colorScheme.onSurface
-                            : Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withOpacity(0.95),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(height: 2),
                     Text(
-                      widget.playlists['type'] +
-                          ' · ' +
-                          widget.playlists['owner'],
+                      widget.playlists['owner'],
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 12,
@@ -971,29 +1162,35 @@ class _PlaylistUserCardState extends State<PlaylistUserCard> {
                     ),
                   ],
                 ),
+              ),
 
-                // Text(
-                //   widget.playlists['role'],
-                //   style: TextStyle(
-                //     color: Colors.grey[400],
-                //     fontSize: 12,
-                //   ),
-                //   maxLines: 1,
-                //   overflow: TextOverflow.ellipsis,
-                // ),
-              ],
-            ),
+              const SizedBox(width: 12),
+
+              // Total duration
+              Text(
+                _formatDuration(
+                  (widget.playlists['duration'] ?? 0) is int
+                      ? widget.playlists['duration']
+                      : int.tryParse(
+                              widget.playlists['duration']?.toString() ?? '0') ??
+                          0,
+                ),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 }
-
-// Create Playlist Dialog - Spotify style
 class _CreatePlaylistDialog extends StatefulWidget {
   final String defaultName;
-  final Function(String) onCreatePlaylist;
+  final Function(Playlist) onCreatePlaylist;
 
   const _CreatePlaylistDialog({
     required this.defaultName,
@@ -1005,252 +1202,330 @@ class _CreatePlaylistDialog extends StatefulWidget {
 }
 
 class _CreatePlaylistDialogState extends State<_CreatePlaylistDialog> {
-  late TextEditingController _nameController;
+  late final TextEditingController _playlistNameController;
   final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocusNode = FocusNode();
+  List<Track> _searchResults = [];
+  final List<Track> _selectedTracks = [];
+  bool _isSearching = false;
+  bool _isCreating = false;
+  bool _isPublic = false;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.defaultName);
+    _playlistNameController = TextEditingController(text: widget.defaultName);
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _playlistNameController.dispose();
     _searchController.dispose();
-    _searchFocusNode.dispose();
     super.dispose();
+  }
+
+  Future<void> _searchTracks(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
+      });
+      return;
+    }
+
+    setState(() => _isSearching = true);
+
+    try {
+      final musicService = serviceLocator.musicService;
+      final results = await musicService.searchTracks(query: query, limit: 20);
+
+      if (!mounted) return;
+      setState(() {
+        _searchResults = results;
+        _isSearching = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
+      });
+    }
+  }
+
+  void _toggleTrackSelection(Track track) {
+    setState(() {
+      if (_selectedTracks.any((t) => t.id == track.id)) {
+        _selectedTracks.removeWhere((t) => t.id == track.id);
+      } else {
+        _selectedTracks.add(track);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Dialog(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      backgroundColor: const Color(0xFF282828),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
         width: 500,
+        height: 600,
         padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with close button
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const SizedBox(width: 40), // Placeholder for alignment
-                const Spacer(),
+                Text(
+                  l10n?.createPlaylist ?? 'Create Playlist',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(
-                    Icons.close,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Playlist info section
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Playlist cover placeholder
-                Container(
-                  width: 180,
-                  height: 180,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceVariant,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 16,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.music_note,
-                    size: 64,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(width: 24),
-
-                // Playlist details
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        AppLocalizations.of(context)?.publicPlaylist ?? 'Public Playlist',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      // Editable playlist name
-                      TextField(
-                        controller: _nameController,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                        onSubmitted: (_) => _createPlaylist(),
-                      ),
-                      const SizedBox(height: 16),
-                      // Owner info
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 12,
-                            backgroundColor: Theme.of(context).colorScheme.primary,
-                            child: Icon(
-                              Icons.person,
-                              size: 14,
-                              color: Theme.of(context).colorScheme.onPrimary,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'You', // TODO: Get actual user name
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurface,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                  icon: const Icon(Icons.close, color: Colors.white54),
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
             ),
             const SizedBox(height: 24),
 
-            // Action buttons
+            TextField(
+              controller: _playlistNameController,
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+              onSubmitted: (_) => _createPlaylist(),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color(0xFF3E3E3E),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+                hintText: l10n?.myPlaylist ?? 'My Playlist',
+                hintStyle: const TextStyle(color: Colors.white38),
+              ),
+            ),
+            const SizedBox(height: 24),
+
             Row(
               children: [
-                // Add collaborator button
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                    ),
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: IconButton(
-                    onPressed: () {
-                      // TODO: Add collaborator functionality
-                    },
-                    icon: Icon(
-                      Icons.person_add_outlined,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                ChoiceChip(
+                  label: const Text('Private'),
+                  selected: !_isPublic,
+                  onSelected: (_) => setState(() => _isPublic = false),
+                  selectedColor: const Color(0xFF3E3E3E),
+                  backgroundColor: const Color(0xFF2F2F2F),
+                  labelStyle: TextStyle(
+                    color: !_isPublic ? Colors.white : Colors.white54,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(width: 12),
-                // More options button
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                    ),
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: IconButton(
-                    onPressed: () {
-                      // TODO: More options
-                    },
-                    icon: Icon(
-                      Icons.more_horiz,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                const SizedBox(width: 8),
+                ChoiceChip(
+                  label: const Text('Public'),
+                  selected: _isPublic,
+                  onSelected: (_) => setState(() => _isPublic = true),
+                  selectedColor: const Color(0xFF3E3E3E),
+                  backgroundColor: const Color(0xFF2F2F2F),
+                  labelStyle: TextStyle(
+                    color: _isPublic ? Colors.white : Colors.white54,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
 
-            // Search section title
             Text(
-              AppLocalizations.of(context)?.findSongsForPlaylist ?? 
+              l10n?.findSongsForPlaylist ??
                   "Let's find something for your playlist",
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            TextField(
+              controller: _searchController,
+              style: const TextStyle(color: Colors.white),
+              onChanged: _searchTracks,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color(0xFF3E3E3E),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+                prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                hintText:
+                    l10n?.searchSongsAndPodcasts ??
+                    'Search for songs and podcasts',
+                hintStyle: const TextStyle(color: Colors.white38),
               ),
             ),
             const SizedBox(height: 16),
 
-            // Search bar
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceVariant,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 16),
-                        Icon(
-                          Icons.search,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextField(
-                            controller: _searchController,
-                            focusNode: _searchFocusNode,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurface,
+            Expanded(
+              child: _isSearching
+                  ? const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    )
+                  : _searchResults.isNotEmpty
+                  ? ListView.builder(
+                      itemCount: _searchResults.length,
+                      itemBuilder: (context, index) {
+                        final track = _searchResults[index];
+                        final isSelected = _selectedTracks.any(
+                          (t) => t.id == track.id,
+                        );
+
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: Image.network(
+                              track.trackImageUrl,
+                              width: 48,
+                              height: 48,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                width: 48,
+                                height: 48,
+                                color: Colors.grey.shade800,
+                                child: const Icon(
+                                  Icons.music_note,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            track.title,
+                            style: const TextStyle(
+                              color: Colors.white,
                               fontSize: 14,
                             ),
-                            decoration: InputDecoration(
-                              hintText: AppLocalizations.of(context)?.searchSongsAndPodcasts ?? 
-                                  'Search for songs and podcasts',
-                              hintStyle: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                fontSize: 14,
-                              ),
-                              border: InputBorder.none,
-                              isDense: true,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            track.artist,
+                            style: const TextStyle(
+                              color: Colors.white54,
+                              fontSize: 12,
                             ),
+                            maxLines: 1,
+                          ),
+                          trailing: IconButton(
+                            icon: Icon(
+                              isSelected
+                                  ? Icons.check_circle
+                                  : Icons.add_circle_outline,
+                              color: isSelected ? Colors.green : Colors.white54,
+                            ),
+                            onPressed: () => _toggleTrackSelection(track),
+                          ),
+                        );
+                      },
+                    )
+                  : _selectedTracks.isNotEmpty
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${_selectedTracks.length} tracks selected',
+                          style: const TextStyle(color: Colors.white54),
+                        ),
+                        const SizedBox(height: 8),
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: _selectedTracks.length,
+                            itemBuilder: (context, index) {
+                              final track = _selectedTracks[index];
+                              return ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: Image.network(
+                                    track.trackImageUrl,
+                                    width: 40,
+                                    height: 40,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      width: 40,
+                                      height: 40,
+                                      color: Colors.grey.shade800,
+                                      child: const Icon(
+                                        Icons.music_note,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                title: Text(
+                                  track.title,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(
+                                    Icons.remove_circle,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () => _toggleTrackSelection(track),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],
+                    )
+                  : Center(
+                      child: Text(
+                        l10n?.searchSongsAndPodcasts ??
+                            'Search for songs to add',
+                        style: const TextStyle(color: Colors.white38),
+                      ),
                     ),
+            ),
+
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isCreating ? null : _createPlaylist,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
                   ),
                 ),
-                const SizedBox(width: 16),
-                // Close/Cancel button
-                IconButton(
-                  onPressed: () {
-                    _createPlaylist();
-                  },
-                  icon: Icon(
-                    Icons.close,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
+                child: _isCreating
+                    ? const SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.black,
+                        ),
+                      )
+                    : Text(
+                        l10n?.create ?? 'Create',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+              ),
             ),
           ],
         ),
@@ -1258,11 +1533,52 @@ class _CreatePlaylistDialogState extends State<_CreatePlaylistDialog> {
     );
   }
 
-  void _createPlaylist() {
-    final name = _nameController.text.trim();
-    if (name.isNotEmpty) {
-      widget.onCreatePlaylist(name);
+  Future<void> _createPlaylist() async {
+    final name = _playlistNameController.text.trim();
+    if (name.isEmpty) return;
+
+    final userId = CurrentUser.instance.user?.userId ?? '';
+    if (userId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please login to create a playlist.')),
+      );
+      return;
     }
-    Navigator.pop(context);
+
+    if (_isCreating) return;
+    setState(() => _isCreating = true);
+
+    try {
+      final trackIds = _selectedTracks
+          .map((t) => t.trackId)
+          .where((id) => id.trim().isNotEmpty)
+          .toList();
+
+      final duration = _selectedTracks.fold<int>(
+        0,
+        (sum, t) => sum + (t.duration > 0 ? t.duration : 0),
+      );
+
+      final created = await serviceLocator.playlistService
+          .createPlaylistCatalog(
+            playlistName: name,
+            userId: userId,
+            isPublic: _isPublic,
+            trackIds: trackIds.isEmpty ? null : trackIds,
+            totalTracks: trackIds.isEmpty ? null : trackIds.length,
+            duration: duration > 0 ? duration : null,
+          );
+
+      if (!mounted) return;
+      widget.onCreatePlaylist(created);
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Create playlist failed: $e')));
+    } finally {
+      if (mounted) setState(() => _isCreating = false);
+    }
   }
 }

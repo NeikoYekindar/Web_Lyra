@@ -227,16 +227,32 @@ class AuthProviderV2 extends ChangeNotifier {
         return;
       }
 
-      // We have tokens and cached user, restore session without API call
-      _auth = AuthResponse(
-        tokenType: 'Bearer',
-        accessToken: apiClient.accessToken ?? '',
-        refreshToken: apiClient.refreshToken ?? '',
-        expiresIn: '',
-        user: cachedUser,
-      );
+      // Verify token with server to ensure it's still valid
+      try {
+        print('🔐 Verifying token with server...');
+        final isValid = await authService.verifyToken();
 
-      print('✅ Session restored from cache');
+        if (!isValid) {
+          print('❌ Token is invalid or expired');
+          await logout();
+          return;
+        }
+
+        // Token is valid, restore session with cached user data
+        _auth = AuthResponse(
+          tokenType: 'Bearer',
+          accessToken: apiClient.accessToken ?? '',
+          refreshToken: apiClient.refreshToken ?? '',
+          expiresIn: '',
+          user: cachedUser,
+        );
+
+        print('✅ Session restored successfully');
+      } catch (e) {
+        print('❌ Token verification failed: $e');
+        await logout();
+        return;
+      }
 
       // Use addPostFrameCallback to notify after build phase
       SchedulerBinding.instance.addPostFrameCallback((_) {

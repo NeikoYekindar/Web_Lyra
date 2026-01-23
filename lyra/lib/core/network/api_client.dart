@@ -229,10 +229,34 @@ class ApiClient {
     required List<http.MultipartFile> files,
     Map<String, dynamic>? fields,
     Map<String, String>? headers,
+    bool includeAuth = true,
     T Function(dynamic)? fromJson,
   }) async {
     final uri = _buildUri(serviceUrl, endpoint, null);
     final requestHeaders = await _buildHeaders(headers);
+    // IMPORTANT: Do not set Content-Type manually for multipart.
+    // http.MultipartRequest will set a boundary-based multipart/form-data content-type.
+    // Setting application/json can break parsing and also triggers CORS preflight on web.
+    requestHeaders.remove('Content-Type');
+    if (!includeAuth) {
+      requestHeaders.remove('Authorization');
+    }
+
+    assert(() {
+      final safeHeaders = Map<String, String>.from(requestHeaders);
+      if (safeHeaders.containsKey('Authorization')) {
+        safeHeaders['Authorization'] = 'Bearer ***';
+      }
+      print('🌐 API Request: POST-MULTIPART $uri');
+      print('📤 Multipart headers: $safeHeaders');
+      if (fields != null) {
+        print('📤 Multipart fields keys: ${fields.keys.toList()}');
+      }
+      if (files.isNotEmpty) {
+        print('📤 Multipart files: ${files.map((f) => f.field).toList()}');
+      }
+      return true;
+    }());
 
     try {
       for (var interceptor in _requestInterceptors) {
@@ -262,7 +286,9 @@ class ApiClient {
         });
       }
 
-      for (final f in files) request.files.add(f);
+      for (final f in files) {
+        request.files.add(f);
+      }
 
       final streamed = await request.send().timeout(
         ApiConfig.connectionTimeout,
