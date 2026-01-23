@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lyra/core/di/service_locator.dart';
 import 'package:lyra/widgets/reset_pass/fp_enter_code.dart';
+import 'package:lyra/l10n/app_localizations.dart';
 
 class EnterEmailScreen extends StatefulWidget {
   @override
@@ -28,7 +29,7 @@ class _EnterEmailScreenState extends State<EnterEmailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to send code: $error'),
+            content: Text('${AppLocalizations.of(context)!.failedToSendCode}$error'),
             backgroundColor: Colors.red,
           ),
         );

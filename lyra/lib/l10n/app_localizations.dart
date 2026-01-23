@@ -293,6 +293,12 @@ abstract class AppLocalizations {
   /// **'Female'**
   String get female;
 
+  /// No description provided for @other.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get other;
+
   /// No description provided for @writeSomething.
   ///
   /// In en, this message translates to:
@@ -352,6 +358,252 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Recent'**
   String get recent;
+
+  /// No description provided for @enterEmailPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter email and password'**
+  String get enterEmailPassword;
+
+  /// No description provided for @loginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Login failed'**
+  String get loginFailed;
+
+  /// No description provided for @failedToPickImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to pick image'**
+  String get failedToPickImage;
+
+  /// No description provided for @skip.
+  ///
+  /// In en, this message translates to:
+  /// **'skip'**
+  String get skip;
+
+  /// No description provided for @createYourProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Your Profile'**
+  String get createYourProfile;
+
+  /// No description provided for @musicExperience.
+  ///
+  /// In en, this message translates to:
+  /// **'Help us personalize your music experience'**
+  String get musicExperience;
+
+  /// No description provided for @profilePicture.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile Picture'**
+  String get profilePicture;
+
+  /// No description provided for @uploadPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Photo'**
+  String get uploadPhoto;
+
+  /// No description provided for @max.
+  ///
+  /// In en, this message translates to:
+  /// **'Max'**
+  String get max;
+
+  /// No description provided for @howShouldWeCallYou.
+  ///
+  /// In en, this message translates to:
+  /// **'How should we call you?'**
+  String get howShouldWeCallYou;
+
+  /// No description provided for @select.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get select;
+
+  /// No description provided for @tellUsAbUrSelf.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about yourself'**
+  String get tellUsAbUrSelf;
+
+  /// No description provided for @selectAtLeastOneGenre.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least one genre'**
+  String get selectAtLeastOneGenre;
+
+  /// No description provided for @yourPersonalized.
+  ///
+  /// In en, this message translates to:
+  /// **'Your personalized playlists will appear here'**
+  String get yourPersonalized;
+
+  /// No description provided for @enterDisplayName.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a display name'**
+  String get enterDisplayName;
+
+  /// No description provided for @failedToSaveProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save profile'**
+  String get failedToSaveProfile;
+
+  /// No description provided for @finish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get finish;
+
+  /// No description provided for @loginDescribe1.
+  ///
+  /// In en, this message translates to:
+  /// **'Stream millions of songs with Lyra.'**
+  String get loginDescribe1;
+
+  /// No description provided for @loginDescribe2.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover new artists, create playlists, and enjoy your favorite music anywhere.'**
+  String get loginDescribe2;
+
+  /// No description provided for @signUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Up'**
+  String get signUp;
+
+  /// No description provided for @signIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In'**
+  String get signIn;
+
+  /// No description provided for @millionsOfSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Millions of Songs'**
+  String get millionsOfSongs;
+
+  /// No description provided for @accessAVastLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Access a vast library of music from'**
+  String get accessAVastLibrary;
+
+  /// No description provided for @artistsAroundTheWorld.
+  ///
+  /// In en, this message translates to:
+  /// **'artists around the world.'**
+  String get artistsAroundTheWorld;
+
+  /// No description provided for @personalized.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalized'**
+  String get personalized;
+
+  /// No description provided for @getRecommendationsBasedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Get recommendations based on'**
+  String get getRecommendationsBasedOn;
+
+  /// No description provided for @yourUniqueMusicalTaste.
+  ///
+  /// In en, this message translates to:
+  /// **'your unique musical taste.'**
+  String get yourUniqueMusicalTaste;
+
+  /// No description provided for @anywhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Anywhere'**
+  String get anywhere;
+
+  /// No description provided for @listenOnAnyDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen on any device, online or offline'**
+  String get listenOnAnyDevice;
+
+  /// No description provided for @whereverYouGo.
+  ///
+  /// In en, this message translates to:
+  /// **'wherever you go.'**
+  String get whereverYouGo;
+
+  /// No description provided for @welcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get welcomeBack;
+
+  /// No description provided for @loginContLis.
+  ///
+  /// In en, this message translates to:
+  /// **'Log in to continue listening'**
+  String get loginContLis;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @enterPass.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Password'**
+  String get enterPass;
+
+  /// No description provided for @rememberMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember me'**
+  String get rememberMe;
+
+  /// No description provided for @validEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email address'**
+  String get validEmail;
+
+  /// No description provided for @logIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Log In'**
+  String get logIn;
+
+  /// No description provided for @continueWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Or continue with'**
+  String get continueWith;
+
+  /// No description provided for @dontHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have account?'**
+  String get dontHaveAccount;
+
+  /// No description provided for @selectDateOfBirth.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Date of Birth'**
+  String get selectDateOfBirth;
+
+  /// No description provided for @continueC.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueC;
 
   /// No description provided for @noResults.
   ///
@@ -430,6 +682,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search for songs and podcasts'**
   String get searchSongsAndPodcasts;
+
+  /// No description provided for @changeAvatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Change avatar'**
+  String get changeAvatar;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// No description provided for @passwordResetSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset successfully!'**
+  String get passwordResetSuccessfully;
+
+  /// No description provided for @failedToResetPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to reset password: {error}'**
+  String failedToResetPassword(Object error);
+
+  /// No description provided for @logoutFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout failed: {error}'**
+  String logoutFailed(Object error);
+
+  /// No description provided for @failedToSendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send code: {error}'**
+  String failedToSendCode(Object error);
+
+  /// No description provided for @verificationCodeResent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code resent. Please check your inbox.'**
+  String get verificationCodeResent;
+
+  /// No description provided for @failedToResendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to resend code: {error}'**
+  String failedToResendCode(Object error);
+
+  /// No description provided for @checkingLoginSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking login session...'**
+  String get checkingLoginSession;
+
+  /// No description provided for @failedToSaveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save: {error}'**
+  String failedToSaveChanges(Object error);
 
   /// No description provided for @createPlaylist.
   ///

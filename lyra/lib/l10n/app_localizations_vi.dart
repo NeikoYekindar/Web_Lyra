@@ -108,6 +108,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get female => 'Nữ';
 
   @override
+  String get other => 'Khác';
+
+  @override
   String get writeSomething => 'Hãy viết gì đó!';
 
   @override
@@ -136,6 +139,129 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get recent => 'Gần đây';
+
+  @override
+  String get enterEmailPassword => 'Vui lòng nhập email và mật khẩu';
+
+  @override
+  String get loginFailed => 'Đăng nhập thất bại';
+
+  @override
+  String get failedToPickImage => 'Không thể chọn ảnh';
+
+  @override
+  String get skip => 'Bỏ qua';
+
+  @override
+  String get createYourProfile => 'Tạo hồ sơ của bạn';
+
+  @override
+  String get musicExperience => 'Hãy giúp chúng tôi cá nhân hóa trải nghiệm âm nhạc của bạn.';
+
+  @override
+  String get profilePicture => 'Ảnh đại diện';
+
+  @override
+  String get uploadPhoto => 'Tải ảnh lên';
+
+  @override
+  String get max => 'Tối đa';
+
+  @override
+  String get howShouldWeCallYou => 'Chúng tôi nên gọi bạn là gì?';
+
+  @override
+  String get select => 'Chọn';
+
+  @override
+  String get tellUsAbUrSelf => 'Hãy cho chúng tôi biết về bạn';
+
+  @override
+  String get selectAtLeastOneGenre => 'Hãy chọn ít nhất một thể loại nhạc';
+
+  @override
+  String get yourPersonalized => 'Danh sách phát cá nhân của bạn sẽ xuất hiện ở đây';
+
+  @override
+  String get enterDisplayName => 'Vui lòng nhập tên hiển thị';
+
+  @override
+  String get failedToSaveProfile => 'Không thể lưu hồ sơ';
+
+  @override
+  String get finish => 'Hoàn tất';
+
+  @override
+  String get loginDescribe1 => 'Nghe hàng triệu bài hát với Lyra.';
+
+  @override
+  String get loginDescribe2 => 'Khám phá những nghệ sĩ mới, tạo danh sách phát và thưởng thức âm nhạc yêu thích của bạn mọi lúc mọi nơi.';
+
+  @override
+  String get signUp => 'Đăng ký';
+
+  @override
+  String get signIn => 'Đăng nhập';
+
+  @override
+  String get millionsOfSongs => 'Triệu bài hát';
+
+  @override
+  String get accessAVastLibrary => 'Truy cập vào kho thư viện âm nhạc khổng lồ từ';
+
+  @override
+  String get artistsAroundTheWorld => 'các nghệ sĩ trên toàn thế giới.';
+
+  @override
+  String get personalized => 'Cá nhân hóa';
+
+  @override
+  String get getRecommendationsBasedOn => 'Nhận đề xuất dựa trên';
+
+  @override
+  String get yourUniqueMusicalTaste => 'gu âm nhạc độc đáo của bạn.';
+
+  @override
+  String get anywhere => 'Bất cứ đâu';
+
+  @override
+  String get listenOnAnyDevice => 'Nghe trên mọi thiết bị, trực tuyến hoặc ngoại tuyến,';
+
+  @override
+  String get whereverYouGo => 'mọi lúc mọi nơi.';
+
+  @override
+  String get welcomeBack => 'Chào mừng bạn quay lại';
+
+  @override
+  String get loginContLis => 'Đăng nhập để tiếp tục nghe nhạc.';
+
+  @override
+  String get password => 'Mật khẩu';
+
+  @override
+  String get enterPass => 'Nhập mật khẩu';
+
+  @override
+  String get rememberMe => 'Nhớ tài khoản';
+
+  @override
+  String get validEmail => 'Vui lòng nhập địa chỉ email hợp lệ';
+
+  @override
+  String get logIn => 'Đăng nhập';
+
+  @override
+  String get continueWith => 'Hoặc đăng nhập với';
+
+  @override
+  String get dontHaveAccount => 'Không có tài khoản?';
+
+  @override
+  String get selectDateOfBirth => 'Chọn ngày sinh';
+
+  @override
+  String get continueC => 'Tiếp tục';
 
   @override
   String get noResults => 'Không tìm thấy kết quả';
@@ -175,6 +301,46 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get searchSongsAndPodcasts => 'Tìm bài hát và tập podcast';
+
+  @override
+  String get changeAvatar => 'Thay đổi ảnh đại diện';
+
+  @override
+  String get clear => 'Xóa';
+
+  @override
+  String get passwordResetSuccessfully => 'Đã đặt lại mật khẩu thành công!';
+
+  @override
+  String failedToResetPassword(Object error) {
+    return 'Không thể đặt lại mật khẩu: $error';
+  }
+
+  @override
+  String logoutFailed(Object error) {
+    return 'Đăng xuất thất bại: $error';
+  }
+
+  @override
+  String failedToSendCode(Object error) {
+    return 'Không thể gửi mã: $error';
+  }
+
+  @override
+  String get verificationCodeResent => 'Mã xác minh đã được gửi lại. Vui lòng kiểm tra hộp thư đến.';
+
+  @override
+  String failedToResendCode(Object error) {
+    return 'Không thể gửi lại mã: $error';
+  }
+
+  @override
+  String get checkingLoginSession => 'Đang kiểm tra phiên đăng nhập...';
+
+  @override
+  String failedToSaveChanges(Object error) {
+    return 'Không thể lưu: $error';
+  }
 
   @override
   String get createPlaylist => 'Tạo danh sách phát';
