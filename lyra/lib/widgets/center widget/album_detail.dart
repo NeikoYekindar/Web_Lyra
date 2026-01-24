@@ -283,9 +283,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
       listen: false,
     );
 
-    await musicPlayerProvider.setTrack(
+    await musicPlayerProvider.setTrackWithRecommended(
       _albumDetail!.tracks.first,
-      queue: _albumDetail!.tracks,
+      fallbackQueue: _albumDetail!.tracks,
     );
     musicPlayerProvider.play();
 
@@ -306,7 +306,10 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
       listen: false,
     );
 
-    await musicPlayerProvider.setTrack(track, queue: _albumDetail!.tracks);
+    await musicPlayerProvider.setTrackWithRecommended(
+      track,
+      fallbackQueue: _albumDetail!.tracks,
+    );
     musicPlayerProvider.play();
 
     if (!shellController.isPlayerMaximized) {

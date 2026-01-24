@@ -357,8 +357,11 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
         listen: false,
       );
 
-      // Load track with full queue (at least 10 tracks)
-      await musicPlayerProvider.setTrack(track, queue: _queueTracks);
+      // Load track with full queue (at least 10 tracks). Prefer recommendations.
+      await musicPlayerProvider.setTrackWithRecommended(
+        track,
+        fallbackQueue: _queueTracks,
+      );
       musicPlayerProvider.play();
     } catch (e) {
       print('Error playing track: $e');

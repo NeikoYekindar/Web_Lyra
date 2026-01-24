@@ -190,8 +190,11 @@ class _ArtistPageState extends State<ArtistPage> {
           ? track.copyWith(artistObj: widget.artist)
           : track;
 
-      // Load track with enhanced queue
-      await musicPlayerProvider.setTrack(trackWithArtist, queue: queue);
+      // Load track with enhanced queue; prefer recommended queue when available
+      await musicPlayerProvider.setTrackWithRecommended(
+        trackWithArtist,
+        fallbackQueue: queue,
+      );
       musicPlayerProvider.play();
     } catch (e) {
       print('Error playing track: $e');

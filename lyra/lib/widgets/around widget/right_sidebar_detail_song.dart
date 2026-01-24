@@ -631,7 +631,10 @@ class _NextQueueSection extends StatelessWidget {
                           track,
                           ...existing.where((t) => t.trackId != track.trackId),
                         ];
-                        await player.setTrack(track, queue: rotated);
+                        await player.setTrackWithRecommended(
+                          track,
+                          fallbackQueue: rotated,
+                        );
                         player.play();
                       } catch (e) {
                         debugPrint('Error playing next track directly: $e');

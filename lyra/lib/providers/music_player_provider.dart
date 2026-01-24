@@ -196,6 +196,67 @@ class MusicPlayerProvider extends ChangeNotifier {
     }
   }
 
+  // Set track but prefer recommended queue for the user when available.
+  Future<void> setTrackWithRecommended(
+    Track track, {
+    List<Track>? fallbackQueue,
+    int n = 20,
+  }) async {
+    List<Track>? queueToUse;
+
+    // If a fallback queue is provided (album/playlist), play it first
+    // and append recommendations after it. If no fallback is provided,
+    // use recommendations as the primary queue when available.
+    if (fallbackQueue != null && fallbackQueue.isNotEmpty) {
+      queueToUse = List<Track>.from(fallbackQueue);
+      try {
+        final userId = CurrentUser.instance.user?.userId;
+        if (userId != null && userId.isNotEmpty) {
+          final recs = await InteractionService.getRecommendations(
+            userId: userId,
+            n: n,
+            filterLiked: false,
+          );
+          if (recs.isNotEmpty) {
+            final existingIds = queueToUse.map((t) => t.trackId).toSet();
+            final toAdd = recs.where((t) => !existingIds.contains(t.trackId));
+            queueToUse.addAll(toAdd);
+            debugPrint('✅ Appended ${toAdd.length} recommended tracks to fallback queue');
+          } else {
+            debugPrint('ℹ️ No recommendations returned; using fallback queue only');
+          }
+        } else {
+          debugPrint('ℹ️ No user logged in; using fallback queue only');
+        }
+      } catch (e) {
+        debugPrint('⚠️ Error fetching recommendations: $e');
+      }
+    } else {
+      try {
+        final userId = CurrentUser.instance.user?.userId;
+        if (userId != null && userId.isNotEmpty) {
+          final recs = await InteractionService.getRecommendations(
+            userId: userId,
+            n: n,
+            filterLiked: false,
+          );
+          if (recs.isNotEmpty) {
+            queueToUse = recs;
+            debugPrint('✅ Using ${recs.length} recommended tracks as queue');
+          } else {
+            debugPrint('ℹ️ No recommendations returned; no queue provided');
+          }
+        } else {
+          debugPrint('ℹ️ No user logged in; no queue provided');
+        }
+      } catch (e) {
+        debugPrint('⚠️ Error fetching recommendations: $e');
+      }
+    }
+
+    await setTrack(track, queue: queueToUse);
+  }
+
   // =========================
   // QUEUE MANAGEMENT
   // =========================

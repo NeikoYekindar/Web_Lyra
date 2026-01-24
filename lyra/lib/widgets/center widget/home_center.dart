@@ -464,8 +464,11 @@ class _HomeCenterState extends State<HomeCenter> {
         listen: false,
       );
 
-      // Load the track into player with full trending songs as queue
-      await musicPlayerProvider.setTrack(song, queue: _trendingSongs);
+      // Load the track into player with full trending songs as a fallback queue; prefer recommendations
+      await musicPlayerProvider.setTrackWithRecommended(
+        song,
+        fallbackQueue: _trendingSongs,
+      );
 
       // Always play the new track
       musicPlayerProvider.play();
@@ -485,8 +488,11 @@ class _HomeCenterState extends State<HomeCenter> {
         listen: false,
       );
 
-      // Load the track into player with full recommended songs as queue
-      await musicPlayerProvider.setTrack(song, queue: _recommendedSongs);
+      // Load the track into player; prefer recommendations (use recommended list as fallback too)
+      await musicPlayerProvider.setTrackWithRecommended(
+        song,
+        fallbackQueue: _recommendedSongs,
+      );
 
       // Always play the new track
       musicPlayerProvider.play();
@@ -791,9 +797,36 @@ class _HomeCenterState extends State<HomeCenter> {
                                         ),
                                         const SizedBox(width: 10),
                                         ElevatedButton(
-                                          onPressed: () {
+                                          onPressed: () async {
+                                            // If there are recommended songs, queue them and play
+                                            if (_recommendedSongs.isNotEmpty) {
+                                              try {
+                                                final musicPlayerProvider =
+                                                    Provider.of<MusicPlayerProvider>(
+                                                  context,
+                                                  listen: false,
+                                                );
+                                                final first = _recommendedSongs.first;
+                                                await musicPlayerProvider.setTrackWithRecommended(
+                                                  first,
+                                                  fallbackQueue: _recommendedSongs,
+                                                );
+                                                musicPlayerProvider.play();
+                                                if (mounted) {
+                                                  setState(() {
+                                                    _isPlaying = true;
+                                                  });
+                                                }
+                                                print(
+                                                    'Playing recommended queue: ${_recommendedSongs.length} tracks');
+                                              } catch (e) {
+                                                print('Error playing recommended queue: $e');
+                                              }
+                                              return;
+                                            }
+
+                                            // Fallback: open album detail and add to sidebar
                                             if (_featuredAlbum != null) {
-                                              // Add album to left sidebar saved list
                                               final shellController =
                                                   Provider.of<
                                                     AppShellController
@@ -807,7 +840,6 @@ class _HomeCenterState extends State<HomeCenter> {
                                                 'artist_name':
                                                     _featuredAlbum!.artistName,
                                               });
-                                              // Open album detail
                                               shellController.showCenterContent(
                                                 AlbumDetailScreen(
                                                   key: ValueKey(

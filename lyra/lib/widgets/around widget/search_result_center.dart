@@ -543,9 +543,9 @@ class _SearchResultCenterState extends State<SearchResultCenter> {
                                   }
                                 }
 
-                                await player.setTrack(
+                                await player.setTrackWithRecommended(
                                   playTrack,
-                                  queue: allTracks,
+                                  fallbackQueue: allTracks,
                                 );
                                 player.play();
                               } catch (e) {

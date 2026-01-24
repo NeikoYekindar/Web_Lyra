@@ -161,9 +161,11 @@ class _LeftSidebarState extends State<LeftSidebar> {
         setState(() {
           // Filter out "Artists" and "Albums" from categories
           categories = apiResponse
-              .where((cat) => 
-                  cat.toLowerCase() != 'artists' && 
-                  cat.toLowerCase() != 'albums')
+              .where(
+                (cat) =>
+                    cat.toLowerCase() != 'artists' &&
+                    cat.toLowerCase() != 'albums',
+              )
               .toList();
           _isLoadingCategories = false;
         });
@@ -276,12 +278,6 @@ class _LeftSidebarState extends State<LeftSidebar> {
                 const Spacer(),
                 _buildCreateButton(),
                 const SizedBox(width: 2),
-                _buildCustomIconMenuItemLibraryCreate(
-                  'assets/icons/expand.svg',
-                  false,
-                  35,
-                  35,
-                ),
               ],
             ),
           ),
@@ -313,7 +309,9 @@ class _LeftSidebarState extends State<LeftSidebar> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isSelected
                           ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.surfaceContainerHighest,
+                          : Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest,
                       foregroundColor: isSelected
                           ? Theme.of(context).colorScheme.onPrimary
                           : Theme.of(context).colorScheme.onSurfaceVariant,
@@ -595,7 +593,9 @@ class _LeftSidebarState extends State<LeftSidebar> {
                               child: Text(
                                 'No saved artists',
                                 style: TextStyle(
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                                   fontSize: 14,
                                 ),
                               ),
@@ -606,7 +606,8 @@ class _LeftSidebarState extends State<LeftSidebar> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: artists.length,
-                          separatorBuilder: (context, index) => const SizedBox(height: 8),
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 8),
                           itemBuilder: (context, index) {
                             final artist = artists[index];
                             return _buildArtistCard(artist, shellController);
@@ -627,7 +628,9 @@ class _LeftSidebarState extends State<LeftSidebar> {
                               child: Text(
                                 'No saved albums',
                                 style: TextStyle(
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                                   fontSize: 14,
                                 ),
                               ),
@@ -638,7 +641,8 @@ class _LeftSidebarState extends State<LeftSidebar> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: albums.length,
-                          separatorBuilder: (context, index) => const SizedBox(height: 8),
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 8),
                           itemBuilder: (context, index) {
                             final album = albums[index];
                             return _buildAlbumCard(album, shellController);
@@ -655,11 +659,16 @@ class _LeftSidebarState extends State<LeftSidebar> {
     );
   }
 
-  Widget _buildArtistCard(Map<String, dynamic> artist, AppShellController shellController) {
+  Widget _buildArtistCard(
+    Map<String, dynamic> artist,
+    AppShellController shellController,
+  ) {
     final artistId = (artist['artist_id'] ?? artist['id'] ?? '').toString();
-    final name = (artist['nickname'] ?? artist['name'] ?? 'Unknown Artist').toString();
-    final imageUrl = (artist['profile_picture'] ?? artist['image'] ?? '').toString();
-    
+    final name = (artist['nickname'] ?? artist['name'] ?? 'Unknown Artist')
+        .toString();
+    final imageUrl = (artist['profile_picture'] ?? artist['image'] ?? '')
+        .toString();
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
@@ -725,12 +734,22 @@ class _LeftSidebarState extends State<LeftSidebar> {
     );
   }
 
-  Widget _buildAlbumCard(Map<String, dynamic> album, AppShellController shellController) {
+  Widget _buildAlbumCard(
+    Map<String, dynamic> album,
+    AppShellController shellController,
+  ) {
     final albumId = (album['album_id'] ?? album['id'] ?? '').toString();
-    final name = (album['album_name'] ?? album['title'] ?? album['name'] ?? 'Unknown Album').toString();
-    final artistName = (album['artist_name'] ?? album['artistName'] ?? '').toString();
-    final imageUrl = (album['album_image_url'] ?? album['image'] ?? '').toString();
-    
+    final name =
+        (album['album_name'] ??
+                album['title'] ??
+                album['name'] ??
+                'Unknown Album')
+            .toString();
+    final artistName = (album['artist_name'] ?? album['artistName'] ?? '')
+        .toString();
+    final imageUrl = (album['album_image_url'] ?? album['image'] ?? '')
+        .toString();
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
@@ -799,13 +818,13 @@ class _LeftSidebarState extends State<LeftSidebar> {
 
   Future<void> _onPlaylistUserTapped(Map<String, dynamic> playlist) async {
     try {
-      final playlistId =
-          (playlist['playlist_id'] ?? playlist['id'] ?? '').toString();
+      final playlistId = (playlist['playlist_id'] ?? playlist['id'] ?? '')
+          .toString();
       if (playlistId.trim().isEmpty) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid playlist id.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Invalid playlist id.')));
         return;
       }
 
@@ -1120,8 +1139,11 @@ class _LeftSidebarState extends State<LeftSidebar> {
         listen: false,
       );
 
-      // Load track with full queue (at least 10 tracks)
-      await musicPlayerProvider.setTrack(track, queue: _queueTracks);
+      // Load track with full queue (at least 10 tracks). Prefer recommendations.
+      await musicPlayerProvider.setTrackWithRecommended(
+        track,
+        fallbackQueue: _queueTracks,
+      );
       musicPlayerProvider.play();
     } catch (e) {
       print('Error playing track: $e');
@@ -1239,8 +1261,12 @@ class PlaylistUserCard extends StatefulWidget {
   final Map<String, dynamic> playlists;
   final VoidCallback? onTap;
 
-  const PlaylistUserCard(
-      {super.key, required this.index, required this.playlists, this.onTap});
+  const PlaylistUserCard({
+    super.key,
+    required this.index,
+    required this.playlists,
+    this.onTap,
+  });
 
   @override
   State<PlaylistUserCard> createState() => _PlaylistUserCardState();
@@ -1279,9 +1305,13 @@ class _PlaylistUserCardState extends State<PlaylistUserCard> {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,
-        onTapDown: isInteractive ? (_) => setState(() => _pressed = true) : null,
+        onTapDown: isInteractive
+            ? (_) => setState(() => _pressed = true)
+            : null,
         onTapUp: isInteractive ? (_) => setState(() => _pressed = false) : null,
-        onTapCancel: isInteractive ? () => setState(() => _pressed = false) : null,
+        onTapCancel: isInteractive
+            ? () => setState(() => _pressed = false)
+            : null,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           curve: Curves.easeOut,
@@ -1309,8 +1339,7 @@ class _PlaylistUserCardState extends State<PlaylistUserCard> {
                 borderRadius: BorderRadius.circular(4),
                 child: Builder(
                   builder: (context) {
-                    final image =
-                        (widget.playlists['image'] ?? '').toString();
+                    final image = (widget.playlists['image'] ?? '').toString();
                     final fallbackAsset = 'assets/images/khongbuon.png';
 
                     if (image.startsWith('http://') ||
@@ -1386,8 +1415,9 @@ class _PlaylistUserCardState extends State<PlaylistUserCard> {
                   (widget.playlists['duration'] ?? 0) is int
                       ? widget.playlists['duration']
                       : int.tryParse(
-                              widget.playlists['duration']?.toString() ?? '0') ??
-                          0,
+                              widget.playlists['duration']?.toString() ?? '0',
+                            ) ??
+                            0,
                 ),
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -1402,6 +1432,7 @@ class _PlaylistUserCardState extends State<PlaylistUserCard> {
     );
   }
 }
+
 class _CreatePlaylistDialog extends StatefulWidget {
   final String defaultName;
   final Function(Playlist) onCreatePlaylist;

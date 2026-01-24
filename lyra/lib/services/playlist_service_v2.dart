@@ -59,7 +59,8 @@ class Playlist {
     }
 
     List<String>? parsedTrackIds;
-    final rawTrackIds = json['track_ids'] ?? json['id_tracks'] ?? json['tracks'];
+    final rawTrackIds =
+        json['track_ids'] ?? json['id_tracks'] ?? json['tracks'];
     if (rawTrackIds is List) {
       parsedTrackIds = List<String>.from(rawTrackIds.map((e) => e.toString()));
     } else if (rawTrackIds is String && rawTrackIds.trim().isNotEmpty) {
@@ -76,11 +77,12 @@ class Playlist {
     return Playlist(
       id: (json['playlist_id'] ?? json['id'])?.toString() ?? '',
       name:
-          (json['playlist_name'] ?? json['name'] ?? json['title'])?.toString() ??
+          (json['playlist_name'] ?? json['name'] ?? json['title'])
+              ?.toString() ??
           '',
       description: json['description']?.toString(),
-      coverUrl:
-          (json['image_url'] ?? json['cover_url'] ?? json['image'])?.toString(),
+      coverUrl: (json['image_url'] ?? json['cover_url'] ?? json['image'])
+          ?.toString(),
       ownerId: (json['user_id'] ?? json['owner_id'])?.toString() ?? '',
       ownerName: json['owner_name']?.toString() ?? '',
       isPublic: parseBool(json['is_public'] ?? json['public']),
@@ -169,16 +171,17 @@ class PlaylistDetail {
     return PlaylistDetail(
       playlistId: (json['playlist_id'] ?? json['id'])?.toString() ?? '',
       playlistName:
-          (json['playlist_name'] ?? json['name'] ?? json['title'])?.toString() ??
+          (json['playlist_name'] ?? json['name'] ?? json['title'])
+              ?.toString() ??
           '',
       userId: (json['user_id'] ?? json['owner_id'])?.toString() ?? '',
       totalTracks: parseInt(
-        json['total_tracks'] ?? json['track_count'] ?? json['tracks_count'],
+        json['total_track'] ?? json['track_count'] ?? json['tracks_count'],
       ),
       duration: parseInt(json['duration']),
       isPublic: parseBool(json['is_public'] ?? json['public']),
-      imageUrl:
-          (json['image_url'] ?? json['cover_url'] ?? json['image'])?.toString(),
+      imageUrl: (json['image_url'] ?? json['cover_url'] ?? json['image'])
+          ?.toString(),
       releaseDate: (json['release_date'] ?? json['created_at'])?.toString(),
       totalStreams: parseInt(json['total_streams']),
       tracks: parsedTracks,
@@ -292,7 +295,8 @@ class PlaylistServiceV2 {
         dynamic raw = json;
 
         if (raw is Map<String, dynamic>) {
-          raw = raw['data'] ?? raw['playlists'] ?? raw['items'] ?? raw['result'];
+          raw =
+              raw['data'] ?? raw['playlists'] ?? raw['items'] ?? raw['result'];
         }
 
         if (raw is List) {
@@ -347,8 +351,7 @@ class PlaylistServiceV2 {
     final response = await _apiClient.get<PlaylistDetail>(
       ApiConfig.playlistServiceUrl,
       endpoint,
-      fromJson: (json) =>
-          PlaylistDetail.fromJson(json as Map<String, dynamic>),
+      fromJson: (json) => PlaylistDetail.fromJson(json as Map<String, dynamic>),
     );
 
     if (response.success && response.data != null) {
@@ -514,10 +517,7 @@ class PlaylistServiceV2 {
     // Record add_to_playlist interaction
     final userId = CurrentUser.instance.user?.userId;
     if (userId != null) {
-      InteractionService.recordAddToPlaylist(
-        trackId: trackId,
-        userId: userId,
-      );
+      InteractionService.recordAddToPlaylist(trackId: trackId, userId: userId);
     }
   }
 

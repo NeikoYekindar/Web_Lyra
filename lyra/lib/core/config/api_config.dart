@@ -10,11 +10,11 @@ class ApiConfig {
   // Microservice Base URLs - Configure for your FastAPI services
   static const Map<String, Map<String, String>> _serviceUrls = {
     'dev': {
-      'auth': 'http://52.73.105.174:3000',
-      'music': 'http://52.73.105.174:3000',
-      'user': 'http://52.73.105.174:3000',
-      'playlist': 'http://52.73.105.174:3000',
-      'search': 'http://52.73.105.174:3000',
+      'auth': 'http://34.228.77.51:3000',
+      'music': 'http://34.228.77.51:3000',
+      'user': 'http://34.228.77.51:3000',
+      'playlist': 'http://34.228.77.51:3000',
+      'search': 'http://34.228.77.51:3000',
     },
     'staging': {
       'auth': 'https://staging-auth.lyra.app',
@@ -56,7 +56,8 @@ class ApiConfig {
   static const String albumsEndpoint = '/api/v1/albums';
   static const String topAlbumsEndpoint = '/albums/top-albums';
   static const String artistsEndpoint = '/api/v1/artists';
-  static const String artistProfileEndpoint = '/artists/info/profile/{artist_id}';
+  static const String artistProfileEndpoint =
+      '/artists/info/profile/{artist_id}';
   static const String topArtistsEndpoint = '/artists/top-artists';
   static const String trackStreamsEndpoint = '/tracks/{id}/streams';
   static const String recentTracksEndpoint = '/tracks/recent-tracks';
@@ -97,15 +98,14 @@ class ApiConfig {
   static const String searchEndpoint = '/api/v1/search';
   static const String suggestionsEndpoint = '/api/v1/search/suggestions';
 
-
   // API Endpoints for Recommendations Service
   static const String interactionsEndpoint = '/recommendations/interactions';
-  static const String userRecommendationsEndpoint = '/recommendations/user/{user_id}';
+  static const String userRecommendationsEndpoint =
+      '/recommendations/user/{user_id}';
 
   // API Endpoints for Change Password
   static String get changePasswordServiceUrl => getServiceUrl('user');
   static const String changePasswordEndpoint = '/users/change-pass';
-
 
   // Request Configuration
   static const Duration connectionTimeout = Duration(seconds: 30);
