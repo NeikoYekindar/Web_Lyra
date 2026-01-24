@@ -43,8 +43,10 @@ class _HomeCenterState extends State<HomeCenter> {
   bool _isLoadingRecommendedSongs = true;
   bool _isLoadingPopularArtists = true;
   bool _isLoadingTopAlbums = true;
-  List<Map<String, dynamic>> _favoriteItems = []; // Danh sách yêu thích đang hiển thị
-  List<Map<String, dynamic>> _allFavoriteItems = []; // Tất cả items gốc để filter
+  List<Map<String, dynamic>> _favoriteItems =
+      []; // Danh sách yêu thích đang hiển thị
+  List<Map<String, dynamic>> _allFavoriteItems =
+      []; // Tất cả items gốc để filter
   bool _isLoadingFavorites = true;
 
   @override
@@ -150,19 +152,27 @@ class _HomeCenterState extends State<HomeCenter> {
       final musicservice = ServiceLocator().musicService;
       final response = await musicservice.getTopAlbums(limit: 10);
       print('🎵 [_loadTopAlbums] Step 2: Got ${response.length} albums');
-      
+
       if (mounted && response.isNotEmpty) {
         final firstAlbum = response.first;
-        print('🎵 [_loadTopAlbums] Step 3: First album - ${firstAlbum.title} (artist_id: ${firstAlbum.artistId})');
-        
+        print(
+          '🎵 [_loadTopAlbums] Step 3: First album - ${firstAlbum.title} (artist_id: ${firstAlbum.artistId})',
+        );
+
         // Fetch artist name nếu chưa có
         Album detailedAlbum = firstAlbum;
         if (firstAlbum.artistName.isEmpty && firstAlbum.artistId.isNotEmpty) {
           try {
-            print('🎵 [_loadTopAlbums] Step 4: Fetching artist profile: ${firstAlbum.artistId}');
-            final artist = await musicservice.getArtistProfile(firstAlbum.artistId);
-            print('🎵 [_loadTopAlbums] Step 5: Got artist - ${artist.nickname}');
-            
+            print(
+              '🎵 [_loadTopAlbums] Step 4: Fetching artist profile: ${firstAlbum.artistId}',
+            );
+            final artist = await musicservice.getArtistProfile(
+              firstAlbum.artistId,
+            );
+            print(
+              '🎵 [_loadTopAlbums] Step 5: Got artist - ${artist.nickname}',
+            );
+
             detailedAlbum = Album(
               id: firstAlbum.id,
               title: firstAlbum.title,
@@ -174,12 +184,16 @@ class _HomeCenterState extends State<HomeCenter> {
               trackIds: firstAlbum.trackIds,
             );
           } catch (e) {
-            print('⚠️ [_loadTopAlbums] Failed to fetch artist, using album as-is: $e');
+            print(
+              '⚠️ [_loadTopAlbums] Failed to fetch artist, using album as-is: $e',
+            );
           }
         } else {
-          print('🎵 [_loadTopAlbums] Artist name already present: ${firstAlbum.artistName}');
+          print(
+            '🎵 [_loadTopAlbums] Artist name already present: ${firstAlbum.artistName}',
+          );
         }
-        
+
         setState(() {
           _topAlbums = response;
           _featuredAlbum = detailedAlbum;
@@ -246,12 +260,12 @@ class _HomeCenterState extends State<HomeCenter> {
       print('🎵 [Favorites] Loading top items from API...');
       final musicService = ServiceLocator().musicService;
       final playlistService = ServiceLocator().playlistService;
-      
+
       // Load top albums, artists, playlists separately to handle errors
       List<Album> topAlbums = [];
       List<Artist> topArtists = [];
       List<Playlist> topPlaylists = [];
-      
+
       // Load albums (3 for All view)
       try {
         topAlbums = await musicService.getTopAlbums(limit: 3);
@@ -259,7 +273,7 @@ class _HomeCenterState extends State<HomeCenter> {
       } catch (e) {
         print('⚠️ [Favorites] Failed to load albums: $e');
       }
-      
+
       // Load artists (2 for All view)
       try {
         topArtists = await musicService.getTopArtists(limit: 2);
@@ -267,7 +281,7 @@ class _HomeCenterState extends State<HomeCenter> {
       } catch (e) {
         print('⚠️ [Favorites] Failed to load artists: $e');
       }
-      
+
       // Load playlists (3 for All view)
       try {
         topPlaylists = await playlistService.getTopPlaylists(limit: 3);
@@ -275,12 +289,14 @@ class _HomeCenterState extends State<HomeCenter> {
       } catch (e) {
         print('⚠️ [Favorites] Failed to load playlists: $e');
       }
-      
-      print('🎵 [Favorites] Total: ${topAlbums.length} albums, ${topArtists.length} artists, ${topPlaylists.length} playlists');
-      
+
+      print(
+        '🎵 [Favorites] Total: ${topAlbums.length} albums, ${topArtists.length} artists, ${topPlaylists.length} playlists',
+      );
+
       // Convert to favorite items format
       final List<Map<String, dynamic>> items = [];
-      
+
       // Add albums
       for (var album in topAlbums) {
         items.add({
@@ -292,7 +308,7 @@ class _HomeCenterState extends State<HomeCenter> {
           'streams': 0, // Albums don't have streams in current model
         });
       }
-      
+
       // Add artists
       for (var artist in topArtists) {
         items.add({
@@ -304,7 +320,7 @@ class _HomeCenterState extends State<HomeCenter> {
           'streams': artist.totalStreams,
         });
       }
-      
+
       // Add playlists
       for (var playlist in topPlaylists) {
         items.add({
@@ -316,18 +332,22 @@ class _HomeCenterState extends State<HomeCenter> {
           'streams': playlist.totalStreams, // Use total streams for sorting
         });
       }
-      
+
       // Sort by streams (popularity)
-      items.sort((a, b) => (b['streams'] as int).compareTo(a['streams'] as int));
-      
+      items.sort(
+        (a, b) => (b['streams'] as int).compareTo(a['streams'] as int),
+      );
+
       if (mounted) {
         setState(() {
-          _allFavoriteItems = items.take(8).toList(); // Lưu trữ tất cả items gốc
+          _allFavoriteItems = items
+              .take(8)
+              .toList(); // Lưu trữ tất cả items gốc
           _favoriteItems = _allFavoriteItems; // Hiển thị tất cả
           _isLoadingFavorites = false;
         });
       }
-      
+
       print('✅ [Favorites] Loaded ${_favoriteItems.length} favorite items');
     } catch (e) {
       print('❌ [Favorites] Error: $e');
@@ -405,7 +425,10 @@ class _HomeCenterState extends State<HomeCenter> {
                 imageUrl: item['image'],
               ),
             );
-            AppNav.key.currentState?.pushNamed(AppRoutes.artist, arguments: artist);
+            AppNav.key.currentState?.pushNamed(
+              AppRoutes.artist,
+              arguments: artist,
+            );
           }
         });
         break;
@@ -477,13 +500,16 @@ class _HomeCenterState extends State<HomeCenter> {
 
   void _onPopularArtistTapped(Artist artist) {
     // Add artist to left sidebar saved list
-    final shellController = Provider.of<AppShellController>(context, listen: false);
+    final shellController = Provider.of<AppShellController>(
+      context,
+      listen: false,
+    );
     shellController.addArtist({
       'artist_id': artist.artistId,
       'nickname': artist.nickname,
       'profile_picture': artist.imageUrl,
     });
-    
+
     // Use SchedulerBinding to navigate after current frame to avoid GlobalKey conflicts
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -497,13 +523,13 @@ class _HomeCenterState extends State<HomeCenter> {
     setState(() {
       _isLoadingFavorites = true;
     });
-    
+
     try {
       print('Loading content for category: $category');
       final musicService = ServiceLocator().musicService;
       final playlistService = ServiceLocator().playlistService;
       final List<Map<String, dynamic>> items = [];
-      
+
       if (category == 'All') {
         // Load mixed: 2 artists, 3 albums, 3 playlists
         await _loadFavoriteItems();
@@ -560,7 +586,7 @@ class _HomeCenterState extends State<HomeCenter> {
           print('⚠️ Failed to load playlists: $e');
         }
       }
-      
+
       if (mounted) {
         setState(() {
           _favoriteItems = items;
@@ -635,19 +661,19 @@ class _HomeCenterState extends State<HomeCenter> {
                                   ),
                                 )
                               : (_featuredAlbum?.coverUrl != null &&
-                                      _featuredAlbum!.coverUrl.isNotEmpty)
-                                  ? Image.network(
-                                      _featuredAlbum!.coverUrl,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => const Image(
-                                        image: AssetImage('assets/images/HTH.png'),
-                                        fit: BoxFit.cover,
-                                      ),
-                                    )
-                                  : const Image(
-                                      image: AssetImage('assets/images/HTH.png'),
-                                      fit: BoxFit.cover,
-                                    ),
+                                    _featuredAlbum!.coverUrl.isNotEmpty)
+                              ? Image.network(
+                                  _featuredAlbum!.coverUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const Image(
+                                    image: AssetImage('assets/images/HTH.png'),
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                              : const Image(
+                                  image: AssetImage('assets/images/HTH.png'),
+                                  fit: BoxFit.cover,
+                                ),
                         ),
 
                       // Right Side - Text Info
@@ -673,7 +699,8 @@ class _HomeCenterState extends State<HomeCenter> {
                                   ),
                                   SizedBox(height: isNarrow ? 8 : 20),
                                   Text(
-                                    _featuredAlbum?.title ?? 'Ai Cũng Phải Bắt Đầu Từ Đâu Đó',
+                                    _featuredAlbum?.title ??
+                                        'Ai Cũng Phải Bắt Đầu Từ Đâu Đó',
                                     style: TextStyle(
                                       color: const Color(0xFFFFFFFF),
                                       fontSize: isNarrow
@@ -705,18 +732,29 @@ class _HomeCenterState extends State<HomeCenter> {
                                                 context,
                                               ).colorScheme.primary,
                                             ),
-                                            child: _featuredAlbum!.coverUrl.isNotEmpty
+                                            child:
+                                                _featuredAlbum!
+                                                    .coverUrl
+                                                    .isNotEmpty
                                                 ? ClipRRect(
-                                                    borderRadius: BorderRadius.circular(30),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          30,
+                                                        ),
                                                     child: Image.network(
                                                       _featuredAlbum!.coverUrl,
                                                       fit: BoxFit.cover,
-                                                      errorBuilder: (_, __, ___) => const Image(
-                                                        image: AssetImage(
-                                                          'assets/images/HTH_icon.png',
-                                                        ),
-                                                        fit: BoxFit.fill,
-                                                      ),
+                                                      errorBuilder:
+                                                          (
+                                                            _,
+                                                            __,
+                                                            ___,
+                                                          ) => const Image(
+                                                            image: AssetImage(
+                                                              'assets/images/HTH_icon.png',
+                                                            ),
+                                                            fit: BoxFit.fill,
+                                                          ),
                                                     ),
                                                   )
                                                 : const Image(
@@ -732,15 +770,15 @@ class _HomeCenterState extends State<HomeCenter> {
                                           child: Text(
                                             _featuredAlbum != null
                                                 ? isNarrow
-                                                    ? '${_featuredAlbum!.artistName} • ${_featuredAlbum!.releaseYear ?? 2023}'
-                                                    : isMedium
-                                                        ? '${_featuredAlbum!.artistName} • ${_featuredAlbum!.releaseYear ?? 2023} • ${_featuredAlbum!.totalTracks ?? 0} songs'
-                                                        : '${_featuredAlbum!.artistName} • ${_featuredAlbum!.releaseYear ?? 2023} • ${_featuredAlbum!.totalTracks ?? 0} songs'
+                                                      ? '${_featuredAlbum!.artistName} • ${_featuredAlbum!.releaseYear ?? 2023}'
+                                                      : isMedium
+                                                      ? '${_featuredAlbum!.artistName} • ${_featuredAlbum!.releaseYear ?? 2023} • ${_featuredAlbum!.totalTracks ?? 0} songs'
+                                                      : '${_featuredAlbum!.artistName} • ${_featuredAlbum!.releaseYear ?? 2023} • ${_featuredAlbum!.totalTracks ?? 0} songs'
                                                 : (isNarrow
-                                                    ? 'HIEUTHUHAI • 2023'
-                                                    : (isMedium
-                                                        ? 'HIEUTHUHAI • 2023 • 13 songs'
-                                                        : 'HIEUTHUHAI • 2023 • 13 songs, 39 min 44 sec ')),
+                                                      ? 'HIEUTHUHAI • 2023'
+                                                      : (isMedium
+                                                            ? 'HIEUTHUHAI • 2023 • 13 songs'
+                                                            : 'HIEUTHUHAI • 2023 • 13 songs, 39 min 44 sec ')),
                                             style: TextStyle(
                                               color: const Color(0xFFB0B0B0),
                                               fontSize: isNarrow
@@ -756,23 +794,30 @@ class _HomeCenterState extends State<HomeCenter> {
                                           onPressed: () {
                                             if (_featuredAlbum != null) {
                                               // Add album to left sidebar saved list
-                                              final shellController = Provider.of<AppShellController>(
-                                                context,
-                                                listen: false,
-                                              );
+                                              final shellController =
+                                                  Provider.of<
+                                                    AppShellController
+                                                  >(context, listen: false);
                                               shellController.addAlbum({
                                                 'album_id': _featuredAlbum!.id,
-                                                'album_name': _featuredAlbum!.title,
-                                                'album_image_url': _featuredAlbum!.coverUrl,
-                                                'artist_name': _featuredAlbum!.artistName,
+                                                'album_name':
+                                                    _featuredAlbum!.title,
+                                                'album_image_url':
+                                                    _featuredAlbum!.coverUrl,
+                                                'artist_name':
+                                                    _featuredAlbum!.artistName,
                                               });
                                               // Open album detail
                                               shellController.showCenterContent(
                                                 AlbumDetailScreen(
-                                                  key: ValueKey('album_${_featuredAlbum!.id}'),
+                                                  key: ValueKey(
+                                                    'album_${_featuredAlbum!.id}',
+                                                  ),
                                                   albumId: _featuredAlbum!.id,
-                                                  albumName: _featuredAlbum!.title,
-                                                  albumImage: _featuredAlbum!.coverUrl,
+                                                  albumName:
+                                                      _featuredAlbum!.title,
+                                                  albumImage:
+                                                      _featuredAlbum!.coverUrl,
                                                 ),
                                               );
                                             }
@@ -1010,42 +1055,42 @@ class _HomeCenterState extends State<HomeCenter> {
                     ),
                   )
                 : _recommendedSongs.isEmpty
-                    ? Center(
-                        child: Text(
-                          'No recommendations yet',
-                          style: GoogleFonts.inter(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            fontSize: 14,
-                          ),
-                        ),
-                      )
-                    : SizedBox(
-                        height: 300,
-                        child: ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(context).copyWith(
-                            dragDevices: {
-                              PointerDeviceKind.touch,
-                              PointerDeviceKind.mouse,
-                            },
-                          ),
-                          child: ListView.separated(
-                            primary: false,
-                            shrinkWrap: true,
-                            scrollDirection: Axis.horizontal,
-                            physics: const BouncingScrollPhysics(),
-                            itemCount: _recommendedSongs.length,
-                            separatorBuilder: (context, index) =>
-                                const SizedBox(width: 20),
-                            itemBuilder: (context, index) {
-                              final song = _recommendedSongs[index];
-                              return _TrendingSongCard(
-                                song: song,
-                                onTap: () => _onRecommendedSongTapped(song),
-                              );
-                            },
-                          ),
-                        ),
+                ? Center(
+                    child: Text(
+                      'No recommendations yet',
+                      style: GoogleFonts.inter(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 14,
                       ),
+                    ),
+                  )
+                : SizedBox(
+                    height: 300,
+                    child: ScrollConfiguration(
+                      behavior: ScrollConfiguration.of(context).copyWith(
+                        dragDevices: {
+                          PointerDeviceKind.touch,
+                          PointerDeviceKind.mouse,
+                        },
+                      ),
+                      child: ListView.separated(
+                        primary: false,
+                        shrinkWrap: true,
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: _recommendedSongs.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(width: 20),
+                        itemBuilder: (context, index) {
+                          final song = _recommendedSongs[index];
+                          return _TrendingSongCard(
+                            song: song,
+                            onTap: () => _onRecommendedSongTapped(song),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
             const SizedBox(height: 16),
 
             Text(
@@ -1126,7 +1171,9 @@ class _FavoriteItemCardState extends State<_FavoriteItemCard> {
           duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
             color: _isHovered
-                ? Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.7)
+                ? Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest.withOpacity(0.7)
                 : Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
@@ -1154,40 +1201,42 @@ class _FavoriteItemCardState extends State<_FavoriteItemCard> {
                     topLeft: Radius.circular(8),
                     bottomLeft: Radius.circular(8),
                   ),
-                  child: widget.item['image'] != null && widget.item['image'].toString().isNotEmpty
+                  child:
+                      widget.item['image'] != null &&
+                          widget.item['image'].toString().isNotEmpty
                       ? (widget.item['image'].toString().startsWith('http')
-                          ? Image.network(
-                              widget.item['image'],
-                              fit: BoxFit.cover,
-                              width: 60,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  width: 60,
-                                  color: Colors.grey[700],
-                                  child: const Icon(
-                                    Icons.music_note,
-                                    color: Colors.white54,
-                                    size: 20,
-                                  ),
-                                );
-                              },
-                            )
-                          : Image.asset(
-                              widget.item['image'],
-                              fit: BoxFit.cover,
-                              width: 60,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  width: 60,
-                                  color: Colors.grey[700],
-                                  child: const Icon(
-                                    Icons.music_note,
-                                    color: Colors.white54,
-                                    size: 20,
-                                  ),
-                                );
-                              },
-                            ))
+                            ? Image.network(
+                                widget.item['image'],
+                                fit: BoxFit.cover,
+                                width: 60,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 60,
+                                    color: Colors.grey[700],
+                                    child: const Icon(
+                                      Icons.music_note,
+                                      color: Colors.white54,
+                                      size: 20,
+                                    ),
+                                  );
+                                },
+                              )
+                            : Image.asset(
+                                widget.item['image'],
+                                fit: BoxFit.cover,
+                                width: 60,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 60,
+                                    color: Colors.grey[700],
+                                    child: const Icon(
+                                      Icons.music_note,
+                                      color: Colors.white54,
+                                      size: 20,
+                                    ),
+                                  );
+                                },
+                              ))
                       : Container(
                           width: 60,
                           color: Colors.grey[700],
