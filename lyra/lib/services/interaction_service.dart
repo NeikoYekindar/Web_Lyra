@@ -2,21 +2,17 @@ import 'package:flutter/foundation.dart';
 import '../core/config/api_config.dart';
 import '../core/di/service_locator.dart';
 import '../models/track.dart';
-import 'music_service_v2.dart';
+import 'music_service_v2.dart' as ms;
+import '../models/artist.dart';
 
 /// Types of user interactions with tracks
-enum InteractionType {
-  play,
-  like,
-  skip,
-  addToPlaylist,
-}
+enum InteractionType { play, like, skip, addToPlaylist }
 
 /// Service for recording user interactions with tracks
 /// Uses POST /recommendations/interactions API
 class InteractionService {
   /// Get recommended tracks for a user
-  /// 
+  ///
   /// [userId] - The ID of the user
   /// [n] - Number of recommendations (1-100, default 10)
   /// [filterLiked] - Whether to filter out already liked tracks (default true)
@@ -32,8 +28,11 @@ class InteractionService {
 
     try {
       final apiClient = ServiceLocator().apiClient;
-      final musicService = MusicServiceV2(apiClient);
-      final endpoint = ApiConfig.userRecommendationsEndpoint.replaceAll('{user_id}', userId);
+      final musicService = ms.MusicServiceV2(apiClient);
+      final endpoint = ApiConfig.userRecommendationsEndpoint.replaceAll(
+        '{user_id}',
+        userId,
+      );
 
       debugPrint('📊 Getting recommendations for user: $userId');
 
@@ -51,34 +50,81 @@ class InteractionService {
         // API returns { "recommendations": [{ "track_id": "...", "score": 0 }, ...] }
         final data = response.data!;
         List<dynamic>? recommendationList;
-        
+
         if (data.containsKey('recommendations')) {
           recommendationList = data['recommendations'] as List<dynamic>?;
         } else if (data.containsKey('tracks')) {
           recommendationList = data['tracks'] as List<dynamic>?;
         }
-        
+
         if (recommendationList != null && recommendationList.isNotEmpty) {
           // Extract track IDs from recommendations
           final trackIds = recommendationList
-              .map((item) => (item as Map<String, dynamic>)['track_id'] as String?)
+              .map(
+                (item) => (item as Map<String, dynamic>)['track_id'] as String?,
+              )
               .where((id) => id != null && id.isNotEmpty)
               .cast<String>()
               .toList();
-          
+
           debugPrint('📊 Fetching ${trackIds.length} tracks by ID...');
-          
-          // Fetch track details for each track ID
+
+          // Fetch track details for each track ID and attach artist objects
           final List<Track> tracks = [];
+          // cache artist objects to avoid repeated requests
+          final Map<String, Artist> artistCache = {};
+
           for (final trackId in trackIds) {
             try {
-              final track = await musicService.getTrackById(trackId);
+              var track = await musicService.getTrackById(trackId);
+
+              // If track already has artistObj, keep it
+              if (track.artistObj == null && track.artistId.isNotEmpty) {
+                // Use cached artist if available
+                if (artistCache.containsKey(track.artistId)) {
+                  track = track.copyWith(
+                    artistObj: artistCache[track.artistId],
+                  );
+                } else {
+                  try {
+                    final apiClient = ServiceLocator().apiClient;
+                    final artistResp = await apiClient
+                        .get<Map<String, dynamic>>(
+                          ApiConfig.musicServiceUrl,
+                          '/artists/info/profile/${track.artistId}',
+                          fromJson: (json) => json as Map<String, dynamic>,
+                        );
+
+                    if (artistResp.success && artistResp.data != null) {
+                      final artistData =
+                          artistResp.data! as Map<String, dynamic>?;
+                      if (artistData != null) {
+                        final artistObj = Artist.fromJson(artistData);
+                        artistCache[track.artistId] = artistObj;
+                        track = track.copyWith(artistObj: artistObj);
+                      } else {
+                        // fallback to nickname if 'fr' missing
+                        final nickname =
+                            artistResp.data!['nickname']?.toString() ?? '';
+                        if (nickname.isNotEmpty) {
+                          track = track.copyWith(artistName: nickname);
+                        }
+                      }
+                    }
+                  } catch (e) {
+                    debugPrint(
+                      '⚠️ Failed to load artist for ${track.artistId}: $e',
+                    );
+                  }
+                }
+              }
+
               tracks.add(track);
             } catch (e) {
               debugPrint('⚠️ Failed to fetch track $trackId: $e');
             }
           }
-          
+
           debugPrint('✅ Got ${tracks.length} recommendations');
           return tracks;
         }
@@ -95,7 +141,7 @@ class InteractionService {
   }
 
   /// Record a user interaction with a track
-  /// 
+  ///
   /// [trackId] - The ID of the track
   /// [userId] - The ID of the user
   /// [action] - The type of interaction (play, like, skip, add_to_playlist)
@@ -113,7 +159,7 @@ class InteractionService {
 
     try {
       final apiClient = ServiceLocator().apiClient;
-      
+
       final body = {
         'action': _actionToString(action),
         'track_id': trackId,
@@ -214,7 +260,7 @@ class InteractionService {
   static Future<bool> triggerRetrain() async {
     try {
       final apiClient = ServiceLocator().apiClient;
-      
+
       debugPrint('🔄 Triggering recommendation model retrain...');
 
       final response = await apiClient.post<Map<String, dynamic>>(
@@ -242,7 +288,7 @@ class InteractionService {
   static Future<bool> reloadModels() async {
     try {
       final apiClient = ServiceLocator().apiClient;
-      
+
       debugPrint('🔄 Reloading recommendation models...');
 
       final response = await apiClient.post<Map<String, dynamic>>(
