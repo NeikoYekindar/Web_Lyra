@@ -201,19 +201,20 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
           limit: minQueueSize,
         );
         final existingIds = queue.map((t) => t.trackId).toSet();
-        final additional = trending.where((t) => !existingIds.contains(t.trackId)).toList();
+        final additional = trending
+            .where((t) => !existingIds.contains(t.trackId))
+            .toList();
         queue.addAll(additional);
       } catch (e) {
         debugPrint('Error loading trending songs to pad playlist queue: $e');
       }
     }
 
-    final firstTrack = queue.isNotEmpty ? queue.first : _playlistDetail!.tracks.first;
+    final firstTrack = queue.isNotEmpty
+        ? queue.first
+        : _playlistDetail!.tracks.first;
 
-    await musicPlayerProvider.setTrack(
-      firstTrack,
-      queue: queue,
-    );
+    await musicPlayerProvider.setTrack(firstTrack, queue: queue);
     musicPlayerProvider.play();
 
     if (!shellController.isPlayerMaximized) {
@@ -252,7 +253,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
           limit: minQueueSize,
         );
         final existingIds = queue.map((t) => t.trackId).toSet();
-        final additional = trending.where((t) => !existingIds.contains(t.trackId)).toList();
+        final additional = trending
+            .where((t) => !existingIds.contains(t.trackId))
+            .toList();
         queue.addAll(additional);
       } catch (e) {
         debugPrint('Error loading trending songs to pad playlist queue: $e');
