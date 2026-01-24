@@ -6,6 +6,7 @@ import '../models/auth_response.dart';
 import '../models/signup_response.dart';
 import '../models/current_user.dart';
 import '../models/user.dart';
+import '../services/interaction_service.dart';
 
 /// Updated AuthProvider using microservice architecture
 class AuthProviderV2 extends ChangeNotifier {
@@ -60,6 +61,11 @@ class AuthProviderV2 extends ChangeNotifier {
       print(
         'Refresh token saved: ${apiClient.refreshToken?.substring(0, 20)}...',
       );
+
+      // Trigger recommendation model retrain and reload after login (non-blocking)
+      InteractionService.triggerRetrain().then((_) {
+        InteractionService.reloadModels();
+      });
 
       _isLoading = false;
       notifyListeners();

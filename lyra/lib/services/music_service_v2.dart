@@ -14,6 +14,7 @@ class Album {
   final String artistName;
   final String coverUrl;
   final int? releaseYear;
+  final int? totalTracks;
   final List<String>? trackIds;
 
   const Album({
@@ -23,17 +24,30 @@ class Album {
     required this.artistName,
     required this.coverUrl,
     this.releaseYear,
+    this.totalTracks,
     this.trackIds,
   });
 
   factory Album.fromJson(Map<String, dynamic> json) {
+    // Parse release_year from release_date if available
+    int? releaseYear;
+    if (json['release_year'] != null) {
+      releaseYear = json['release_year'] as int?;
+    } else if (json['release_date'] != null) {
+      try {
+        final dateStr = json['release_date'].toString();
+        releaseYear = int.tryParse(dateStr.split('-').first);
+      } catch (_) {}
+    }
+
     return Album(
-      id: json['id']?.toString() ?? '',
-      title: json['title']?.toString() ?? '',
+      id: json['album_id']?.toString() ?? json['id']?.toString() ?? '',
+      title: json['album_name']?.toString() ?? json['title']?.toString() ?? '',
       artistId: json['artist_id']?.toString() ?? '',
       artistName: json['artist_name']?.toString() ?? '',
-      coverUrl: json['cover_url']?.toString() ?? '',
-      releaseYear: json['release_year'] as int?,
+      coverUrl: json['album_image_url']?.toString() ?? json['cover_url']?.toString() ?? '',
+      releaseYear: releaseYear,
+      totalTracks: json['total_track'] as int? ?? json['total_tracks'] as int?,
       trackIds: json['track_ids'] != null
           ? List<String>.from(json['track_ids'])
           : null,
@@ -235,7 +249,7 @@ class MusicServiceV2 {
     /// Toggle nhanh khi test backend:
     /// - `true`  => dùng endpoint `/tracks/top-tracks` (cần Authorization)
     /// - `false` => dùng endpoint `/tracks/search?q=*` (public, thường trả nhiều bài hơn)
-    const bool useTopTracksEndpoint = true;
+    const bool useTopTracksEndpoint = false; // Đổi sang false vì endpoint top-tracks không tồn tại
 
     /// CÁCH 1: /tracks/top-tracks (auth-gated)
     if (useTopTracksEndpoint) {
@@ -262,9 +276,9 @@ class MusicServiceV2 {
     }
 
     /// CÁCH 2: /tracks/search?q=* (public)
-    // final tracks = await searchTracks(query: '*', limit: limit);
-    // if (tracks.length <= limit) return tracks;
-    // return tracks.take(limit).toList();
+    final tracks = await searchTracks(query: '*', limit: limit);
+    if (tracks.length <= limit) return tracks;
+    return tracks.take(limit).toList();
   }
 
   /// Get all albums with pagination
@@ -309,6 +323,92 @@ class MusicServiceV2 {
     throw Exception(response.message ?? 'Failed to fetch album');
   }
 
+  /// Get album with full details including artist name
+  /// This fetches both album and artist info
+  Future<Album> getAlbumWithDetails(String albumId) async {
+    print('🔍 [getAlbumWithDetails] Fetching album: $albumId');
+    final album = await getAlbumById(albumId);
+    print('   ✅ Got album: ${album.title}, artist_id: ${album.artistId}, artist_name: ${album.artistName}');
+    
+    // Fetch artist name if not present
+    if (album.artistName.isEmpty && album.artistId.isNotEmpty) {
+      try {
+        print('   🔍 Fetching artist profile: ${album.artistId}');
+        final artist = await getArtistProfile(album.artistId);
+        print('   ✅ Got artist: ${artist.nickname}');
+        return Album(
+          id: album.id,
+          title: album.title,
+          artistId: album.artistId,
+          artistName: artist.nickname,
+          coverUrl: album.coverUrl,
+          releaseYear: album.releaseYear,
+          trackIds: album.trackIds,
+        );
+      } catch (e) {
+        print('   ⚠️ Failed to fetch artist name for album: $e');
+        return album;
+      }
+    }
+    
+    print('   ℹ️ Artist name already present, skipping artist fetch');
+    return album;
+  }
+
+  /// Get top albums
+  /// Fallback: use /api/v1/albums endpoint since /albums/top-albums returns 404
+  Future<List<Album>> getTopAlbums({
+    int? month,
+    int? year,
+    int limit = 10,
+  }) async {
+    print('🔍 [getTopAlbums] Starting request...');
+    print('   📍 Base URL: ${ApiConfig.musicServiceUrl}');
+    print('   📍 Endpoint: ${ApiConfig.topAlbumsEndpoint}');
+    print('   📊 Params: month=$month, year=$year, limit=$limit');
+    
+    // Thử dùng endpoint top-albums trước
+    try {
+      final queryParams = {
+        if (month != null) 'month': month.toString(),
+        if (year != null) 'year': year.toString(),
+        'limit': limit.toString(),
+      };
+      print('   🌐 Full URL: ${ApiConfig.musicServiceUrl}${ApiConfig.topAlbumsEndpoint}?${queryParams.entries.map((e) => '${e.key}=${e.value}').join('&')}');
+      
+      final response = await _apiClient.get<List<Album>>(
+        ApiConfig.musicServiceUrl,
+        ApiConfig.topAlbumsEndpoint,
+        queryParameters: queryParams,
+        fromJson: (json) {
+          print('   📥 Response type: ${json.runtimeType}');
+          print('   📥 Response data: $json');
+          if (json is List) {
+            print('   ✅ Parsed ${json.length} albums');
+            return json.map((e) => Album.fromJson(e as Map<String, dynamic>)).toList();
+          }
+          print('   ⚠️ Response is not a List');
+          return [];
+        },
+      );
+
+      if (response.success && response.data != null) {
+        print('   ✅ Success! Got ${response.data!.length} albums');
+        return response.data!;
+      }
+      print('   ❌ Response not successful or data is null');
+    } catch (e) {
+      print('   ⚠️ Top albums endpoint failed: $e');
+      print('   🔄 Falling back to /api/v1/albums...');
+    }
+
+    // Fallback: Dùng endpoint /api/v1/albums với pagination
+    print('   📍 Fallback endpoint: ${ApiConfig.albumsEndpoint}');
+    final paginatedResponse = await getAlbums(page: 1, pageSize: limit);
+    print('   ✅ Fallback success! Got ${paginatedResponse.items.length} albums');
+    return paginatedResponse.items;
+  }
+
   /// Get all artists with pagination
   Future<PaginatedResponse<Artist>> getArtists({
     int page = 1,
@@ -334,6 +434,23 @@ class MusicServiceV2 {
     }
 
     throw Exception(response.message ?? 'Failed to fetch artists');
+  }
+
+  /// Get artist profile by ID
+  /// GET /artists/info/profile/{artist_id}
+  Future<models.Artist> getArtistProfile(String artistId) async {
+    final endpoint = ApiConfig.artistProfileEndpoint.replaceAll('{artist_id}', artistId);
+    final response = await _apiClient.get<models.Artist>(
+      ApiConfig.musicServiceUrl,
+      endpoint,
+      fromJson: (json) => models.Artist.fromJson(json as Map<String, dynamic>),
+    );
+
+    if (response.success && response.data != null) {
+      return response.data!;
+    }
+
+    throw Exception(response.message ?? 'Failed to fetch artist profile');
   }
 
   /// Get artist by ID

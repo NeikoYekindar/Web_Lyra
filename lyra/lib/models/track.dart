@@ -5,6 +5,7 @@ class Track implements MediaItem {
   // API fields
   final String trackId;
   final String artistId;
+  final String artistName; // Artist name from API
   final String trackName;
   final int duration; // seconds
   final String kind;
@@ -22,6 +23,7 @@ class Track implements MediaItem {
   const Track({
     required this.trackId,
     required this.artistId,
+    this.artistName = '',
     required this.trackName,
     required this.duration,
     required this.kind,
@@ -40,7 +42,7 @@ class Track implements MediaItem {
   @override
   String get title => trackName;
   String get artist =>
-      artistObj?.nickname ?? artistId; // Use artist nickname if available
+      artistObj?.nickname ?? (artistName.isNotEmpty ? artistName : artistId); // Use artist nickname or artistName if available
   String get albumArtUrl => trackImageUrl;
   int get durationMs => duration * 1000;
   String get audioUrl => trackFileUrl;
@@ -65,6 +67,7 @@ class Track implements MediaItem {
   Track copyWith({
     String? trackId,
     String? artistId,
+    String? artistName,
     String? trackName,
     int? duration,
     String? kind,
@@ -79,6 +82,7 @@ class Track implements MediaItem {
   }) => Track(
     trackId: trackId ?? this.trackId,
     artistId: artistId ?? this.artistId,
+    artistName: artistName ?? this.artistName,
     trackName: trackName ?? this.trackName,
     duration: duration ?? this.duration,
     kind: kind ?? this.kind,
@@ -116,7 +120,8 @@ class Track implements MediaItem {
 
     return Track(
       trackId: (json['track_id'] ?? json['id'] ?? '').toString(),
-      artistId: (json['artist_id'] ?? json['artist'] ?? '').toString(),
+      artistId: (json['artist_id'] ?? '').toString(),
+      artistName: (json['artist_name'] ?? json['artistName'] ?? '').toString(),
       trackName: (json['track_name'] ?? json['title'] ?? json['name'] ?? '')
           .toString(),
       duration: (json['duration'] is int)
@@ -168,6 +173,7 @@ class Track implements MediaItem {
     return Track(
       trackId: json['track_id'] as String,
       artistId: json['artist_id'] as String,
+      artistName: (json['artist_name'] ?? '').toString(),
       trackName: json['track_name'] as String,
       duration: json['duration'] as int,
       kind: json['kind'] as String,
@@ -185,6 +191,7 @@ class Track implements MediaItem {
   Map<String, dynamic> toJson() => {
     'track_id': trackId,
     'artist_id': artistId,
+    'artist_name': artistName,
     'track_name': trackName,
     'duration': duration,
     'kind': kind,

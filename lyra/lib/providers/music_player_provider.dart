@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/track.dart';
 import '../models/current_user.dart';
 import '../core/di/service_locator.dart';
+import '../services/interaction_service.dart';
 
 class MusicPlayerProvider extends ChangeNotifier {
   final AudioPlayer _player = AudioPlayer();
@@ -122,6 +123,14 @@ class MusicPlayerProvider extends ChangeNotifier {
     }
 
     try {
+      // Record play interaction
+      await InteractionService.recordPlay(
+        trackId: _currentTrack!.trackId,
+        userId: userId,
+        durationSeconds: _positionMs ~/ 1000,
+      );
+      
+      // Also increment stream count
       await ServiceLocator().musicService.incrementStream(
         _currentTrack!.trackId,
         userId,
@@ -260,6 +269,18 @@ class MusicPlayerProvider extends ChangeNotifier {
   // =========================
   Future<void> playNext() async {
     if (hasNext) {
+      // Record skip interaction if track was playing and not finished
+      if (_currentTrack != null && _positionMs < _durationMs - 5000) {
+        final userId = CurrentUser.instance.user?.userId;
+        if (userId != null) {
+          InteractionService.recordSkip(
+            trackId: _currentTrack!.trackId,
+            userId: userId,
+            durationBeforeSkip: _positionMs ~/ 1000,
+          );
+        }
+      }
+
       _tracksPlayedSinceRefresh++;
 
       // Remove played tracks and refresh queue after 5 tracks
@@ -276,6 +297,18 @@ class MusicPlayerProvider extends ChangeNotifier {
 
   Future<void> playPrevious() async {
     if (hasPrevious) {
+      // Record skip interaction if going back
+      if (_currentTrack != null && _positionMs > 3000) {
+        final userId = CurrentUser.instance.user?.userId;
+        if (userId != null) {
+          InteractionService.recordSkip(
+            trackId: _currentTrack!.trackId,
+            userId: userId,
+            durationBeforeSkip: _positionMs ~/ 1000,
+          );
+        }
+      }
+
       final previousTrack = _queue[_currentIndex - 1];
       await setTrack(previousTrack);
       play();

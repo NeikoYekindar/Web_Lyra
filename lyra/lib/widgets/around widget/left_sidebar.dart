@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lyra/l10n/app_localizations.dart';
 import 'package:lyra/services/left_sidebar_service.dart';
 import 'package:lyra/core/di/service_locator.dart';
@@ -91,6 +92,8 @@ class _LeftSidebarState extends State<LeftSidebar> {
 
   bool get _showTracks => _selectedCategoryName.toLowerCase() == 'tracks';
   bool get _showPlaylists => _selectedCategoryName.toLowerCase() == 'playlists';
+  bool get _showArtists => _selectedCategoryName.toLowerCase() == 'artists';
+  bool get _showAlbums => _selectedCategoryName.toLowerCase() == 'albums';
 
   @override
   void didChangeDependencies() {
@@ -156,7 +159,12 @@ class _LeftSidebarState extends State<LeftSidebar> {
 
       if (mounted) {
         setState(() {
-          categories = apiResponse;
+          // Filter out "Artists" and "Albums" from categories
+          categories = apiResponse
+              .where((cat) => 
+                  cat.toLowerCase() != 'artists' && 
+                  cat.toLowerCase() != 'albums')
+              .toList();
           _isLoadingCategories = false;
         });
       }
@@ -574,8 +582,214 @@ class _LeftSidebarState extends State<LeftSidebar> {
                           },
                         ),
                       ),
+
+                  // Artists section
+                  if (_showArtists)
+                    Consumer<AppShellController>(
+                      builder: (context, shellController, child) {
+                        final artists = shellController.savedArtists;
+                        if (artists.isEmpty) {
+                          return Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Center(
+                              child: Text(
+                                'No saved artists',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        return ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: artists.length,
+                          separatorBuilder: (context, index) => const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final artist = artists[index];
+                            return _buildArtistCard(artist, shellController);
+                          },
+                        );
+                      },
+                    ),
+
+                  // Albums section
+                  if (_showAlbums)
+                    Consumer<AppShellController>(
+                      builder: (context, shellController, child) {
+                        final albums = shellController.savedAlbums;
+                        if (albums.isEmpty) {
+                          return Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Center(
+                              child: Text(
+                                'No saved albums',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        return ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: albums.length,
+                          separatorBuilder: (context, index) => const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final album = albums[index];
+                            return _buildAlbumCard(album, shellController);
+                          },
+                        );
+                      },
+                    ),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildArtistCard(Map<String, dynamic> artist, AppShellController shellController) {
+    final artistId = (artist['artist_id'] ?? artist['id'] ?? '').toString();
+    final name = (artist['nickname'] ?? artist['name'] ?? 'Unknown Artist').toString();
+    final imageUrl = (artist['profile_picture'] ?? artist['image'] ?? '').toString();
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: [
+          // Artist image (circle)
+          ClipOval(
+            child: Container(
+              width: 48,
+              height: 48,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              child: imageUrl.isNotEmpty && imageUrl.startsWith('http')
+                  ? Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Icon(
+                        Icons.person,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    )
+                  : Icon(
+                      Icons.person,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Artist name
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  'Artist',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Remove button
+          IconButton(
+            onPressed: () => shellController.removeArtist(artistId),
+            icon: Icon(
+              Icons.close,
+              size: 18,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAlbumCard(Map<String, dynamic> album, AppShellController shellController) {
+    final albumId = (album['album_id'] ?? album['id'] ?? '').toString();
+    final name = (album['album_name'] ?? album['title'] ?? album['name'] ?? 'Unknown Album').toString();
+    final artistName = (album['artist_name'] ?? album['artistName'] ?? '').toString();
+    final imageUrl = (album['album_image_url'] ?? album['image'] ?? '').toString();
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: [
+          // Album image (rounded square)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: Container(
+              width: 48,
+              height: 48,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              child: imageUrl.isNotEmpty && imageUrl.startsWith('http')
+                  ? Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Icon(
+                        Icons.album,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    )
+                  : Icon(
+                      Icons.album,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Album info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  artistName.isNotEmpty ? artistName : 'Album',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Remove button
+          IconButton(
+            onPressed: () => shellController.removeAlbum(albumId),
+            icon: Icon(
+              Icons.close,
+              size: 18,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ],

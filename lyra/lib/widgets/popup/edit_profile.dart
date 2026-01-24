@@ -1,9 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:collection/collection.dart';
 import 'package:lyra/l10n/app_localizations.dart';
 import 'package:lyra/widgets/common/favorite_card.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../models/current_user.dart';
 import '../../core/di/service_locator.dart';
 
@@ -24,6 +27,8 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _hasChanges = false;
+  List<int>? _selectedImageBytes;
+  String? _selectedImageFilename;
 
   // initial snapshots for change detection (will be filled from CurrentUser)
   String _initialDisplayName = "";
@@ -93,91 +98,31 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
 
   Future<void> _changeAvatar() async {
     try {
-      // Show dialog to choose between gallery or delete
-      final choice = await showDialog<String>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text(
-            'Chọn ảnh đại diện',
-            style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Chọn từ thư viện'),
-                onTap: () => Navigator.of(ctx).pop('gallery'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: Text(
-                  'Delete image',
-                  style: GoogleFonts.inter(color: Colors.red),
-                ),
-                onTap: () => Navigator.of(ctx).pop('clear'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(null),
-              child: const Text('Hủy'),
-            ),
-          ],
-        ),
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 85,
       );
 
-      if (choice == null) return;
-
-      if (choice == 'gallery') {
-        final picker = ImagePicker();
-        final XFile? image = await picker.pickImage(
-          source: ImageSource.gallery,
-          maxWidth: 1024,
-          maxHeight: 1024,
-          imageQuality: 85,
-        );
-
-        if (image == null) return;
-
-        // TODO: Upload image to server and get URL
-        // For now, show a message that upload feature needs backend
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Đang phát triển tính năng upload ảnh lên server. Vui lòng sử dụng URL tạm thời.',
-              ),
-              duration: Duration(seconds: 3),
-            ),
-          );
-        }
-        return;
-      } else if (choice == 'clear') {
-        // Delete avatar by setting profileImageUrl to empty string
-        final prev = CurrentUser.instance.user;
-        if (prev != null) {
-          // Create a new user with empty profileImageUrl
-          final updated = prev.copyWith(profileImageUrl: '');
-          CurrentUser.instance.update((_) => updated);
-          await CurrentUser.instance.saveToPrefs();
-          if (mounted) {
-            setState(() {});
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Đã xóa ảnh đại diện'),
-                duration: Duration(seconds: 2),
-              ),
-            );
-          }
-        }
+      if (image != null) {
+        final Uint8List imageBytes = await image.readAsBytes();
+      
+      
+        setState(() {
+          _selectedImageBytes = imageBytes;
+          _selectedImageFilename = image.name;
+          _checkChanges();
+        });
+      
       }
     } catch (e) {
+      print('Error picking image: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.failedToPickImage)));
       }
     }
   }
@@ -271,13 +216,30 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            // Use profile image from user if available, otherwise fall back to asset
+                            // Use selected image bytes if available, else use profile image URL, else fall back to asset
                             ClipOval(
                               child: SizedBox(
                                 width: 80,
                                 height: 80,
-                                child:
-                                    CurrentUser
+                                child: _selectedImageBytes != null
+                                    ? Image.memory(
+                                        Uint8List.fromList(_selectedImageBytes!),
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (ctx, error, stack) =>
+                                            Container(
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.surface,
+                                              child: Icon(
+                                                Icons.person,
+                                                size: 64,
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.onSurfaceVariant,
+                                              ),
+                                            ),
+                                      )
+                                    : CurrentUser
                                             .instance
                                             .user
                                             ?.profileImageUrl !=
@@ -546,14 +508,15 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                                             displayName: displayNameController
                                                 .text
                                                 .trim(),
+                                            email: emailController.text.trim(),
                                             gender: gender,
                                             dateOfBirth: dob,
-                                            profileImageUrl:
-                                                prev?.profileImageUrl,
                                             bio: bioController.text.trim(),
                                             favoriteGenres: List<String>.from(
                                               selectedGenres,
                                             ),
+                                            profileImageBytes: _selectedImageBytes,
+                                            profileImageFilename: _selectedImageFilename,
                                           );
 
                                       // Persist updated user locally
@@ -562,25 +525,12 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                                       );
                                       await CurrentUser.instance.saveToPrefs();
 
-                                      setState(() {
-                                        _isLoading = false;
-                                        // commit changes as the new baseline
-                                        _initialDisplayName =
-                                            displayNameController.text;
-                                        _initialEmail = emailController.text;
-                                        _initialBio = bioController.text;
-                                        _initialGender = gender;
-                                        _initialDob = dob;
-                                        _initialGenres = List.from(
-                                          selectedGenres,
-                                        );
-                                        _hasChanges = false;
-                                      });
+                                      // Reload UI with updated data
+                                      _reloadUserData();
 
                                       if (mounted) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
+                                        // Show snackbar BEFORE closing dialog
+                                        ScaffoldMessenger.of(context).showSnackBar(
                                           const SnackBar(
                                             content: Text(
                                               'Profile saved successfully',
@@ -588,9 +538,9 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
                                             duration: Duration(seconds: 2),
                                           ),
                                         );
+                                        // Then close the dialog
                                         Navigator.of(context).pop();
                                       }
-                                      _playConfetti();
                                     } catch (e) {
                                       setState(() => _isLoading = false);
                                       if (mounted) {
@@ -728,6 +678,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
       selectedGenres,
       _initialGenres,
     ));
+    final imageChanged = _selectedImageBytes != null;
 
     final any =
         nameChanged ||
@@ -735,8 +686,38 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
         bioChanged ||
         genderChanged ||
         dobChanged ||
-        genresChanged;
+        genresChanged ||
+        imageChanged;
     if (any != _hasChanges) setState(() => _hasChanges = any);
+  }
+
+  void _reloadUserData() {
+    // Reload data từ CurrentUser sau khi update thành công
+    final user = CurrentUser.instance.user;
+    if (user != null) {
+      setState(() {
+        _initialDisplayName = user.displayName ?? '';
+        _initialEmail = user.email ?? '';
+        _initialBio = user.bio ?? '';
+        _initialDob = user.dateOfBirth ?? DateTime(2004, 5, 7);
+        _initialGenres = user.favoriteGenres != null
+            ? List<String>.from(user.favoriteGenres!)
+            : [];
+
+        // Update controllers
+        displayNameController.text = _initialDisplayName;
+        emailController.text = _initialEmail;
+        bioController.text = _initialBio;
+        selectedGenres = List<String>.from(_initialGenres);
+
+        // Update dropdown/picker
+        gender = _initialGender;
+        dob = _initialDob;
+        _selectedImageBytes = null;
+        _selectedImageFilename = null;
+        _hasChanges = false;
+      });
+    }
   }
 
   Widget buildGenderDropdown() {
