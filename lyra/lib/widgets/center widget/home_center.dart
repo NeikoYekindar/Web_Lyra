@@ -459,22 +459,23 @@ class _HomeCenterState extends State<HomeCenter> {
         context,
         listen: false,
       );
-      final shellController = Provider.of<AppShellController>(
-        context,
-        listen: false,
-      );
 
-      // Load the track into player with full trending songs as a fallback queue; prefer recommendations
-      await musicPlayerProvider.setTrackWithRecommended(
-        song,
-        fallbackQueue: _trendingSongs,
-      );
+      // Use recommended songs in queue, with trending as initial content
+      if (_recommendedSongs.isNotEmpty) {
+        await musicPlayerProvider.setTrackWithRecommended(
+          song,
+          fallbackQueue: _trendingSongs,
+        );
+        print('🎵 Playing trending with recommended queue: ${song.trackName}');
+      } else {
+        await musicPlayerProvider.setTrack(song, queue: _trendingSongs);
+        print('🎵 Playing trending: ${song.trackName}');
+      }
 
       // Always play the new track
       musicPlayerProvider.play();
 
       print('Playing: ${song.trackName} by ${song.artist}');
-      print('Queue size: ${_trendingSongs.length}');
     } catch (e) {
       print('Error playing song: $e');
     }
@@ -488,17 +489,26 @@ class _HomeCenterState extends State<HomeCenter> {
         listen: false,
       );
 
-      // Load the track into player; prefer recommendations (use recommended list as fallback too)
-      await musicPlayerProvider.setTrackWithRecommended(
-        song,
-        fallbackQueue: _recommendedSongs,
+      // Check if we can just rotate existing queue
+      final currentQueue = musicPlayerProvider.queue;
+      final hasRecommendedInQueue = currentQueue.any(
+        (t) => _recommendedSongs.any((r) => r.trackId == t.trackId),
       );
+
+      if (hasRecommendedInQueue && currentQueue.length >= _recommendedSongs.length) {
+        // Queue already has recommended songs, just rotate
+        await musicPlayerProvider.rotateQueueToTrack(song);
+        print('♻️ Rotated existing queue to: ${song.trackName}');
+      } else {
+        // Load recommended as queue
+        await musicPlayerProvider.setTrack(song, queue: _recommendedSongs);
+        print('🆕 Loaded recommended queue: ${song.trackName}');
+      }
 
       // Always play the new track
       musicPlayerProvider.play();
 
       print('Playing recommended: ${song.trackName} by ${song.artist}');
-      print('Queue size: ${_recommendedSongs.length}');
     } catch (e) {
       print('Error playing recommended song: $e');
     }
@@ -802,15 +812,17 @@ class _HomeCenterState extends State<HomeCenter> {
                                             if (_recommendedSongs.isNotEmpty) {
                                               try {
                                                 final musicPlayerProvider =
-                                                    Provider.of<MusicPlayerProvider>(
-                                                  context,
-                                                  listen: false,
-                                                );
-                                                final first = _recommendedSongs.first;
-                                                await musicPlayerProvider.setTrackWithRecommended(
-                                                  first,
-                                                  fallbackQueue: _recommendedSongs,
-                                                );
+                                                    Provider.of<
+                                                      MusicPlayerProvider
+                                                    >(context, listen: false);
+                                                final first =
+                                                    _recommendedSongs.first;
+                                                await musicPlayerProvider
+                                                    .setTrackWithRecommended(
+                                                      first,
+                                                      fallbackQueue:
+                                                          _recommendedSongs,
+                                                    );
                                                 musicPlayerProvider.play();
                                                 if (mounted) {
                                                   setState(() {
@@ -818,9 +830,12 @@ class _HomeCenterState extends State<HomeCenter> {
                                                   });
                                                 }
                                                 print(
-                                                    'Playing recommended queue: ${_recommendedSongs.length} tracks');
+                                                  'Playing recommended queue: ${_recommendedSongs.length} tracks',
+                                                );
                                               } catch (e) {
-                                                print('Error playing recommended queue: $e');
+                                                print(
+                                                  'Error playing recommended queue: $e',
+                                                );
                                               }
                                               return;
                                             }

@@ -237,52 +237,64 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
   }
 
   Widget _buildAlbumIconPNG(String pngPath, bool isActive) {
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF2A2A2A) : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: () {
-            print('Clicked album: $pngPath'); // Debug log
-          },
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: Image.asset(
-              pngPath,
-              width: 50,
-              height: 50,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                // Fallback widget khi không load được PNG
-                return Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        _getAlbumColor(pngPath),
-                        _getAlbumColor(pngPath).withOpacity(0.7),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.album, color: Colors.white, size: 60),
-                  ),
-                );
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate responsive size based on available width
+        final containerSize = (constraints.maxWidth * 0.8).clamp(50.0, 80.0);
+        final imageSize = containerSize * 0.83; // ~50px at 60px container
+
+        return Container(
+          width: containerSize,
+          height: containerSize,
+          decoration: BoxDecoration(
+            color: isActive ? const Color(0xFF2A2A2A) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () {
+                print('Clicked album: $pngPath'); // Debug log
               },
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Image.asset(
+                  pngPath,
+                  width: imageSize,
+                  height: imageSize,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    // Fallback widget khi không load được PNG
+                    return Container(
+                      width: imageSize,
+                      height: imageSize,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            _getAlbumColor(pngPath),
+                            _getAlbumColor(pngPath).withOpacity(0.7),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.album,
+                          color: Colors.white,
+                          size: imageSize,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -295,54 +307,62 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
   }
 
   Widget _buildTrackIconMini(Track track, bool isActive) {
-    return GestureDetector(
-      onTap: () => _onTrackTapped(track),
-      child: Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF2A2A2A) : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(6),
-          child: track.trackImageUrl.isNotEmpty
-              ? Image.network(
-                  track.trackImageUrl,
-                  width: 50,
-                  height: 50,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: 50,
-                      height: 50,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate responsive size based on available width
+        final containerSize = (constraints.maxWidth * 0.8).clamp(50.0, 80.0);
+        final imageSize = containerSize * 0.83; // ~50px at 60px container
+
+        return GestureDetector(
+          onTap: () => _onTrackTapped(track),
+          child: Container(
+            width: containerSize,
+            height: containerSize,
+            decoration: BoxDecoration(
+              color: isActive ? const Color(0xFF2A2A2A) : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: track.trackImageUrl.isNotEmpty
+                  ? Image.network(
+                      track.trackImageUrl,
+                      width: imageSize,
+                      height: imageSize,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: imageSize,
+                          height: imageSize,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade800,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Icon(
+                            Icons.music_note,
+                            color: Colors.white,
+                            size: imageSize * 0.6,
+                          ),
+                        );
+                      },
+                    )
+                  : Container(
+                      width: imageSize,
+                      height: imageSize,
                       decoration: BoxDecoration(
                         color: Colors.grey.shade800,
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.music_note,
                         color: Colors.white,
-                        size: 30,
+                        size: imageSize * 0.6,
                       ),
-                    );
-                  },
-                )
-              : Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade800,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: const Icon(
-                    Icons.music_note,
-                    color: Colors.white,
-                    size: 30,
-                  ),
-                ),
-        ),
-      ),
+                    ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -369,31 +389,39 @@ class _LeftSidebarMiniState extends State<LeftSidebarMini> {
   }
 
   Widget _buildCreateButtonMini() {
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: _showCreatePlaylistDialog,
-          child: Center(
-            child: Container(
-              width: 45,
-              height: 45,
-              decoration: const BoxDecoration(
-                color: Color(0xFFE53935),
-                shape: BoxShape.circle,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate responsive size based on available width
+        final containerSize = (constraints.maxWidth * 0.8).clamp(50.0, 80.0);
+        final buttonSize = containerSize * 0.75; // ~45px at 60px container
+
+        return Container(
+          width: containerSize,
+          height: containerSize,
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: _showCreatePlaylistDialog,
+              child: Center(
+                child: Container(
+                  width: buttonSize,
+                  height: buttonSize,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE53935),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.add, color: Colors.white, size: 28),
+                ),
               ),
-              child: const Icon(Icons.add, color: Colors.white, size: 28),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -540,270 +568,291 @@ class _CreatePlaylistDialogMiniState extends State<_CreatePlaylistDialogMini> {
     return Dialog(
       backgroundColor: const Color(0xFF1E1E1E),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: SizedBox(
-        width: 420,
-        height: 620,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Responsive dialog sizing
+          final screenHeight = MediaQuery.of(context).size.height;
+          final dialogHeight = (screenHeight * 0.75).clamp(500.0, 800.0);
+
+          return SizedBox(
+            width: 420,
+            height: dialogHeight,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Text(
-                      l10n?.createPlaylist ?? 'Create playlist',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          l10n?.createPlaylist ?? 'Create playlist',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close, color: Colors.white54),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  TextField(
+                    controller: _playlistNameController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFF2A2A2A),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                      hintText: 'Playlist name',
+                      hintStyle: const TextStyle(color: Colors.white38),
                     ),
                   ),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close, color: Colors.white54),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
 
-              TextField(
-                controller: _playlistNameController,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: const Color(0xFF2A2A2A),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      ChoiceChip(
+                        label: const Text('Private'),
+                        selected: !_isPublic,
+                        onSelected: (_) => setState(() => _isPublic = false),
+                        selectedColor: const Color(0xFF3E3E3E),
+                        backgroundColor: const Color(0xFF2F2F2F),
+                        labelStyle: TextStyle(
+                          color: !_isPublic ? Colors.white : Colors.white54,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ChoiceChip(
+                        label: const Text('Public'),
+                        selected: _isPublic,
+                        onSelected: (_) => setState(() => _isPublic = true),
+                        selectedColor: const Color(0xFF3E3E3E),
+                        backgroundColor: const Color(0xFF2F2F2F),
+                        labelStyle: TextStyle(
+                          color: _isPublic ? Colors.white : Colors.white54,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
-                  hintText: 'Playlist name',
-                  hintStyle: const TextStyle(color: Colors.white38),
-                ),
-              ),
+                  const SizedBox(height: 16),
 
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  ChoiceChip(
-                    label: const Text('Private'),
-                    selected: !_isPublic,
-                    onSelected: (_) => setState(() => _isPublic = false),
-                    selectedColor: const Color(0xFF3E3E3E),
-                    backgroundColor: const Color(0xFF2F2F2F),
-                    labelStyle: TextStyle(
-                      color: !_isPublic ? Colors.white : Colors.white54,
+                  Text(
+                    l10n?.findSongsForPlaylist ??
+                        "Let's find something for your playlist",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  ChoiceChip(
-                    label: const Text('Public'),
-                    selected: _isPublic,
-                    onSelected: (_) => setState(() => _isPublic = true),
-                    selectedColor: const Color(0xFF3E3E3E),
-                    backgroundColor: const Color(0xFF2F2F2F),
-                    labelStyle: TextStyle(
-                      color: _isPublic ? Colors.white : Colors.white54,
-                      fontWeight: FontWeight.w600,
+                  const SizedBox(height: 12),
+
+                  TextField(
+                    controller: _searchController,
+                    style: const TextStyle(color: Colors.white),
+                    onChanged: _searchTracks,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFF3E3E3E),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: Colors.white54,
+                      ),
+                      hintText:
+                          l10n?.searchSongsAndPodcasts ??
+                          'Search for songs and podcasts',
+                      hintStyle: const TextStyle(color: Colors.white38),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-              Text(
-                l10n?.findSongsForPlaylist ??
-                    "Let's find something for your playlist",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              TextField(
-                controller: _searchController,
-                style: const TextStyle(color: Colors.white),
-                onChanged: _searchTracks,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: const Color(0xFF3E3E3E),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none,
-                  ),
-                  prefixIcon: const Icon(Icons.search, color: Colors.white54),
-                  hintText:
-                      l10n?.searchSongsAndPodcasts ??
-                      'Search for songs and podcasts',
-                  hintStyle: const TextStyle(color: Colors.white38),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              Expanded(
-                child: _isSearching
-                    ? const Center(
-                        child: CircularProgressIndicator(color: Colors.white),
-                      )
-                    : _searchResults.isNotEmpty
-                    ? ListView.builder(
-                        itemCount: _searchResults.length,
-                        itemBuilder: (context, index) {
-                          final track = _searchResults[index];
-                          final isSelected = _selectedTracks.any(
-                            (t) => t.trackId == track.trackId,
-                          );
-                          return ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            leading: ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: Image.network(
-                                track.trackImageUrl,
-                                width: 48,
-                                height: 48,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Container(
-                                  width: 48,
-                                  height: 48,
-                                  color: Colors.grey.shade800,
-                                  child: const Icon(
-                                    Icons.music_note,
-                                    color: Colors.white,
+                  Expanded(
+                    child: _isSearching
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          )
+                        : _searchResults.isNotEmpty
+                        ? ListView.builder(
+                            itemCount: _searchResults.length,
+                            itemBuilder: (context, index) {
+                              final track = _searchResults[index];
+                              final isSelected = _selectedTracks.any(
+                                (t) => t.trackId == track.trackId,
+                              );
+                              return ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      final imageSize = 48.0;
+                                      return Image.network(
+                                        track.trackImageUrl,
+                                        width: imageSize,
+                                        height: imageSize,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) => Container(
+                                          width: imageSize,
+                                          height: imageSize,
+                                          color: Colors.grey.shade800,
+                                          child: const Icon(
+                                            Icons.music_note,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ),
+                                title: Text(
+                                  track.title,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                subtitle: Text(
+                                  track.artist,
+                                  style: const TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 12,
+                                  ),
+                                  maxLines: 1,
+                                ),
+                                trailing: IconButton(
+                                  icon: Icon(
+                                    isSelected
+                                        ? Icons.check_circle
+                                        : Icons.add_circle_outline,
+                                    color: isSelected
+                                        ? Colors.green
+                                        : Colors.white54,
+                                  ),
+                                  onPressed: () => _toggleTrackSelection(track),
+                                ),
+                              );
+                            },
+                          )
+                        : _selectedTracks.isNotEmpty
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${_selectedTracks.length} tracks selected',
+                                style: const TextStyle(color: Colors.white54),
                               ),
-                            ),
-                            title: Text(
-                              track.title,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            subtitle: Text(
-                              track.artist,
-                              style: const TextStyle(
-                                color: Colors.white54,
-                                fontSize: 12,
-                              ),
-                              maxLines: 1,
-                            ),
-                            trailing: IconButton(
-                              icon: Icon(
-                                isSelected
-                                    ? Icons.check_circle
-                                    : Icons.add_circle_outline,
-                                color: isSelected
-                                    ? Colors.green
-                                    : Colors.white54,
-                              ),
-                              onPressed: () => _toggleTrackSelection(track),
-                            ),
-                          );
-                        },
-                      )
-                    : _selectedTracks.isNotEmpty
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${_selectedTracks.length} tracks selected',
-                            style: const TextStyle(color: Colors.white54),
-                          ),
-                          const SizedBox(height: 8),
-                          Expanded(
-                            child: ListView.builder(
-                              itemCount: _selectedTracks.length,
-                              itemBuilder: (context, index) {
-                                final track = _selectedTracks[index];
-                                return ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  leading: ClipRRect(
-                                    borderRadius: BorderRadius.circular(4),
-                                    child: Image.network(
-                                      track.trackImageUrl,
-                                      width: 40,
-                                      height: 40,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => Container(
-                                        width: 40,
-                                        height: 40,
-                                        color: Colors.grey.shade800,
-                                        child: const Icon(
-                                          Icons.music_note,
-                                          color: Colors.white,
-                                          size: 20,
+                              const SizedBox(height: 8),
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: _selectedTracks.length,
+                                  itemBuilder: (context, index) {
+                                    final track = _selectedTracks[index];
+                                    return ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      leading: ClipRRect(
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: Image.network(
+                                          track.trackImageUrl,
+                                          width: 40,
+                                          height: 40,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) =>
+                                              Container(
+                                                width: 40,
+                                                height: 40,
+                                                color: Colors.grey.shade800,
+                                                child: const Icon(
+                                                  Icons.music_note,
+                                                  color: Colors.white,
+                                                  size: 20,
+                                                ),
+                                              ),
                                         ),
                                       ),
-                                    ),
-                                  ),
-                                  title: Text(
-                                    track.title,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  trailing: IconButton(
-                                    icon: const Icon(
-                                      Icons.remove_circle,
-                                      color: Colors.red,
-                                    ),
-                                    onPressed: () =>
-                                        _toggleTrackSelection(track),
-                                  ),
-                                );
-                              },
+                                      title: Text(
+                                        track.title,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      trailing: IconButton(
+                                        icon: const Icon(
+                                          Icons.remove_circle,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () =>
+                                            _toggleTrackSelection(track),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          )
+                        : Center(
+                            child: Text(
+                              l10n?.searchSongsAndPodcasts ??
+                                  'Search for songs to add',
+                              style: const TextStyle(color: Colors.white38),
                             ),
                           ),
-                        ],
-                      )
-                    : Center(
-                        child: Text(
-                          l10n?.searchSongsAndPodcasts ??
-                              'Search for songs to add',
-                          style: const TextStyle(color: Colors.white38),
+                  ),
+
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isCreating ? null : _createPlaylist,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
                         ),
                       ),
-              ),
-
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isCreating ? null : _createPlaylist,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
+                      child: _isCreating
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.black,
+                              ),
+                            )
+                          : Text(
+                              l10n?.create ?? 'Create',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
-                  child: _isCreating
-                      ? const SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.black,
-                          ),
-                        )
-                      : Text(
-                          l10n?.create ?? 'Create',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

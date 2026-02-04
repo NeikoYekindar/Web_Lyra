@@ -27,13 +27,27 @@ class _UserProfileState extends State<UserProfile> {
   @override
   void initState() {
     super.initState();
-    //_loadUserPlaylists();
+    _loadUserPlaylists();
     _loadRecentTracks();
   }
 
   Future<void> _loadUserPlaylists() async {
     try {
-      final playlists = await serviceLocator.playlistService.getUserPlaylists();
+      final userId = CurrentUser.instance.user?.userId;
+      if (userId == null || userId.isEmpty) {
+        print('No user ID available');
+        if (mounted) {
+          setState(() {
+            _userPlaylists = [];
+            _isLoadingPlaylists = false;
+          });
+        }
+        return;
+      }
+      
+      final playlists = await serviceLocator.playlistService.getYourPlaylists(
+        userId: userId,
+      );
       if (mounted) {
         setState(() {
           _userPlaylists = playlists;

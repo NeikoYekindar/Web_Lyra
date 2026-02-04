@@ -214,7 +214,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         ? queue.first
         : _playlistDetail!.tracks.first;
 
-      await musicPlayerProvider.setTrackWithRecommended(firstTrack, fallbackQueue: queue);
+    await musicPlayerProvider.setTrackWithRecommended(
+      firstTrack,
+      fallbackQueue: queue,
+    );
     musicPlayerProvider.play();
 
     if (!shellController.isPlayerMaximized) {
@@ -265,7 +268,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     // Ensure the current track object contains artistObj if available in playlist
     final current = queue.isNotEmpty ? queue.first : track;
 
-      await musicPlayerProvider.setTrackWithRecommended(current, fallbackQueue: queue);
+    await musicPlayerProvider.setTrackWithRecommended(
+      current,
+      fallbackQueue: queue,
+    );
     musicPlayerProvider.play();
 
     if (!shellController.isPlayerMaximized) {
