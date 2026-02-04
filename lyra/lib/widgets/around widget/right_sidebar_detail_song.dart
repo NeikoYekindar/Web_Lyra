@@ -23,7 +23,7 @@ class RightSidebarDetailSong extends StatelessWidget {
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           LayoutBuilder(
@@ -70,27 +70,33 @@ class RightSidebarDetailSong extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          Flexible(
+          Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Ảnh Album
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      width: double.infinity,
-                      height: 300,
-                      color: Colors.grey.shade800,
-                      child: track == null || track.albumArtUrl.isEmpty
-                          ? const Icon(
-                              Icons.music_note,
-                              color: Colors.white,
-                              size: 60,
-                            )
-                          : _buildSidebarImage(track.albumArtUrl),
-                    ),
+                  // Ảnh Album - responsive
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      // Calculate responsive height: use available width with max constraint
+                      final imageSize = constraints.maxWidth.clamp(200.0, 400.0);
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          width: double.infinity,
+                          height: imageSize,
+                          color: Colors.grey.shade800,
+                          child: track == null || track.albumArtUrl.isEmpty
+                              ? const Icon(
+                                  Icons.music_note,
+                                  color: Colors.white,
+                                  size: 60,
+                                )
+                              : _buildSidebarImage(track.albumArtUrl, imageSize),
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 20),
 
@@ -192,7 +198,7 @@ class RightSidebarDetailSong extends StatelessWidget {
     );
   }
 
-  Widget _buildSidebarImage(String imageUrl) {
+  Widget _buildSidebarImage(String imageUrl, double height) {
     if (imageUrl.isEmpty) {
       return const Icon(Icons.music_note, color: Colors.white, size: 60);
     }
@@ -201,12 +207,12 @@ class RightSidebarDetailSong extends StatelessWidget {
       return Image.network(
         imageUrl,
         width: double.infinity,
-        height: 300,
+        height: height,
         fit: BoxFit.cover,
         errorBuilder: (_, __, ___) => Image.asset(
           'assets/images/HTH.png',
           width: double.infinity,
-          height: 300,
+          height: height,
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) =>
               const Icon(Icons.music_note, color: Colors.white, size: 60),
@@ -220,12 +226,12 @@ class RightSidebarDetailSong extends StatelessWidget {
     return Image.asset(
       assetPath,
       width: double.infinity,
-      height: 300,
+      height: height,
       fit: BoxFit.cover,
       errorBuilder: (_, __, ___) => Image.asset(
         'assets/images/HTH.png',
         width: double.infinity,
-        height: 300,
+        height: height,
         fit: BoxFit.cover,
         errorBuilder: (_, __, ___) =>
             const Icon(Icons.music_note, color: Colors.white, size: 60),
@@ -354,7 +360,9 @@ class _ArtistInfoCardState extends State<_ArtistInfoCard> {
                             onPressed: isLoading ? null : _toggleFollow,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isFollowing
-                                  ? Theme.of(context).colorScheme.surfaceContainerHighest
+                                  ? Theme.of(
+                                      context,
+                                    ).colorScheme.surfaceContainerHighest
                                   : Theme.of(context).colorScheme.primary,
                               foregroundColor: isFollowing
                                   ? Theme.of(

@@ -129,7 +129,7 @@ class MusicPlayerProvider extends ChangeNotifier {
         userId: userId,
         durationSeconds: _positionMs ~/ 1000,
       );
-      
+
       // Also increment stream count
       await ServiceLocator().musicService.incrementStream(
         _currentTrack!.trackId,
@@ -221,9 +221,13 @@ class MusicPlayerProvider extends ChangeNotifier {
             final existingIds = queueToUse.map((t) => t.trackId).toSet();
             final toAdd = recs.where((t) => !existingIds.contains(t.trackId));
             queueToUse.addAll(toAdd);
-            debugPrint('✅ Appended ${toAdd.length} recommended tracks to fallback queue');
+            debugPrint(
+              '✅ Appended ${toAdd.length} recommended tracks to fallback queue',
+            );
           } else {
-            debugPrint('ℹ️ No recommendations returned; using fallback queue only');
+            debugPrint(
+              'ℹ️ No recommendations returned; using fallback queue only',
+            );
           }
         } else {
           debugPrint('ℹ️ No user logged in; using fallback queue only');
@@ -272,6 +276,29 @@ class MusicPlayerProvider extends ChangeNotifier {
       _queue.add(track);
     }
     notifyListeners();
+  }
+
+  /// Rotate queue so the specified track plays first
+  /// (moves it to index 0, preserves rest of queue order)
+  Future<void> rotateQueueToTrack(Track track) async {
+    if (_queue.isEmpty) return;
+    
+    final index = _queue.indexWhere((t) => t.trackId == track.trackId);
+    if (index == -1) {
+      // Track not in queue, just set it normally
+      await setTrack(track, queue: [track, ..._queue]);
+      return;
+    }
+    
+    // Rotate: [track, items after track, items before track]
+    final rotated = [
+      _queue[index],
+      ..._queue.sublist(index + 1),
+      ..._queue.sublist(0, index),
+    ];
+    
+    await setTrack(track, queue: rotated);
+    debugPrint('🔄 Rotated queue: track ${track.trackId} moved to front');
   }
 
   void removeFromQueue(int index) {
@@ -342,17 +369,23 @@ class MusicPlayerProvider extends ChangeNotifier {
         }
       }
 
-      _tracksPlayedSinceRefresh++;
+      // Advance index first to pick the correct next element
+      final int nextIndex = (_currentIndex + 1).clamp(0, _queue.length - 1);
+      _currentIndex = nextIndex;
+      final nextTrack = _queue[_currentIndex];
+      debugPrint('🔁 playNext: _currentIndex=$_currentIndex, next=${nextTrack.trackId}');
+      debugPrint('🔁 playNext: queueIds=${_queue.map((t)=>t.trackId).toList()}');
 
-      // Remove played tracks and refresh queue after 5 tracks
+      // Ensure setTrack receives the full queue so it doesn't mutate order
+      await setTrack(nextTrack, queue: List<Track>.from(_queue));
+      play();
+
+      // After playing, check if we need to refresh queue (don't disrupt current playback)
+      _tracksPlayedSinceRefresh++;
       if (_tracksPlayedSinceRefresh >= 5) {
         await _refreshQueue();
         _tracksPlayedSinceRefresh = 0;
       }
-
-      final nextTrack = _queue[_currentIndex + 1];
-      await setTrack(nextTrack);
-      play();
     }
   }
 
@@ -370,8 +403,11 @@ class MusicPlayerProvider extends ChangeNotifier {
         }
       }
 
-      final previousTrack = _queue[_currentIndex - 1];
-      await setTrack(previousTrack);
+      final int prevIndex = (_currentIndex - 1).clamp(0, _queue.length - 1);
+      _currentIndex = prevIndex;
+      final previousTrack = _queue[_currentIndex];
+      debugPrint('⏮ playPrevious: _currentIndex=$_currentIndex, prev=${previousTrack.trackId}');
+      await setTrack(previousTrack, queue: List<Track>.from(_queue));
       play();
     }
   }
